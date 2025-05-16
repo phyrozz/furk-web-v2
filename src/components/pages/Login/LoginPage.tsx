@@ -1,0 +1,146 @@
+import { useState } from 'react';
+import { PawPrint as Paw, User, Store } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import LoginForm from './LoginForm';
+
+const LoginPage = () => {
+  const [activeTab, setActiveTab] = useState<'owner' | 'merchant'>('owner');
+  const navigate = useNavigate();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 },
+    },
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left Column - Banner */}
+      <div className="hidden md:flex md:w-1/2 bg-primary-500 text-white p-12 items-center justify-center">
+        <motion.div
+          className="max-w-md text-center"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-center mb-6">
+            <Paw size={64} />
+          </div>
+          <h1 className="text-4xl font-bold mb-4">Welcome to FURK</h1>
+          <p className="text-xl mb-8">Your one-stop platform for all pet services in the Philippines</p>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4 bg-white bg-opacity-10 p-4 rounded-lg">
+              <div className="bg-white text-primary-500 p-2 rounded-full">
+                <User size={24} />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold">Pet Owners</h3>
+                <p className="text-sm opacity-80">Book services, earn rewards, and manage your pet's needs</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 bg-white bg-opacity-10 p-4 rounded-lg">
+              <div className="bg-white text-primary-500 p-2 rounded-full">
+                <Store size={24} />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold">Service Providers</h3>
+                <p className="text-sm opacity-80">List your services, manage bookings, and grow your business</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Right Column - Login Forms */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 bg-gray-50">
+        <motion.div
+          className="w-full max-w-md"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div 
+            className="flex justify-center mb-8"
+            variants={itemVariants}
+          >
+            <Link to="/" className="flex items-center text-primary-500">
+              <Paw size={32} className="mr-2" />
+              <span className="text-2xl font-bold">FURK</span>
+            </Link>
+          </motion.div>
+
+          <motion.div 
+            className="bg-white rounded-xl shadow-md overflow-hidden"
+            variants={itemVariants}
+          >
+            {/* Tab Navigation */}
+            <div className="flex border-b">
+              <button
+                className={`w-1/2 py-4 text-center font-medium transition-colors ${
+                  activeTab === 'owner'
+                    ? 'bg-primary-50 text-primary-600 border-b-2 border-primary-500'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+                onClick={() => setActiveTab('owner')}
+              >
+                Pet Owner
+              </button>
+              <button
+                className={`w-1/2 py-4 text-center font-medium transition-colors ${
+                  activeTab === 'merchant'
+                    ? 'bg-primary-50 text-primary-600 border-b-2 border-primary-500'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+                onClick={() => setActiveTab('merchant')}
+              >
+                Service Provider
+              </button>
+            </div>
+
+            {/* Login Forms */}
+            <div className="p-6">
+              <LoginForm 
+                userType={activeTab}
+                onSuccessfulLogin={() => navigate('/')} 
+              />
+            </div>
+          </motion.div>
+
+          <motion.p 
+            className="text-center mt-8 text-gray-600"
+            variants={itemVariants}
+          >
+            Don't have an account?{' '}
+            <a 
+              href="#" 
+              className="text-primary-600 font-medium hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                // This would typically navigate to a registration page
+                alert(`Registration for ${activeTab === 'owner' ? 'Pet Owners' : 'Service Providers'} would open here`);
+              }}
+            >
+              Register as {activeTab === 'owner' ? 'Pet Owner' : 'Service Provider'}
+            </a>
+          </motion.p>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;
