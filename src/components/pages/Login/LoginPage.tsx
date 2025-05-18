@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import LoginForm from './LoginForm';
 
 const LoginPage = () => {
-  const [activeTab, setActiveTab] = useState<'owner' | 'merchant'>('owner');
+  const [activeTab, setActiveTab] = useState<'user' | 'merchant'>('user');
   const navigate = useNavigate();
 
   const containerVariants = {
@@ -91,11 +91,11 @@ const LoginPage = () => {
             <div className="flex border-b">
               <button
                 className={`w-1/2 py-4 text-center font-medium transition-colors ${
-                  activeTab === 'owner'
+                  activeTab === 'user'
                     ? 'bg-primary-50 text-primary-600 border-b-2 border-primary-500'
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
-                onClick={() => setActiveTab('owner')}
+                onClick={() => setActiveTab('user')}
               >
                 Pet Owner
               </button>
@@ -130,11 +130,10 @@ const LoginPage = () => {
               className="text-primary-600 font-medium hover:underline"
               onClick={(e) => {
                 e.preventDefault();
-                // This would typically navigate to a registration page
-                alert(`Registration for ${activeTab === 'owner' ? 'Pet Owners' : 'Service Providers'} would open here`);
+                navigate(activeTab === 'user' ? '/sign-up/user' : '/sign-up/merchant');
               }}
             >
-              Register as {activeTab === 'owner' ? 'Pet Owner' : 'Service Provider'}
+              Register as {activeTab === 'user' ? 'Pet Owner' : 'Service Provider'}
             </a>
           </motion.p>
         </motion.div>

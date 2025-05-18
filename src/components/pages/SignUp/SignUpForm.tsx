@@ -1,0 +1,266 @@
+import { useState } from 'react';
+import { Mail, Lock, User, Phone, CheckCircle } from 'lucide-react';
+import Button from '../../common/Button';
+import { loginService } from '../../../services/login/login-service';
+import { useNavigate } from 'react-router-dom';
+
+interface SignUpFormProps {
+  userType: 'user' | 'merchant';
+  onSuccessfulSignUp: () => void;
+}
+
+const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showVerification, setShowVerification] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      let signUp = await loginService.signUp({
+        email: email,
+        password: password,
+        phone: phone
+      });
+
+      if (!signUp) {
+        setError('An error occurred during sign up. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+      
+      setShowVerification(true);
+      setIsLoading(false);
+    } catch (err) {
+      setError('An error occurred during sign up. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const verified = await loginService.verifySignUp(email, verificationCode);
+
+      if (verified) {
+        navigate('/login');
+      } else {
+        setError('Invalid verification code. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred during verification. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (showVerification) {
+    return (
+      <form onSubmit={handleVerification} className="space-y-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Verify your account
+        </h2>
+
+        <p className="text-gray-600 mb-4">
+          We've sent a verification code to your email address. Please enter it below to complete your registration.
+        </p>
+
+        {error && (
+          <div className="p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-1">
+            Verification Code
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <CheckCircle size={18} />
+            </div>
+            <input
+              id="verificationCode"
+              type="text"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Enter verification code"
+              required
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={isLoading}
+        >
+          {isLoading ? 'Verifying...' : 'Verify Account'}
+        </Button>
+
+        <p className="text-sm text-center text-gray-600">
+          Didn't receive the code?{' '}
+          <button
+            type="button"
+            onClick={() => loginService.resendVerificationCode(email)}
+            className="text-primary-600 hover:text-primary-500 font-medium"
+          >
+            Resend code
+          </button>
+        </p>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        {userType === 'user' 
+          ? 'Create your Pet Owner account' 
+          : 'Create your Service Provider account'}
+      </h2>
+
+      {error && (
+        <div className="p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            Full Name
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <User size={18} />
+            </div>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="John Doe"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <Mail size={18} />
+            </div>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <Phone size={18} />
+            </div>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="+1 (555) 000-0000"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <Lock size={18} />
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <Lock size={18} />
+            </div>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={isLoading}
+        >
+          {isLoading ? 'Creating Account...' : 'Create Account'}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export default SignUpForm;
