@@ -10,7 +10,8 @@ interface SignUpFormProps {
 }
 
 const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp }) => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +37,10 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
       let signUp = await loginService.signUp({
         email: email,
         password: password,
-        phone: phone
+        phone: phone,
+        firstName: firstName,
+        lastName: lastName,
+        userType: userType
       });
 
       if (!signUp) {
@@ -150,20 +154,36 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
               <User size={18} />
             </div>
             <input
-              id="name"
+              id="firstName"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="John Doe"
+              placeholder="John"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <User size={18} />
+            </div>
+            <input
+              id="lastName"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Doe"
               required
             />
           </div>
@@ -203,7 +223,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+63 900 000 0000"
               required
             />
           </div>

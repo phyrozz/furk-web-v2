@@ -18,6 +18,22 @@ interface LoginCredentials {
   password: string;
 }
 
+interface SignUpCredentials {
+  email: string | undefined;
+  phone: string | undefined;
+  firstName: string;
+  lastName: string;
+  password: string;
+  userType: 'user' | 'merchant';
+}
+
+interface SignUpResponse {
+  data?: any;
+  message?: string;
+  role_name?: string | null;
+  token?: string;
+}
+
 interface LoginResponse {
   data?: any;
   token?: string;
@@ -133,7 +149,12 @@ export class LoginService {
 
     // Login to backend API
     const response = await axios.get<LoginResponse>(
-      `${this.baseUrl}/login?username=${username}`
+      `${this.baseUrl}/login?username=${username}`,
+      {
+        headers: {
+          Authorization: `${tokens.accessToken}`
+        }
+      }
     );
 
     // Store tokens and role name in localStorage
@@ -158,32 +179,53 @@ export class LoginService {
     }
   }
 
-  public async signUp(credentials: LoginCredentials): Promise<LoginResponse> {
-    if (!credentials.email && !credentials.phone) {
-      throw new Error('Email or phone number is required');
-    }
-
-    if (credentials.phone && credentials.phone.startsWith('0')) {
-      credentials.phone = `+63${credentials.phone.substring(1)}`;
-    }
-
-    console.log('Signing up with credentials:', credentials);
-
-    const cognitoUser = await signUp({
-      username: credentials.email || credentials.phone!,
-      password: credentials.password,
-      options: {
-        userAttributes: {
-          email: credentials.email,
-          phone_number: credentials.phone
-        }
+  public async signUp(credentials: SignUpCredentials): Promise<LoginResponse> {
+    try {
+      if (!credentials.email && !credentials.phone) {
+        throw new Error('Email or phone number is required');
       }
-    });
-
-    console.log('Cognito user:', cognitoUser);
-
-    return {
-      message: 'Sign up successful'
+  
+      if (credentials.phone && credentials.phone.startsWith('0')) {
+        credentials.phone = `+63${credentials.phone.substring(1)}`;
+      }
+  
+      console.log('Signing up with credentials:', credentials);
+  
+      const cognitoUser = await signUp({
+        username: credentials.email || credentials.phone!,
+        password: credentials.password,
+        options: {
+          userAttributes: {
+            email: credentials.email,
+            phone_number: credentials.phone
+          }
+        }
+      });
+  
+      console.log('Cognito user:', cognitoUser);
+  
+      const response = await axios.post<SignUpResponse>(
+        `${this.baseUrl}/login`,
+        {
+          username: credentials.email || credentials.phone!,
+          email: credentials.email,
+          phone_number: credentials.phone,
+          first_name: credentials.firstName,
+          last_name: credentials.lastName,
+          role_id: credentials.userType === 'user' ? 1 : 3
+        }
+      );
+  
+      console.log('Backend response:', response.data);
+  
+      localStorage.setItem('token', response.data.token!);
+      localStorage.setItem('userRole', response.data.role_name!);
+  
+      return {
+        message: 'Sign up successful'
+      }
+    } catch (error) {
+      throw this.handleCognitoError(error);
     }
   }
 

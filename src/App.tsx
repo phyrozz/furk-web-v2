@@ -7,6 +7,7 @@ import RewardsPage from './components/pages/Rewards/RewardsPage';
 import LoginPage from './components/pages/Login/LoginPage';
 import MerchantDashboard from './components/pages/Merchant/MerchantDashboard';
 import SignUpPage from './components/pages/SignUp/SignUpPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -14,7 +15,11 @@ function App() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+          <Route path="/merchant/dashboard" element={
+            <ProtectedRoute requiredRole='merchant'>
+              <MerchantDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/sign-up/merchant" element={<SignUpPage userType='merchant' />} />
           <Route path="/sign-up/user" element={<SignUpPage userType='user' />} />
           <Route
