@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Mail, Lock, User, Phone, CheckCircle } from 'lucide-react';
 import Button from '../../common/Button';
-import { loginService } from '../../../services/login/login-service';
-import { useNavigate } from 'react-router-dom';
+import { loginService } from '../../../services/auth/auth-service';
 
 interface SignUpFormProps {
   userType: 'user' | 'merchant';
@@ -20,7 +19,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +49,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
       
       setShowVerification(true);
       setIsLoading(false);
-    } catch (err) {
-      setError('An error occurred during sign up. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'An error occurred during login. Please try again.');
       setIsLoading(false);
     }
   };
@@ -66,7 +64,19 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
       const verified = await loginService.verifySignUp(email, verificationCode);
 
       if (verified) {
-        navigate('/login');
+        const login = loginService.login({
+          email: email,
+          password: password,
+          userType: userType
+        });
+
+        if (!login) {
+          setError('An error occurred during login. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+
+        onSuccessfulSignUp();
       } else {
         setError('Invalid verification code. Please try again.');
       }
@@ -143,7 +153,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         {userType === 'user' 
           ? 'Create your Pet Owner account' 
-          : 'Create your Service Provider account'}
+          : 'Create your Merchant account'}
       </h2>
 
       {error && (

@@ -5,8 +5,8 @@ const WhyFurkSection = () => {
   const benefits = [
     {
       icon: <CheckCircle size={32} className="text-primary-500" />,
-      title: 'Verified Service Providers',
-      description: 'All service providers on FURK undergo a thorough verification process to ensure quality and reliability.'
+      title: 'Verified Merchants',
+      description: 'All merchants on FURK undergo a thorough verification process to ensure quality and reliability.'
     },
     {
       icon: <Shield size={32} className="text-primary-500" />,

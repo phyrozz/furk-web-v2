@@ -8,20 +8,34 @@ import LoginPage from './components/pages/Login/LoginPage';
 import MerchantDashboard from './components/pages/Merchant/MerchantDashboard';
 import SignUpPage from './components/pages/SignUp/SignUpPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ResetPasswordPage from './components/pages/ResetPassword/ResetPasswordPage';
+import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+            } />
           <Route path="/merchant/dashboard" element={
             <ProtectedRoute requiredRole='merchant'>
               <MerchantDashboard />
             </ProtectedRoute>
           } />
-          <Route path="/sign-up/merchant" element={<SignUpPage userType='merchant' />} />
-          <Route path="/sign-up/user" element={<SignUpPage userType='user' />} />
+          <Route path="/sign-up/merchant" element={
+            <PublicRoute>
+              <SignUpPage userType='merchant' />
+            </PublicRoute>
+          } />
+          <Route path="/sign-up/user" element={
+            <PublicRoute>
+              <SignUpPage userType='user' />
+            </PublicRoute>
+            } />
           <Route
             path="/*"
             element={
@@ -38,6 +52,11 @@ function App() {
               </>
             }
           />
+          <Route path="/reset-password" element={
+            <PublicRoute>
+              <ResetPasswordPage />
+            </PublicRoute>
+          } />
         </Routes>
       </div>
     </Router>

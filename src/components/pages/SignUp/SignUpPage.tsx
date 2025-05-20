@@ -10,11 +10,10 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
   const navigate = useNavigate();
 
   const handleSuccessfulSignUp = () => {
-    // Navigate to appropriate dashboard based on user type
     if (userType === 'merchant') {
       navigate('/merchant/dashboard');
     } else {
-      navigate('/dashboard');
+      navigate('/');
     }
   };
 

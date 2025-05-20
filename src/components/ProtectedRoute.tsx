@@ -9,8 +9,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   const location = useLocation();
   
   // You can get this from your auth context or state management
-  const isAuthenticated = localStorage.getItem('token') !== null && localStorage.getItem('authToken') !== null;
-  const userRole = localStorage.getItem('userRole');
+  const isAuthenticated = localStorage.getItem('token') !== null && localStorage.getItem('cognitoAccessToken') !== null;
+  const userRole = localStorage.getItem('roleName');
 
   if (!isAuthenticated) {
     // Redirect to login page while saving the attempted location

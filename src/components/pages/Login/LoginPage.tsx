@@ -57,7 +57,7 @@ const LoginPage = () => {
                 <Store size={24} />
               </div>
               <div className="text-left">
-                <h3 className="font-semibold">Service Providers</h3>
+                <h3 className="font-semibold">Merchants</h3>
                 <p className="text-sm opacity-80">List your services, manage bookings, and grow your business</p>
               </div>
             </div>
@@ -107,7 +107,7 @@ const LoginPage = () => {
                 }`}
                 onClick={() => setActiveTab('merchant')}
               >
-                Service Provider
+                Merchant
               </button>
             </div>
 
@@ -115,7 +115,15 @@ const LoginPage = () => {
             <div className="p-6">
               <LoginForm 
                 userType={activeTab}
-                onSuccessfulLogin={() => navigate('/')} 
+                onSuccessfulLogin={() => {
+                  if (activeTab === 'user') {
+                    navigate('/');
+                  } else if (activeTab === 'merchant') {
+                    navigate('/merchant/dashboard');
+                  } else {
+                    navigate('/');
+                  }
+                }} 
               />
             </div>
           </motion.div>
@@ -133,7 +141,7 @@ const LoginPage = () => {
                 navigate(activeTab === 'user' ? '/sign-up/user' : '/sign-up/merchant');
               }}
             >
-              Register as {activeTab === 'user' ? 'Pet Owner' : 'Service Provider'}
+              Register as {activeTab === 'user' ? 'Pet Owner' : 'Merchant'}
             </a>
           </motion.p>
         </motion.div>
