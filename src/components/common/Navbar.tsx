@@ -58,7 +58,7 @@ const Navbar = () => {
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-white shadow-md py-2'
-          : 'bg-transparent py-4'
+          : 'bg-white py-4'
       }`}
     >
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
@@ -191,13 +191,46 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            <Link
-              to="/login"
-              className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-center"
-              onClick={closeMenu}
-            >
-              Login / Register
-            </Link>
+            {loginService.isAuthenticated() ? (
+              <>
+                {loginService.getUserRole() === 'merchant' && (
+                  <Link
+                    to="/merchant/dashboard"
+                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                    onClick={closeMenu}
+                  >
+                    <User size={16} className="mr-2" />
+                    Dashboard
+                  </Link>
+                )}
+                <Link
+                  to="/profile"
+                  className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                  onClick={closeMenu}
+                >
+                  <User size={16} className="mr-2" />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    closeMenu();
+                  }}
+                  className="flex items-center w-full font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-center"
+                onClick={closeMenu}
+              >
+                Login / Register
+              </Link>
+            )}
           </div>
         </div>
       </div>

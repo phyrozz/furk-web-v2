@@ -117,7 +117,7 @@ const LoginPage = () => {
                 userType={activeTab}
                 onSuccessfulLogin={() => {
                   if (activeTab === 'user') {
-                    navigate('/');
+                    navigate('/services');
                   } else if (activeTab === 'merchant') {
                     navigate('/merchant/dashboard');
                   } else {

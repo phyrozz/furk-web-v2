@@ -13,7 +13,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
     if (userType === 'merchant') {
       navigate('/merchant/dashboard');
     } else {
-      navigate('/');
+      navigate('/services');
     }
   };
 
@@ -43,12 +43,13 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
             </div>
 
             <div className="mt-6 text-center">
-              <a
-                href='/login'
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
                 Sign in to your account
-              </a>
+              </button>
             </div>
           </div>
         </div>

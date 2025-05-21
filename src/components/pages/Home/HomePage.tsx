@@ -3,6 +3,7 @@ import HeroSection from './HeroSection';
 import WhatsNewSection from './WhatsNewSection';
 import WhyFurkSection from './WhyFurkSection';
 import PartnerSection from './PartnerSection';
+import { loginService } from '../../../services/auth/auth-service';
 
 const HomePage = () => {
   useEffect(() => {
@@ -23,7 +24,8 @@ const HomePage = () => {
       <HeroSection />
       <WhatsNewSection />
       <WhyFurkSection />
-      <PartnerSection />
+      { !loginService.isAuthenticated() && 
+      <PartnerSection />}
     </div>
   );
 };
