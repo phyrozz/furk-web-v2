@@ -125,7 +125,7 @@ const ServicesList = () => {
             Comprehensive Services for All Your Pet's Needs
           </h2>
           <p className="text-gray-600 text-lg">
-            From everyday care to specialized services, we connect you with trusted providers for every aspect of your pet's wellbeing.
+            From everyday care to specialized services, we connect you with trusted merchants for every aspect of your pet's wellbeing.
           </p>
         </div>
 
@@ -212,7 +212,7 @@ const ServicesList = () => {
                     variant="primary"
                     onClick={() => alert(`You would now see providers for ${selectedService.title}`)}
                   >
-                    Find Providers
+                    Find Merchants
                   </Button>
                   <Button
                     variant="outline"
