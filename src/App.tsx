@@ -10,6 +10,8 @@ import SignUpPage from './components/pages/SignUp/SignUpPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ResetPasswordPage from './components/pages/ResetPassword/ResetPasswordPage';
 import PublicRoute from './components/PublicRoute';
+import AdminPage from './components/pages/Admin/AdminPage';
+import MerchantVerificationForm from './components/pages/Merchant/MerchantVerification/MerchantVerificationForm';
 
 function App() {
   return (
@@ -56,6 +58,16 @@ function App() {
             <PublicRoute>
               <ResetPasswordPage />
             </PublicRoute>
+          } />
+          <Route path='/admin' element={
+            <ProtectedRoute requiredRole='admin'>
+              <AdminPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchant/verify" element={
+            <ProtectedRoute requiredRole='merchant'>
+              <MerchantVerificationForm />
+            </ProtectedRoute>
           } />
         </Routes>
       </div>

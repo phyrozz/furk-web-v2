@@ -15,7 +15,8 @@ Amplify.configure({
   Auth: {
     Cognito: {
       userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || '',
-      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || ''
+      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || '',
+      identityPoolId: import.meta.env.VITE_IDENTITY_POOL_ID || ''
     }
   }
 });
@@ -111,7 +112,7 @@ export class LoginService {
 
       const responseData = response.data.data;
 
-      if (responseData.role !== credentials.userType) {
+      if (responseData.role !== credentials.userType && !(responseData.role === 'admin' && credentials.userType === 'user')) {
         throw new Error('User type mismatch');
       }
       
@@ -246,7 +247,25 @@ export class LoginService {
   }
 
   public isAuthenticated(): boolean {
-    return !!(localStorage.getItem('token') && localStorage.getItem('cognitoAccessToken') && localStorage.getItem('roleName'));
+    const token = localStorage.getItem('token');
+    const cognitoAccessToken = localStorage.getItem('cognitoAccessToken');
+    const roleName = localStorage.getItem('roleName');
+
+    if (!token || !cognitoAccessToken || !roleName) {
+      return false;
+    }
+
+    // Check if the Cognito access token is expired
+    try {
+      const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
+      const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
+      const currentTime = Date.now();
+
+      return currentTime < expirationTime;
+    } catch (error) {
+      // If there's any error parsing the token, consider it invalid
+      return false;
+    }
   }
 
   public getToken(): string | null {
