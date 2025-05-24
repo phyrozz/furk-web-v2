@@ -66,7 +66,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
       const verified = await loginService.verifySignUp(email, verificationCode);
 
       if (verified) {
-        const login = loginService.login({
+        const login = await loginService.login({
           email: email,
           password: password,
           userType: userType

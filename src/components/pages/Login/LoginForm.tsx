@@ -29,7 +29,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
         password: password
       });
 
-      console.log('Login response:', response);
+      // console.log('Login response:', response);
 
       if (response.message === 'New password required') {
         setIsLoading(false);

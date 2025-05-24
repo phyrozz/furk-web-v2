@@ -9,7 +9,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const isAuthenticated = loginService.isAuthenticated();
   const userRole = localStorage.getItem('roleName');
 
-  console.log(isAuthenticated);
+  // console.log(isAuthenticated);
 
   if (isAuthenticated) {
     // Redirect authenticated users to their appropriate dashboard/home

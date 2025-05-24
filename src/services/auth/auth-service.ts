@@ -80,7 +80,7 @@ export class LoginService {
         username: credentials.email,
         password: credentials.password
       });
-      console.log('Cognito user:', cognitoUser);
+      // console.log('Cognito user:', cognitoUser);
 
       if (cognitoUser.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
         return {
@@ -178,7 +178,7 @@ export class LoginService {
         credentials.phone = `+63${credentials.phone.substring(1)}`;
       }
   
-      console.log('Signing up with credentials:', credentials);
+      // console.log('Signing up with credentials:', credentials);
   
       const cognitoUser = await signUp({
         username: credentials.email,
@@ -191,7 +191,7 @@ export class LoginService {
         }
       });
   
-      console.log('Cognito user:', cognitoUser);
+      // console.log('Cognito user:', cognitoUser);
   
       const response = await axios.post<SignUpResponse>(
         `${this.baseUrl}/login`,

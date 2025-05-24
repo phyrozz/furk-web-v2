@@ -75,7 +75,7 @@ const MerchantDashboard = () => {
     {
       title: 'List New Service',
       icon: <Plus size={20} />,
-      onClick: () => console.log('Navigate to new service form'),
+      onClick: () => navigate('/merchant/add-service'),
     },
     {
       title: 'Manage Services',

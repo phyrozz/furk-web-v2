@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Upload, X, Check } from 'lucide-react';
 import Button from '../../../common/Button';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
+import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
+import Autocomplete from '../../../common/Autocomplete';
 
 interface UploadRequirement {
   id: string;
@@ -11,6 +13,12 @@ interface UploadRequirement {
   required: boolean;
   maxSize: number; // in MB
   acceptedFormats: string[];
+}
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
 }
 
 interface UploadedFile {
@@ -24,8 +32,12 @@ interface UploadedFile {
 const MerchantVerificationForm = () => {
   const [uploads, setUploads] = useState<Record<string, UploadedFile | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
 
   const s3Service = new S3UploadService();
+  const dataService = new MerchantVerificationService();
 
   const requirements: UploadRequirement[] = [
     {
@@ -170,6 +182,11 @@ const MerchantVerificationForm = () => {
         throw new Error(`Missing required files: ${missingRequired.join(', ')}`);
       }
 
+      // Insert application details to the database
+      // dataService.submitMerchantApplicationDetails({
+      //   service_id: 
+      // });
+
       // Upload files to S3
       const uploadPromises = Object.values(uploads)
        .filter(upload => upload && upload.status === 'success')
@@ -199,7 +216,7 @@ const MerchantVerificationForm = () => {
               Merchant Verification
             </h1>
             <p className="text-gray-600 mt-2">
-              Please submit the required documents to verify your business
+              Please submit the required documents to verify your business. We will review your application and get back to you within 2 business working days.
             </p>
           </div>
 

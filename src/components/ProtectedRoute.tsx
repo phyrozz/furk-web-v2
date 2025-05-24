@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   const isAuthenticated = loginService.isAuthenticated();
   const userRole = localStorage.getItem('roleName');
 
-  console.log(isAuthenticated);
+  // console.log(isAuthenticated);
 
   if (!isAuthenticated) {
     // Redirect to login page while saving the attempted location

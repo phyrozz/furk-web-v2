@@ -91,7 +91,10 @@ const Navbar = () => {
               loginService.isAuthenticated() ? (
                 <div className="relative">
                   <motion.button
-                    onClick={toggleProfileMenu}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleProfileMenu();
+                    }}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
                     aria-label="Profile menu"
                     whileHover={{ scale: 1.05 }}
@@ -102,44 +105,50 @@ const Navbar = () => {
                   
                   {/* Profile Dropdown Menu */}
                   {showProfileMenu && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
-                    >
-                      {
-                        loginService.getUserRole() === 'merchant' && (
-                          <Link
-                            to="/merchant/dashboard"
-                            className="flex items-center px-4 py-2 text-gray-700"
-                            onClick={() => setShowProfileMenu(false)}
-                          >
-                            <User size={16} className="mr-2" />
-                            Dashboard
-                          </Link>
-                        )
-                      }
-                      <Link
-                        to="/profile"
-                        className="flex items-center px-4 py-2 text-gray-700"
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowProfileMenu(false)}
+                      />
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                       >
-                        <User size={16} className="mr-2" />
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setShowProfileMenu(false);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-gray-700"
-                      >
-                        <LogOut size={16} className="mr-2" />
-                        Logout
-                      </button>
-                    </motion.div>
+                        {
+                          loginService.getUserRole() === 'merchant' && (
+                            <Link
+                              to="/merchant/dashboard"
+                              className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
+                              onClick={() => setShowProfileMenu(false)}
+                            >
+                              <User size={16} className="mr-2" />
+                              Dashboard
+                            </Link>
+                          )
+                        }
+                        <Link
+                          to="/profile"
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <User size={16} className="mr-2" />
+                          Profile
+                        </Link>
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setShowProfileMenu(false);
+                          }}
+                          className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        >
+                          <LogOut size={16} className="mr-2" />
+                          Logout
+                        </button>
+                      </motion.div>
+                    </>
                   )}
                 </div>
               ) : (

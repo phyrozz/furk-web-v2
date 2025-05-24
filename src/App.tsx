@@ -12,6 +12,7 @@ import ResetPasswordPage from './components/pages/ResetPassword/ResetPasswordPag
 import PublicRoute from './components/PublicRoute';
 import AdminPage from './components/pages/Admin/AdminPage';
 import MerchantVerificationForm from './components/pages/Merchant/MerchantVerification/MerchantVerificationForm';
+import AddService from './components/pages/Merchant/AddService/AddService';
 
 function App() {
   return (
@@ -23,11 +24,6 @@ function App() {
               <LoginPage />
             </PublicRoute>
             } />
-          <Route path="/merchant/dashboard" element={
-            <ProtectedRoute requiredRole='merchant'>
-              <MerchantDashboard />
-            </ProtectedRoute>
-          } />
           <Route path="/sign-up/merchant" element={
             <PublicRoute>
               <SignUpPage userType='merchant' />
@@ -64,9 +60,20 @@ function App() {
               <AdminPage />
             </ProtectedRoute>
           } />
+          {/* Routes within the merchant page */}
+          <Route path="/merchant/dashboard" element={
+            <ProtectedRoute requiredRole='merchant'>
+              <MerchantDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/merchant/verify" element={
             <ProtectedRoute requiredRole='merchant'>
               <MerchantVerificationForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchant/add-service" element={
+            <ProtectedRoute requiredRole='merchant'>
+              <AddService />
             </ProtectedRoute>
           } />
         </Routes>
