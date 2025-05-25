@@ -105,7 +105,7 @@ export class LoginService {
         `${this.baseUrl}/login`,
         {
           headers: {
-            Authorization: `${tokens.accessToken}`
+            Authorization: `${tokens.idToken}`
           }
         }
       );
@@ -262,6 +262,7 @@ export class LoginService {
       const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
       if (currentTime >= expirationTime - bufferTime) {
         this.refreshSession();
+        window.location.reload();
       }
 
       return currentTime < expirationTime;
@@ -306,7 +307,7 @@ export class LoginService {
           `${this.baseUrl}/login`,
           {
             headers: {
-              Authorization: `${tokens.accessToken}`
+              Authorization: `${tokens.idToken}`
             }
           }
         );

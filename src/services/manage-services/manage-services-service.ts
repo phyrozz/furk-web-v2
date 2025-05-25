@@ -10,7 +10,7 @@ export class ManageServicesService {
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/list", data, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoIdToken')
             }
         });
         return response.data;
@@ -23,7 +23,7 @@ export class ManageServicesService {
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/delete", data, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoIdToken')
             }
         });
         return response.data;

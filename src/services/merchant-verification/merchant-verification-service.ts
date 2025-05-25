@@ -7,7 +7,7 @@ export class MerchantVerificationService {
             business_name: formData.businessName,
         }, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoIdToken')
             }
         });
         return response.data;
@@ -20,7 +20,7 @@ export class MerchantVerificationService {
             keyword: keyword
         }, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoIdToken')
             }
         });
         return response.data;
