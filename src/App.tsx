@@ -19,7 +19,12 @@ import ManageService from './components/pages/Merchant/ManageService/ManageServi
 function App() {
   return (
     <ToastProvider>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <div className="min-h-screen flex flex-col bg-gray-50">
           <Routes>
             <Route path="/login" element={
