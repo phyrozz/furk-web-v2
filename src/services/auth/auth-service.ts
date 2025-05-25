@@ -159,11 +159,7 @@ export class LoginService {
       await signOut();
       
       // Clear all tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('cognitoAccessToken');
-      localStorage.removeItem('cognitoIdToken');
-      localStorage.removeItem('cognitoRefreshToken');
-      localStorage.removeItem('roleName');
+      localStorage.clear();
     } catch (error) {
       throw this.handleCognitoError(error);
     }
