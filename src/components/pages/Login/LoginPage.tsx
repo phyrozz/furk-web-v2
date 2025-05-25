@@ -120,6 +120,8 @@ const LoginPage = () => {
                     navigate('/services');
                   } else if (activeTab === 'merchant') {
                     navigate('/merchant/dashboard');
+                  } else if (activeTab === 'admin') {
+                    navigate('/admin');
                   } else {
                     navigate('/');
                   }

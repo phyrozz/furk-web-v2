@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 
@@ -20,7 +19,6 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ userType, onCance
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showVerification, setShowVerification] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

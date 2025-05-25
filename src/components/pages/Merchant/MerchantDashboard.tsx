@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, DollarSign, Package, Users, Plus, List, History, Bell } from 'lucide-react';
 import Button from '../../common/Button';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardCard {
   title: string;
@@ -19,6 +20,8 @@ interface Activity {
 
 const MerchantDashboard = () => {
   const [merchantName] = useState('John\'s Pet Services');
+  const [isVerified, setIsVerified] = useState(true);
+  const navigate = useNavigate();
   
   const cards: DashboardCard[] = [
     {
@@ -72,12 +75,12 @@ const MerchantDashboard = () => {
     {
       title: 'List New Service',
       icon: <Plus size={20} />,
-      onClick: () => console.log('Navigate to new service form'),
+      onClick: () => navigate('/merchant/add-service'),
     },
     {
       title: 'Manage Services',
       icon: <List size={20} />,
-      onClick: () => console.log('Navigate to service management'),
+      onClick: () => navigate('/merchant/manage-services'),
     },
     {
       title: 'View History',
@@ -86,17 +89,38 @@ const MerchantDashboard = () => {
     },
   ];
 
+  useEffect(() => {
+    const merchantStatus = localStorage.getItem('merchantStatus');
+    if (merchantStatus === 'unverified') {
+      setIsVerified(false);
+    } else if (merchantStatus === 'pending' || merchantStatus === 'verified') {
+      setIsVerified(true);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Welcome back, {merchantName}!
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Here's an overview of your business activity on FURK
-          </p>
-        </div>
+      {!isVerified && (
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-warning-800">
+                  Verification Required
+                </h2>
+                <p className="text-warning-600 mt-1">
+                  Please complete the verification process to unlock all merchant features
+                </p>
+              </div>
+              <Button
+                size="lg"
+                onClick={() => navigate('/merchant/verify')}
+              >
+                Complete Verification
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

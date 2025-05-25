@@ -15,7 +15,8 @@ Amplify.configure({
   Auth: {
     Cognito: {
       userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || '',
-      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || ''
+      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || '',
+      identityPoolId: import.meta.env.VITE_IDENTITY_POOL_ID || ''
     }
   }
 });
@@ -79,7 +80,7 @@ export class LoginService {
         username: credentials.email,
         password: credentials.password
       });
-      console.log('Cognito user:', cognitoUser);
+      // console.log('Cognito user:', cognitoUser);
 
       if (cognitoUser.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
         return {
@@ -111,7 +112,7 @@ export class LoginService {
 
       const responseData = response.data.data;
 
-      if (responseData.role !== credentials.userType) {
+      if (responseData.role !== credentials.userType && !(responseData.role === 'admin' && credentials.userType === 'user')) {
         throw new Error('User type mismatch');
       }
       
@@ -121,6 +122,7 @@ export class LoginService {
       localStorage.setItem('cognitoIdToken', tokens.idToken);
       localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
       localStorage.setItem('roleName', responseData.role!);
+      localStorage.setItem('merchantStatus', responseData.merchant_status!);
       
       return response.data;
     } catch (error) {
@@ -177,7 +179,7 @@ export class LoginService {
         credentials.phone = `+63${credentials.phone.substring(1)}`;
       }
   
-      console.log('Signing up with credentials:', credentials);
+      // console.log('Signing up with credentials:', credentials);
   
       const cognitoUser = await signUp({
         username: credentials.email,
@@ -190,7 +192,7 @@ export class LoginService {
         }
       });
   
-      console.log('Cognito user:', cognitoUser);
+      // console.log('Cognito user:', cognitoUser);
   
       const response = await axios.post<SignUpResponse>(
         `${this.baseUrl}/login`,
@@ -246,7 +248,30 @@ export class LoginService {
   }
 
   public isAuthenticated(): boolean {
-    return !!(localStorage.getItem('token') && localStorage.getItem('cognitoAccessToken') && localStorage.getItem('roleName'));
+    const token = localStorage.getItem('token');
+    const cognitoAccessToken = localStorage.getItem('cognitoAccessToken');
+    const roleName = localStorage.getItem('roleName');
+
+    if (!token || !cognitoAccessToken || !roleName) {
+      return false;
+    }
+
+    // Check if the Cognito access token is expired
+    try {
+      const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
+      const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
+      const currentTime = Date.now();
+
+      // Add a buffer time (5 minutes) to refresh before expiration
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (currentTime >= expirationTime - bufferTime) {
+        this.refreshSession();
+      }
+
+      return currentTime < expirationTime;
+    } catch (error) {
+      return false;
+    }
   }
 
   public getToken(): string | null {
@@ -274,8 +299,25 @@ export class LoginService {
     try {
       const session = await fetchAuthSession();
       if (session.tokens) {
-        localStorage.setItem('cognitoAccessToken', session.tokens.accessToken.toString());
-        localStorage.setItem('cognitoIdToken', session.tokens.idToken?.toString() || '');
+        // Get new tokens from Cognito
+        const tokens = {
+          accessToken: session.tokens.accessToken.toString(),
+          idToken: session.tokens.idToken?.toString() || ''
+        };
+
+        // Get new backend token using the new access token
+        const response = await axios.get<LoginResponse>(
+          `${this.baseUrl}/login`,
+          {
+            headers: {
+              Authorization: `${tokens.accessToken}`
+            }
+          }
+        );
+
+        localStorage.setItem('token', response.data.data.token!);
+        localStorage.setItem('cognitoAccessToken', tokens.accessToken);
+        localStorage.setItem('cognitoIdToken', tokens.idToken);
       }
     } catch (error) {
       throw this.handleCognitoError(error);
