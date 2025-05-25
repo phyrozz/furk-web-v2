@@ -5,6 +5,7 @@ import { ManageServicesService } from '../../../../services/manage-services/mana
 import { ToastService } from '../../../../services/toast/toast-service';
 import Button from '../../../common/Button';
 import Loading from '../../../common/Loading';
+import MerchantNavbar from '../../../common/MerchantNavbar';
 
 interface Service {
   id: string;
@@ -67,6 +68,7 @@ const ManageService = () => {
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
+      <MerchantNavbar />
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">

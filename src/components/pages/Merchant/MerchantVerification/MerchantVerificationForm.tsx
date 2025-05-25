@@ -6,6 +6,7 @@ import { MerchantVerificationService } from '../../../../services/merchant-verif
 import { ToastService } from '../../../../services/toast/toast-service';
 import { useNavigate } from 'react-router-dom';
 import Autocomplete from '../../../common/Autocomplete';
+import MerchantNavbar from '../../../common/MerchantNavbar';
 
 interface UploadRequirement {
   id: string;
@@ -263,6 +264,7 @@ const MerchantVerificationForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">

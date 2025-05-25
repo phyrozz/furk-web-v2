@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, DollarSign, Package, Users, Plus, List, History, Bell } from 'lucide-react';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
+import MerchantNavbar from '../../common/MerchantNavbar';
 
 interface DashboardCard {
   title: string;
@@ -100,6 +101,7 @@ const MerchantDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
       {!isVerified && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
