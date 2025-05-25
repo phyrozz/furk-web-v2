@@ -47,6 +47,13 @@ export class S3UploadService {
     }
   }
 
+  generateUniqueFileName(originalName: string): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const extension = originalName.split('.').pop();
+    return `${timestamp}-${random}.${extension}`;
+  }
+
   async uploadBuffer(buffer: Buffer, key: string, contentType: string): Promise<string> {
     try {
       const command = new PutObjectCommand({

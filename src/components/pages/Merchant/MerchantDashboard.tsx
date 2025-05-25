@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, DollarSign, Package, Users, Plus, List, History, Bell } from 'lucide-react';
 import Button from '../../common/Button';
@@ -20,7 +20,7 @@ interface Activity {
 
 const MerchantDashboard = () => {
   const [merchantName] = useState('John\'s Pet Services');
-  const [isVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(true);
   const navigate = useNavigate();
   
   const cards: DashboardCard[] = [
@@ -80,7 +80,7 @@ const MerchantDashboard = () => {
     {
       title: 'Manage Services',
       icon: <List size={20} />,
-      onClick: () => console.log('Navigate to service management'),
+      onClick: () => navigate('/merchant/manage-services'),
     },
     {
       title: 'View History',
@@ -88,6 +88,15 @@ const MerchantDashboard = () => {
       onClick: () => console.log('Navigate to booking history'),
     },
   ];
+
+  useEffect(() => {
+    const merchantStatus = localStorage.getItem('merchantStatus');
+    if (merchantStatus === 'unverified') {
+      setIsVerified(false);
+    } else if (merchantStatus === 'pending' || merchantStatus === 'verified') {
+      setIsVerified(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">

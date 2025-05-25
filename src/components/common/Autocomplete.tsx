@@ -139,9 +139,9 @@ const Autocomplete = <T extends object>({
       <div className="relative">
         <input
           type="text"
-          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           placeholder={placeholder}
-          value={value ? getOptionLabel(value) : searchTerm}
+          value={searchTerm}
           onChange={handleSearchChange}
           onFocus={handleFocus}
         />
@@ -153,9 +153,7 @@ const Autocomplete = <T extends object>({
           ref={dropdownRef}
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto"
         >
-          {isLoading ? (
-            <div className="p-4 text-center text-gray-500">Loading...</div>
-          ) : options.length > 0 ? (
+          {options.length > 0 ? (
             <>
               {options.map((option, index) => (
                 <div
@@ -164,19 +162,26 @@ const Autocomplete = <T extends object>({
                   onClick={() => {
                     onChange(option);
                     setIsOpen(false);
-                    setSearchTerm('');
+                    setSearchTerm(getOptionLabel(option));
                     setOffset(0); // Reset offset when option is selected
                   }}
                 >
                   {getOptionLabel(option)}
                 </div>
               ))}
-              {hasMore && (
+              {isLoading && hasMore && (
+                <div className="p-2 text-center text-sm text-gray-500">
+                  Loading...
+                </div>
+              )}
+              {!isLoading && hasMore && (
                 <div className="p-2 text-center text-sm text-gray-500">
                   Scroll for more...
                 </div>
               )}
             </>
+          ) : isLoading ? (
+            <div className="p-4 text-center text-gray-500">Loading...</div>
           ) : (
             <div className="p-4 text-center text-gray-500">No options found</div>
           )}

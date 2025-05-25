@@ -18,9 +18,7 @@ export class AddServiceService {
 
     async insertService(formData: any) {
         const data = {
-            merchant_id: formData.merchant_id,
-            service_category_id: formData.service_category_id,
-            code: formData.code,
+            service_category_id: formData.category.id,
             name: formData.name,
             description: formData.description,
             price: formData.price
@@ -28,7 +26,8 @@ export class AddServiceService {
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/insert", data, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoAccessToken'),
+                'Content-Type': 'application/json'
             }
         });
         return response.data;

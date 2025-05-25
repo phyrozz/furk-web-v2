@@ -3,7 +3,8 @@ import { Upload, X, Check } from 'lucide-react';
 import Button from '../../../common/Button';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
-import Autocomplete from '../../../common/Autocomplete';
+import { ToastService } from '../../../../services/toast/toast-service';
+import { useNavigate } from 'react-router-dom';
 
 interface UploadRequirement {
   id: string;
@@ -35,6 +36,8 @@ const MerchantVerificationForm = () => {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(false);
+
+  const navigate = useNavigate();
 
   const s3Service = new S3UploadService();
   const dataService = new MerchantVerificationService();
@@ -183,25 +186,26 @@ const MerchantVerificationForm = () => {
       }
 
       // Insert application details to the database
-      // dataService.submitMerchantApplicationDetails({
-      //   service_id: 
-      // });
+      const submitResponse = await dataService.submitMerchantApplicationDetails();
 
       // Upload files to S3
       const uploadPromises = Object.values(uploads)
-       .filter(upload => upload && upload.status === 'success')
-       .map(upload => {
-        const key = `merchant-verification/${upload!.file.name}`;
-        return s3Service.uploadFile(upload!.file, key);
-      });
+        .filter(upload => upload && upload.status === 'success')
+        .map(upload => {
+          const uniqueFileName = s3Service.generateUniqueFileName(upload!.file.name);
+          const key = `merchant-verification/${submitResponse.data.application_id}/${uniqueFileName}`;
+          return s3Service.uploadFile(upload!.file, key);
+        });
 
       await Promise.all(uploadPromises);
 
-      // Reset form after successful submission
       setUploads({});
-      alert('Verification documents submitted successfully!');
+      localStorage.setItem('merchantStatus', 'pending');
+      navigate('/merchant/dashboard');
+      ToastService.show('Application documents submitted successfully. We will send you an email once your application is verified or denied.');
     } catch (error: any) {
-      alert(error.message || 'Failed to submit verification documents');
+      ToastService.show('Failed to submit documents: ' + (error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message));
+      navigate('/merchant/dashboard');
     } finally {
       setIsSubmitting(false);
     }

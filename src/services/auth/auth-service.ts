@@ -122,6 +122,7 @@ export class LoginService {
       localStorage.setItem('cognitoIdToken', tokens.idToken);
       localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
       localStorage.setItem('roleName', responseData.role!);
+      localStorage.setItem('merchantStatus', responseData.merchant_status!);
       
       return response.data;
     } catch (error) {
@@ -261,9 +262,14 @@ export class LoginService {
       const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
       const currentTime = Date.now();
 
+      // Add a buffer time (5 minutes) to refresh before expiration
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (currentTime >= expirationTime - bufferTime) {
+        this.refreshSession();
+      }
+
       return currentTime < expirationTime;
     } catch (error) {
-      // If there's any error parsing the token, consider it invalid
       return false;
     }
   }
@@ -293,8 +299,25 @@ export class LoginService {
     try {
       const session = await fetchAuthSession();
       if (session.tokens) {
-        localStorage.setItem('cognitoAccessToken', session.tokens.accessToken.toString());
-        localStorage.setItem('cognitoIdToken', session.tokens.idToken?.toString() || '');
+        // Get new tokens from Cognito
+        const tokens = {
+          accessToken: session.tokens.accessToken.toString(),
+          idToken: session.tokens.idToken?.toString() || ''
+        };
+
+        // Get new backend token using the new access token
+        const response = await axios.get<LoginResponse>(
+          `${this.baseUrl}/login`,
+          {
+            headers: {
+              Authorization: `${tokens.accessToken}`
+            }
+          }
+        );
+
+        localStorage.setItem('token', response.data.data.token!);
+        localStorage.setItem('cognitoAccessToken', tokens.accessToken);
+        localStorage.setItem('cognitoIdToken', tokens.idToken);
       }
     } catch (error) {
       throw this.handleCognitoError(error);
