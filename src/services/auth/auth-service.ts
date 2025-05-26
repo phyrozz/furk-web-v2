@@ -10,6 +10,7 @@ import {
   resetPassword,
   confirmResetPassword
 } from 'aws-amplify/auth';
+import { ToastService } from '../toast/toast-service';
 
 Amplify.configure({
   Auth: {
@@ -243,35 +244,45 @@ export class LoginService {
     }
   }
 
-  public isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
+  public async isAuthenticated(): Promise<boolean> {
     const cognitoAccessToken = localStorage.getItem('cognitoAccessToken');
+    const cognitoIdToken = localStorage.getItem('cognitoIdToken');
     const roleName = localStorage.getItem('roleName');
 
-    if (!token || !cognitoAccessToken || !roleName) {
+    if (!cognitoAccessToken || !cognitoIdToken || !roleName) {
       return false;
     }
 
-    // Check if the Cognito access token is expired
     try {
       const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
       const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
       const currentTime = Date.now();
+      const oneWeek = 7 * 24 * 60 * 60 * 1000; // One week in milliseconds
 
-      // Add a buffer time (5 minutes) to refresh before expiration
-      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
-      if (currentTime >= expirationTime - bufferTime) {
-        // Don't wait for the refresh to complete, but don't throw away the promise
-        this.refreshSession().catch(error => {
-          console.error('Failed to refresh session:', error);
-          // Only clear tokens if it's not a network error or other temporary issue
-          if (error.code && ['NotAuthorizedException', 'UserNotFoundException'].includes(error.code)) {
-            localStorage.clear();
-          }
-        });
+      // Check if token is expired but not more than a week old
+      if (currentTime >= expirationTime && currentTime - expirationTime < oneWeek) {
+        try {
+          console.log('Refreshing session...');
+          await this.refreshSession();
+          return true;
+        } catch (error) {
+          console.error('Error refreshing session:', error);
+          return false;
+        }
       }
 
-      return currentTime < expirationTime;
+      // Check if token is more than a week old
+      if (currentTime - expirationTime >= oneWeek) {
+        localStorage.clear();
+
+        ToastService.show('Session expired. Please login again.');
+        this.logout().catch(error => {
+          console.error('Error during logout:', error);
+        });
+        return false;
+      }
+
+      return true;
     } catch (error) {
       console.error('Error parsing token:', error);
       return false;
@@ -290,42 +301,20 @@ export class LoginService {
     return localStorage.getItem('roleName');
   }
 
-  // private getCognitoTokens(cognitoUser: any): CognitoTokens {
-  //   const session = cognitoUser.signInUserSession;
-  //   return {
-  //     accessToken: session.accessToken.jwtToken,
-  //     idToken: session.idToken.jwtToken,
-  //     refreshToken: session.refreshToken.token
-  //   };
-  // }
-
   public async refreshSession(): Promise<void> {
     try {
-      const session = await fetchAuthSession();
+      const session = await fetchAuthSession({forceRefresh: true});
       if (session.tokens) {
-        // Get new tokens from Cognito
         const tokens = {
           accessToken: session.tokens.accessToken.toString(),
           idToken: session.tokens.idToken?.toString() || ''
         };
 
-        // // Get new backend token using the new access token
-        // const response = await axios.get<LoginResponse>(
-        //   `${this.baseUrl}/login`,
-        //   {
-        //     headers: {
-        //       Authorization: `${tokens.idToken}`
-        //     }
-        //   }
-        // );
-
-        // localStorage.setItem('token', response.data.data.token!);
         localStorage.setItem('cognitoAccessToken', tokens.accessToken);
         localStorage.setItem('cognitoIdToken', tokens.idToken);
       }
     } catch (error) {
       console.error('Error refreshing session:', error);
-      // Don't clear localStorage here, just propagate the error
       throw error;
     }
   }
