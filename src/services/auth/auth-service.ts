@@ -261,11 +261,19 @@ export class LoginService {
       // Add a buffer time (5 minutes) to refresh before expiration
       const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
       if (currentTime >= expirationTime - bufferTime) {
-        this.refreshSession();
+        // Don't wait for the refresh to complete, but don't throw away the promise
+        this.refreshSession().catch(error => {
+          console.error('Failed to refresh session:', error);
+          // Only clear tokens if it's not a network error or other temporary issue
+          if (error.code && ['NotAuthorizedException', 'UserNotFoundException'].includes(error.code)) {
+            localStorage.clear();
+          }
+        });
       }
 
       return currentTime < expirationTime;
     } catch (error) {
+      console.error('Error parsing token:', error);
       return false;
     }
   }
@@ -301,22 +309,24 @@ export class LoginService {
           idToken: session.tokens.idToken?.toString() || ''
         };
 
-        // Get new backend token using the new access token
-        const response = await axios.get<LoginResponse>(
-          `${this.baseUrl}/login`,
-          {
-            headers: {
-              Authorization: `${tokens.idToken}`
-            }
-          }
-        );
+        // // Get new backend token using the new access token
+        // const response = await axios.get<LoginResponse>(
+        //   `${this.baseUrl}/login`,
+        //   {
+        //     headers: {
+        //       Authorization: `${tokens.idToken}`
+        //     }
+        //   }
+        // );
 
-        localStorage.setItem('token', response.data.data.token!);
+        // localStorage.setItem('token', response.data.data.token!);
         localStorage.setItem('cognitoAccessToken', tokens.accessToken);
         localStorage.setItem('cognitoIdToken', tokens.idToken);
       }
     } catch (error) {
-      throw this.handleCognitoError(error);
+      console.error('Error refreshing session:', error);
+      // Don't clear localStorage here, just propagate the error
+      throw error;
     }
   }
 
@@ -326,9 +336,20 @@ export class LoginService {
 
     //   return new Error(error.response?.data?.message || 'An error occurred during authentication');
     // }
-    localStorage.clear();
-
+    
+    // Only clear localStorage for authentication errors, not for network errors
     const authError = error as AuthError;
+
+    // Only clear tokens for actual auth errors, not temporary issues
+    if (authError.code && [
+      'NotAuthorizedException',
+      'UserNotFoundException',
+      'UserNotConfirmedException',
+      'PasswordResetRequiredException'
+    ].includes(authError.code)) {
+      localStorage.clear();
+    }
+
     switch (authError.code) {
       case 'NotAuthorizedException':
         return new Error('Incorrect username or password');

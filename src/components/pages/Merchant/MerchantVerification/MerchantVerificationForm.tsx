@@ -5,8 +5,8 @@ import { S3UploadService } from '../../../../services/s3-upload/s3-upload-servic
 import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { useNavigate } from 'react-router-dom';
-import Autocomplete from '../../../common/Autocomplete';
 import MerchantNavbar from '../../../common/MerchantNavbar';
+import MultipleAutocomplete from '../../../common/MultipleAutocomplete';
 
 interface UploadRequirement {
   id: string;
@@ -37,10 +37,10 @@ const MerchantVerificationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     businessName: '',
-    serviceGroupId: '',
+    serviceGroups: [{}],
   });
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
-  const [selectedServiceGroup, setSelectedServiceGroup] = useState<ServiceGroup | null>(null);
+  const [selectedServiceGroups, setSelectedServiceGroups] = useState<ServiceGroup[]>([]);
   const [isLoadingServiceGroups, setIsLoadingServiceGroups] = useState(false);
   const [hasMoreServiceGroups, setHasMoreServiceGroups] = useState(false);
   const [serviceGroupKeyword, setServiceGroupKeyword] = useState('');
@@ -186,8 +186,8 @@ const MerchantVerificationForm = () => {
     setIsSubmitting(true);
 
     try {
-      if (!selectedServiceGroup) {
-        throw new Error('Please select a service group');
+      if (!selectedServiceGroups) {
+        throw new Error('Please select at least one business type');
       }
       if (!formData.businessName.trim()) {
         throw new Error('Please enter a business name');
@@ -203,7 +203,9 @@ const MerchantVerificationForm = () => {
       }
 
       // Get selected service group ID and store it to formData
-      formData.serviceGroupId = selectedServiceGroup.id;
+      formData.serviceGroups = selectedServiceGroups;
+
+      console.log(formData);
       
       // Insert application details to the database
       const submitResponse = await dataService.submitMerchantApplicationDetails(formData);
@@ -298,17 +300,17 @@ const MerchantVerificationForm = () => {
                 Business Type
                 <span className="text-red-500">*</span>
               </label>
-              <Autocomplete
+              <MultipleAutocomplete
                 options={serviceGroups}
-                value={selectedServiceGroup}
-                onChange={setSelectedServiceGroup}
+                values={selectedServiceGroups}
+                onChange={setSelectedServiceGroups}
                 getOptionLabel={(option) => option.name}
-                placeholder="Search business types..."
-                className="w-full"
-                isLoading={isLoadingServiceGroups}
+                getOptionValue={(option) => option.id}
+                placeholder="Search items..."
                 onSearch={handleServiceGroupSearch}
+                isLoading={isLoadingServiceGroups}
+                maxSelections={5}
                 onLoadMore={handleLoadMoreServiceGroups}
-                hasMore={hasMoreServiceGroups}
               />
             </div>
 
