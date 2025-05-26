@@ -113,7 +113,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'Photo of establishment facade',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
     {
@@ -122,7 +122,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'First interior photo',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
     {
@@ -131,7 +131,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'Second interior photo',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
   ];
@@ -202,6 +202,23 @@ const MerchantVerificationForm = () => {
         throw new Error(`Missing required files: ${missingRequired.join(', ')}`);
       }
 
+      // Validate file sizes
+      const oversizedFiles = Object.entries(uploads)
+        .filter(([id, upload]) => {
+          if (!upload) return false;
+          const requirement = requirements.find(req => req.id === id);
+          const isOversized = requirement && upload.file.size > requirement.maxSize * 1024 * 1024;
+          console.log(`File ${id} size:`, upload.file.size, 'Max allowed:', requirement?.maxSize! * 1024 * 1024);
+          return isOversized;
+        })
+        .map(([id]) => requirements.find(req => req.id === id)?.name);
+
+      console.log('Oversized files:', oversizedFiles);
+
+      if (oversizedFiles.length > 0) {
+        throw new Error(`The following files exceed their size limits: ${oversizedFiles.join(', ')}`);
+      }
+
       // Get selected service group ID and store it to formData
       formData.serviceGroups = selectedServiceGroups;
 
@@ -226,8 +243,7 @@ const MerchantVerificationForm = () => {
       navigate('/merchant/dashboard');
       ToastService.show('Application documents submitted successfully. We will send you an email once your application is verified or denied.');
     } catch (error: any) {
-      ToastService.show('Failed to submit documents: ' + (error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message));
-      navigate('/merchant/dashboard');
+      ToastService.show(error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message);
     } finally {
       setIsSubmitting(false);
     }
