@@ -10,7 +10,7 @@ export class AddServiceService {
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/list-service-categories", data, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken')
+                'Authorization': localStorage.getItem('cognitoIdToken')
             }
         });
         return response.data;
@@ -26,7 +26,7 @@ export class AddServiceService {
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/insert", data, {
             headers: {
-                'Authorization': localStorage.getItem('cognitoAccessToken'),
+                'Authorization': localStorage.getItem('cognitoIdToken'),
                 'Content-Type': 'application/json'
             }
         });

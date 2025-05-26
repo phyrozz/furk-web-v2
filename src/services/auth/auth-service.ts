@@ -10,6 +10,7 @@ import {
   resetPassword,
   confirmResetPassword
 } from 'aws-amplify/auth';
+import { ToastService } from '../toast/toast-service';
 
 Amplify.configure({
   Auth: {
@@ -105,7 +106,7 @@ export class LoginService {
         `${this.baseUrl}/login`,
         {
           headers: {
-            Authorization: `${tokens.accessToken}`
+            Authorization: `${tokens.idToken}`
           }
         }
       );
@@ -159,11 +160,7 @@ export class LoginService {
       await signOut();
       
       // Clear all tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('cognitoAccessToken');
-      localStorage.removeItem('cognitoIdToken');
-      localStorage.removeItem('cognitoRefreshToken');
-      localStorage.removeItem('roleName');
+      localStorage.clear();
     } catch (error) {
       throw this.handleCognitoError(error);
     }
@@ -247,29 +244,47 @@ export class LoginService {
     }
   }
 
-  public isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
+  public async isAuthenticated(): Promise<boolean> {
     const cognitoAccessToken = localStorage.getItem('cognitoAccessToken');
+    const cognitoIdToken = localStorage.getItem('cognitoIdToken');
     const roleName = localStorage.getItem('roleName');
 
-    if (!token || !cognitoAccessToken || !roleName) {
+    if (!cognitoAccessToken || !cognitoIdToken || !roleName) {
       return false;
     }
 
-    // Check if the Cognito access token is expired
     try {
       const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
       const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
       const currentTime = Date.now();
+      const oneWeek = 7 * 24 * 60 * 60 * 1000; // One week in milliseconds
 
-      // Add a buffer time (5 minutes) to refresh before expiration
-      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
-      if (currentTime >= expirationTime - bufferTime) {
-        this.refreshSession();
+      // Check if token is expired but not more than a week old
+      if (currentTime >= expirationTime && currentTime - expirationTime < oneWeek) {
+        try {
+          console.log('Refreshing session...');
+          await this.refreshSession();
+          return true;
+        } catch (error) {
+          console.error('Error refreshing session:', error);
+          return false;
+        }
       }
 
-      return currentTime < expirationTime;
+      // Check if token is more than a week old
+      if (currentTime - expirationTime >= oneWeek) {
+        localStorage.clear();
+
+        ToastService.show('Session expired. Please login again.');
+        this.logout().catch(error => {
+          console.error('Error during logout:', error);
+        });
+        return false;
+      }
+
+      return true;
     } catch (error) {
+      console.error('Error parsing token:', error);
       return false;
     }
   }
@@ -286,41 +301,21 @@ export class LoginService {
     return localStorage.getItem('roleName');
   }
 
-  // private getCognitoTokens(cognitoUser: any): CognitoTokens {
-  //   const session = cognitoUser.signInUserSession;
-  //   return {
-  //     accessToken: session.accessToken.jwtToken,
-  //     idToken: session.idToken.jwtToken,
-  //     refreshToken: session.refreshToken.token
-  //   };
-  // }
-
   public async refreshSession(): Promise<void> {
     try {
-      const session = await fetchAuthSession();
+      const session = await fetchAuthSession({forceRefresh: true});
       if (session.tokens) {
-        // Get new tokens from Cognito
         const tokens = {
           accessToken: session.tokens.accessToken.toString(),
           idToken: session.tokens.idToken?.toString() || ''
         };
 
-        // Get new backend token using the new access token
-        const response = await axios.get<LoginResponse>(
-          `${this.baseUrl}/login`,
-          {
-            headers: {
-              Authorization: `${tokens.accessToken}`
-            }
-          }
-        );
-
-        localStorage.setItem('token', response.data.data.token!);
         localStorage.setItem('cognitoAccessToken', tokens.accessToken);
         localStorage.setItem('cognitoIdToken', tokens.idToken);
       }
     } catch (error) {
-      throw this.handleCognitoError(error);
+      console.error('Error refreshing session:', error);
+      throw error;
     }
   }
 
@@ -330,9 +325,20 @@ export class LoginService {
 
     //   return new Error(error.response?.data?.message || 'An error occurred during authentication');
     // }
-    localStorage.clear();
-
+    
+    // Only clear localStorage for authentication errors, not for network errors
     const authError = error as AuthError;
+
+    // Only clear tokens for actual auth errors, not temporary issues
+    if (authError.code && [
+      'NotAuthorizedException',
+      'UserNotFoundException',
+      'UserNotConfirmedException',
+      'PasswordResetRequiredException'
+    ].includes(authError.code)) {
+      localStorage.clear();
+    }
+
     switch (authError.code) {
       case 'NotAuthorizedException':
         return new Error('Incorrect username or password');

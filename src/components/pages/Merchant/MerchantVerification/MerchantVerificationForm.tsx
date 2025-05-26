@@ -5,6 +5,8 @@ import { S3UploadService } from '../../../../services/s3-upload/s3-upload-servic
 import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { useNavigate } from 'react-router-dom';
+import MerchantNavbar from '../../../common/MerchantNavbar';
+import MultipleAutocomplete from '../../../common/MultipleAutocomplete';
 
 interface UploadRequirement {
   id: string;
@@ -16,12 +18,6 @@ interface UploadRequirement {
   acceptedFormats: string[];
 }
 
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-}
-
 interface UploadedFile {
   id: string;
   file: File;
@@ -30,12 +26,26 @@ interface UploadedFile {
   error?: string;
 }
 
+interface ServiceGroup {
+  id: string;
+  name: string;
+  description: string;
+}
+
 const MerchantVerificationForm = () => {
   const [uploads, setUploads] = useState<Record<string, UploadedFile | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [services, setServices] = useState<Service[]>([]);
-  const [isLoadingServices, setIsLoadingServices] = useState(false);
+  const [formData, setFormData] = useState({
+    businessName: '',
+    serviceGroups: [{}],
+  });
+  const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
+  const [selectedServiceGroups, setSelectedServiceGroups] = useState<ServiceGroup[]>([]);
+  const [isLoadingServiceGroups, setIsLoadingServiceGroups] = useState(false);
+  const [hasMoreServiceGroups, setHasMoreServiceGroups] = useState(false);
+  const [serviceGroupKeyword, setServiceGroupKeyword] = useState('');
+  const [serviceGroupOffset, setServiceGroupOffset] = useState(0);
+  const limit = 20;
 
   const navigate = useNavigate();
 
@@ -103,7 +113,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'Photo of establishment facade',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
     {
@@ -112,7 +122,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'First interior photo',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
     {
@@ -121,7 +131,7 @@ const MerchantVerificationForm = () => {
       type: 'photo',
       description: 'Second interior photo',
       required: true,
-      maxSize: 10,
+      maxSize: 2,
       acceptedFormats: ['.jpg', '.jpeg', '.png'],
     },
   ];
@@ -176,6 +186,13 @@ const MerchantVerificationForm = () => {
     setIsSubmitting(true);
 
     try {
+      if (!selectedServiceGroups) {
+        throw new Error('Please select at least one business type');
+      }
+      if (!formData.businessName.trim()) {
+        throw new Error('Please enter a business name');
+      }
+
       // Validate all required files are uploaded
       const missingRequired = requirements
         .filter(req => req.required && !uploads[req.id])
@@ -185,8 +202,30 @@ const MerchantVerificationForm = () => {
         throw new Error(`Missing required files: ${missingRequired.join(', ')}`);
       }
 
+      // Validate file sizes
+      const oversizedFiles = Object.entries(uploads)
+        .filter(([id, upload]) => {
+          if (!upload) return false;
+          const requirement = requirements.find(req => req.id === id);
+          const isOversized = requirement && upload.file.size > requirement.maxSize * 1024 * 1024;
+          console.log(`File ${id} size:`, upload.file.size, 'Max allowed:', requirement?.maxSize! * 1024 * 1024);
+          return isOversized;
+        })
+        .map(([id]) => requirements.find(req => req.id === id)?.name);
+
+      console.log('Oversized files:', oversizedFiles);
+
+      if (oversizedFiles.length > 0) {
+        throw new Error(`The following files exceed their size limits: ${oversizedFiles.join(', ')}`);
+      }
+
+      // Get selected service group ID and store it to formData
+      formData.serviceGroups = selectedServiceGroups;
+
+      console.log(formData);
+      
       // Insert application details to the database
-      const submitResponse = await dataService.submitMerchantApplicationDetails();
+      const submitResponse = await dataService.submitMerchantApplicationDetails(formData);
 
       // Upload files to S3
       const uploadPromises = Object.values(uploads)
@@ -204,15 +243,46 @@ const MerchantVerificationForm = () => {
       navigate('/merchant/dashboard');
       ToastService.show('Application documents submitted successfully. We will send you an email once your application is verified or denied.');
     } catch (error: any) {
-      ToastService.show('Failed to submit documents: ' + (error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message));
-      navigate('/merchant/dashboard');
+      ToastService.show(error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleServiceGroupSearch = async (keyword: string) => {
+    setIsLoadingServiceGroups(true);
+    try {
+      const response = await dataService.listServiceGroups(limit, 0, keyword);
+      setServiceGroups(response.data);
+      setHasMoreServiceGroups(response.data.length === limit);
+      setServiceGroupKeyword(keyword);
+      setServiceGroupOffset(0);
+    } catch (error) {
+      console.error('Error searching categories:', error);
+    } finally {
+      setIsLoadingServiceGroups(false);
+    }
+  };
+
+  const handleLoadMoreServiceGroups = async () => {
+    if (isLoadingServiceGroups) return;
+    
+    setIsLoadingServiceGroups(true);
+    try {
+      const response = await dataService.listServiceGroups(limit, serviceGroupOffset, serviceGroupKeyword);
+      setServiceGroups(prev => [...prev, ...response.data]);
+      setHasMoreServiceGroups(response.data.length === limit);
+      setServiceGroupOffset(prev => prev + limit);
+    } catch (error) {
+      console.error('Error loading more categories:', error);
+    } finally {
+      setIsLoadingServiceGroups(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -225,6 +295,41 @@ const MerchantVerificationForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Business Name
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="businessName"
+                maxLength={255}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                value={formData.businessName}
+                onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="serviceGroup" className="block text-sm font-medium text-gray-700">
+                Business Type
+                <span className="text-red-500">*</span>
+              </label>
+              <MultipleAutocomplete
+                options={serviceGroups}
+                values={selectedServiceGroups}
+                onChange={setSelectedServiceGroups}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+                placeholder="Search items..."
+                onSearch={handleServiceGroupSearch}
+                isLoading={isLoadingServiceGroups}
+                maxSelections={5}
+                onLoadMore={handleLoadMoreServiceGroups}
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {requirements.map((requirement) => (
                 <div

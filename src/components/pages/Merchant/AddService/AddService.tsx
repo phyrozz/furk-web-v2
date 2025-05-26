@@ -5,6 +5,7 @@ import { AddServiceService } from '../../../../services/add-service/add-service-
 import Autocomplete from '../../../common/Autocomplete';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
+import MerchantNavbar from '../../../common/MerchantNavbar';
 
 // interface ServiceFormData {
 //   category: string;
@@ -136,6 +137,7 @@ const AddService = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">

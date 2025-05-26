@@ -15,77 +15,85 @@ import MerchantVerificationForm from './components/pages/Merchant/MerchantVerifi
 import AddService from './components/pages/Merchant/AddService/AddService';
 import { ToastProvider } from './services/toast/ToastProvider';
 import ManageService from './components/pages/Merchant/ManageService/ManageService';
+import AuthWrapper from './components/AuthWrapper';
 
 function App() {
   return (
     <ToastProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col bg-gray-50">
-          <Routes>
-            <Route path="/login" element={
-              <PublicRoute>
-                <LoginPage />
-              </PublicRoute>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <AuthWrapper>
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            <Routes>
+              <Route path="/login" element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+                } />
+              <Route path="/sign-up/merchant" element={
+                <PublicRoute>
+                  <SignUpPage userType='merchant' />
+                </PublicRoute>
               } />
-            <Route path="/sign-up/merchant" element={
-              <PublicRoute>
-                <SignUpPage userType='merchant' />
-              </PublicRoute>
-            } />
-            <Route path="/sign-up/user" element={
-              <PublicRoute>
-                <SignUpPage userType='user' />
-              </PublicRoute>
+              <Route path="/sign-up/user" element={
+                <PublicRoute>
+                  <SignUpPage userType='user' />
+                </PublicRoute>
+                } />
+              <Route
+                path="/*"
+                element={
+                  <>
+                    <Navbar />
+                    <main className="flex-grow">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/services" element={<ServicesPage />} />
+                        <Route path="/rewards" element={<RewardsPage />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                  </>
+                }
+              />
+              <Route path="/reset-password" element={
+                <PublicRoute>
+                  <ResetPasswordPage />
+                </PublicRoute>
               } />
-            <Route
-              path="/*"
-              element={
-                <>
-                  <Navbar />
-                  <main className="flex-grow">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/services" element={<ServicesPage />} />
-                      <Route path="/rewards" element={<RewardsPage />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </>
-              }
-            />
-            <Route path="/reset-password" element={
-              <PublicRoute>
-                <ResetPasswordPage />
-              </PublicRoute>
-            } />
-            <Route path='/admin' element={
-              <ProtectedRoute requiredRole='admin'>
-                <AdminPage />
-              </ProtectedRoute>
-            } />
-            {/* Routes within the merchant page */}
-            <Route path="/merchant/dashboard" element={
-              <ProtectedRoute requiredRole='merchant'>
-                <MerchantDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/merchant/verify" element={
-              <ProtectedRoute requiredRole='merchant'>
-                <MerchantVerificationForm />
-              </ProtectedRoute>
-            } />
-            <Route path="/merchant/add-service" element={
-              <ProtectedRoute requiredRole='merchant'>
-                <AddService />
-              </ProtectedRoute>
-            } />
-            <Route path="/merchant/manage-services" element={
-              <ProtectedRoute requiredRole='merchant'>
-                <ManageService />
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </div>
+              <Route path='/admin' element={
+                <ProtectedRoute requiredRole='admin'>
+                  <AdminPage />
+                </ProtectedRoute>
+              } />
+              {/* Routes within the merchant page */}
+              <Route path="/merchant/dashboard" element={
+                <ProtectedRoute requiredRole='merchant'>
+                  <MerchantDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/merchant/verify" element={
+                <ProtectedRoute requiredRole='merchant'>
+                  <MerchantVerificationForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/merchant/add-service" element={
+                <ProtectedRoute requiredRole='merchant'>
+                  <AddService />
+                </ProtectedRoute>
+              } />
+              <Route path="/merchant/manage-services" element={
+                <ProtectedRoute requiredRole='merchant'>
+                  <ManageService />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </div>
+        </AuthWrapper>
       </Router>
     </ToastProvider>
   );
