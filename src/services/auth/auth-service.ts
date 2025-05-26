@@ -262,7 +262,6 @@ export class LoginService {
       const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
       if (currentTime >= expirationTime - bufferTime) {
         this.refreshSession();
-        window.location.reload();
       }
 
       return currentTime < expirationTime;
