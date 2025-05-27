@@ -21,7 +21,7 @@ interface Activity {
 
 const MerchantDashboard = () => {
   const [merchantName] = useState('John\'s Pet Services');
-  const [isVerified, setIsVerified] = useState(true);
+  const [merchantStatus, setMerchantStatus] = useState<'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended'>('pending');
   const navigate = useNavigate();
   
   const cards: DashboardCard[] = [
@@ -91,19 +91,15 @@ const MerchantDashboard = () => {
   ];
 
   useEffect(() => {
-    const merchantStatus = localStorage.getItem('merchantStatus');
-    if (merchantStatus === 'unverified') {
-      setIsVerified(false);
-    } else if (merchantStatus === 'pending' || merchantStatus === 'verified') {
-      setIsVerified(true);
-    }
+    const status = localStorage.getItem('merchantStatus')!;
+    setMerchantStatus(status as 'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended');
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
-      {!isVerified && (
+        {merchantStatus === 'unverified' && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between">
               <div>
@@ -120,6 +116,21 @@ const MerchantDashboard = () => {
               >
                 Complete Verification
               </Button>
+            </div>
+          </div>
+        )}
+
+        {merchantStatus === 'pending' && (
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-warning-800">
+                  Verification Pending
+                </h2>
+                <p className="text-warning-600 mt-1">
+                  Your account is currently pending verification. It may take 2 to 3 business working days.
+                </p>
+              </div>
             </div>
           </div>
         )}
