@@ -203,7 +203,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'video',
     description: 'Video of actual pet service (max 1 minute)',
     required: true,
-    maxSize: 3,
+    maxSize: 25,
     acceptedFormats: ['.mp4', '.mov']
   },
   {
@@ -212,7 +212,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'video',
     description: 'Video of actual pet service (max 1 minute)',
     required: true,
-    maxSize: 3,
+    maxSize: 25,
     acceptedFormats: ['.mp4', '.mov']
   }
 ]

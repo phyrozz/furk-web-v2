@@ -16,6 +16,7 @@ const FreelanceMerchantForm = () => {
   const [formData, setFormData] = useState({
     businessName: '',
     serviceGroups: [{}],
+    merchantType: 'FREELANCE'
   });
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [selectedServiceGroups, setSelectedServiceGroups] = useState<ServiceGroup[]>([]);

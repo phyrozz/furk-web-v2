@@ -18,6 +18,7 @@ const MerchantVerificationForm = () => {
   const [formData, setFormData] = useState({
     businessName: '',
     serviceGroups: [{}],
+    merchantType: 'BUSINESS'
   });
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [selectedServiceGroups, setSelectedServiceGroups] = useState<ServiceGroup[]>([]);
