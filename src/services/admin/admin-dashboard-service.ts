@@ -15,4 +15,26 @@ export class AdminDashboardService {
         });
         return response.data;
     }
+
+    async approveService(applicationId: string) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-application/approve", {
+            application_id: applicationId
+        }, {
+            headers: {
+                'Authorization': localStorage.getItem('cognitoIdToken')
+            }
+        });
+        return response.data;
+    }
+
+    async rejectService(applicationId: string) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-application/reject", {
+            application_id: applicationId
+        }, {
+            headers: {
+                'Authorization': localStorage.getItem('cognitoIdToken')
+            }
+        });
+        return response.data;
+    }
 }

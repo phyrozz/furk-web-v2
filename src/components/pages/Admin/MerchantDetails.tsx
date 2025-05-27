@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Check, X, ExternalLink, Image as ImageIcon, FileText } from 'lucide-react';
+import { AdminDashboardService } from '../../../services/admin/admin-dashboard-service';
+import { ToastService } from '../../../services/toast/toast-service';
 
 interface MerchantDetailsProps {
   merchant: any;
@@ -7,11 +9,43 @@ interface MerchantDetailsProps {
 
 const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant }) => {
   const [activeTab, setActiveTab] = useState('profile');
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
     return attachment ? attachment[key] : '';
   };
+
+  const dataService = new AdminDashboardService();
+
+  const onApprove = () => {
+    setApproveLoading(true);
+    dataService.approveService(merchant.id).then((res: any) => {
+      if (res?.success) {
+        ToastService.show('Merchant approved successfully');
+      } else {
+        ToastService.show('Failed to approve merchant');
+      }
+      setApproveLoading(false);
+    }).finally(() => {
+      setApproveLoading(false);
+    });
+  }
+
+  const onReject = () => {
+    setRejectLoading(true);
+    dataService.rejectService(merchant.id).then((res: any) => {
+      if (res?.success) {
+        ToastService.show('Merchant rejected successfully');
+      } else {
+        ToastService.show('Failed to reject merchant');
+      }
+      setRejectLoading(false);
+    }).finally(() => {
+      setRejectLoading(false);
+    });
+  }
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -221,15 +255,17 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant }) => {
         <div className="flex justify-end space-x-4">
           <button
             className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50"
-            onClick={() => {/* Handle rejection */}}
+            onClick={onReject}
+            disabled={approveLoading || rejectLoading}
           >
-            Reject Application
+            {rejectLoading ? 'Rejecting...' : 'Reject Application'}
           </button>
           <button
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-            onClick={() => {/* Handle approval */}}
+            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
+            onClick={onApprove}
+            disabled={rejectLoading || approveLoading}
           >
-            Approve Merchant
+            {approveLoading? 'Approving...' : 'Approve Application'}
           </button>
         </div>
       </div>
