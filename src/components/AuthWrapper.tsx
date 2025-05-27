@@ -13,7 +13,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuthenticated = loginService.isAuthenticated();
+      const isAuthenticated = await loginService.isAuthenticated();
       
       if (!isAuthenticated && !isPublicRoute) {
         navigate('/login', { state: { from: location } });
