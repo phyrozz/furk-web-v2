@@ -8,6 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -53,6 +54,20 @@ const Navbar = () => {
     { name: 'Rewards Program', path: '/rewards' },
   ];
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await loginService.isAuthenticated();
+        setIsAuth(authenticated);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuth(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
@@ -88,7 +103,7 @@ const Navbar = () => {
               </Link>
             ))}
             {
-              loginService.isAuthenticated() ? (
+              isAuth ? (
                 <div className="relative">
                   <motion.button
                     onClick={(e) => {
@@ -200,7 +215,7 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            {loginService.isAuthenticated() ? (
+            {isAuth ? (
               <>
                 {loginService.getUserRole() === 'merchant' && (
                   <Link
