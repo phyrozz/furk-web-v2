@@ -131,7 +131,7 @@ const MerchantVerificationForm = () => {
         .filter(upload => upload && upload.status === 'success')
         .map(upload => {
           const uniqueFileName = s3Service.generateUniqueFileName(upload!.file.name);
-          const key = `merchant-verification/${submitResponse.data.application_id}/${uniqueFileName}`;
+          const key = `merchant-verification/${submitResponse.data.application_id}/${upload?.id}/${uniqueFileName}`;
           return s3Service.uploadFile(upload!.file, key);
         });
 
@@ -189,7 +189,7 @@ const MerchantVerificationForm = () => {
               Merchant Verification
             </h1>
             <p className="text-gray-600 mt-2">
-              Please submit the required documents to verify your business. We will review your application and get back to you within 2 business working days.
+              Please submit the required documents to verify your business. We will review your application and get back to you within 2 - 3 business working days.
             </p>
           </div>
 

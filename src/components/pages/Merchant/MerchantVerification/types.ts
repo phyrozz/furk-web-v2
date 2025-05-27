@@ -104,6 +104,24 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     maxSize: 2,
     acceptedFormats: ['.jpg', '.jpeg', '.png'],
   },
+  {
+    id: 'service_video_1',
+    name: 'Service Video 1',
+    type: 'video',
+    description: 'Video of actual pet service (max 1 minute)',
+    required: true,
+    maxSize: 25,
+    acceptedFormats: ['.mp4', '.mov']
+  },
+  {
+    id:'service_video_2',
+    name: 'Service Video 2',
+    type: 'video',
+    description: 'Video of actual pet service (max 1 minute)',
+    required: true,
+    maxSize: 25,
+    acceptedFormats: ['.mp4', '.mov']
+  }
 ]
 
 export const freelanceMerchantRequirements: UploadRequirement[] = [

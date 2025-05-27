@@ -129,7 +129,7 @@ const FreelanceMerchantForm = () => {
         .filter(upload => upload && upload.status === 'success')
         .map(upload => {
           const uniqueFileName = s3Service.generateUniqueFileName(upload!.file.name);
-          const key = `merchant-verification/${submitResponse.data.application_id}/${uniqueFileName}`;
+          const key = `merchant-verification/${submitResponse.data.application_id}/${upload?.id}/${uniqueFileName}`;
           return s3Service.uploadFile(upload!.file, key);
         });
 
