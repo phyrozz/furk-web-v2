@@ -3,9 +3,10 @@ import MerchantList from './MerchantList';
 import MerchantDetails from './MerchantDetails';
 import { motion } from 'framer-motion';
 import AdminNavbar from '../../common/AdminNavbar';
+import { MerchantApplication } from './types';
 
 const AdminPage = () => {
-  const [selectedMerchant, setSelectedMerchant] = useState(null);
+  const [selectedMerchant, setSelectedMerchant] = useState<MerchantApplication | null>(null);
 
   return (
     <>
