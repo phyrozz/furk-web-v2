@@ -118,7 +118,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               id="remember-me"
               type="checkbox"
@@ -127,7 +127,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
               Remember me
             </label>
-          </div>
+          </div> */}
           <button
             type="button"
             onClick={handleForgotPassword}
