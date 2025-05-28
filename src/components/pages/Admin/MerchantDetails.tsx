@@ -308,12 +308,12 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ name, url }) => (
           <ExternalLink size={20} />
         </button>
       )}
-      <button className="p-2 text-green-500 hover:text-green-700">
+      {/* <button className="p-2 text-green-500 hover:text-green-700">
         <Check size={20} />
       </button>
       <button className="p-2 text-red-500 hover:text-red-700">
         <X size={20} />
-      </button>
+      </button> */}
     </div>
   </div>
 );
@@ -347,14 +347,14 @@ const PhotoItem: React.FC<PhotoItemProps> = ({ name, url, isVideo }) => (
     </div>
     <div className="p-4">
       <h4 className="font-medium text-gray-900">{name}</h4>
-      <div className="flex justify-between items-center mt-2">
+      {/* <div className="flex justify-between items-center mt-2">
         <button className="text-green-500 hover:text-green-700">
           <Check size={20} />
         </button>
         <button className="text-red-500 hover:text-red-700">
           <X size={20} />
         </button>
-      </div>
+      </div> */}
     </div>
   </div>
 );
