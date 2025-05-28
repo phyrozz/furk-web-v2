@@ -3,6 +3,7 @@ import { PawPrint as Paw, User, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import LoginForm from './LoginForm';
+import { loginService } from '../../../services/auth/auth-service';
 
 const LoginPage = () => {
   const [activeTab, setActiveTab] = useState<'user' | 'merchant'>('user');
@@ -117,11 +118,15 @@ const LoginPage = () => {
                 userType={activeTab}
                 onSuccessfulLogin={() => {
                   if (activeTab === 'user') {
-                    navigate('/services');
+                    if (loginService.getUserRole() === 'admin') {
+                      navigate('/admin/dashboard');
+                    } else {
+                      navigate('/services');
+                    }
                   } else if (activeTab === 'merchant') {
                     navigate('/merchant/dashboard');
                   } else if (activeTab === 'admin') {
-                    navigate('/admin');
+                    navigate('/admin/dashboard');
                   } else {
                     navigate('/');
                   }
