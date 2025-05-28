@@ -253,20 +253,32 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant }) => {
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
         <div className="flex justify-end space-x-4">
-          <button
-            className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50"
-            onClick={onReject}
-            disabled={approveLoading || rejectLoading}
-          >
-            {rejectLoading ? 'Rejecting...' : 'Reject Application'}
-          </button>
-          <button
-            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
-            onClick={onApprove}
-            disabled={rejectLoading || approveLoading}
-          >
-            {approveLoading? 'Approving...' : 'Approve Application'}
-          </button>
+          {merchant.status === 'pending' && 
+            <button
+              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg ${
+                approveLoading || rejectLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-red-50'
+              }`}
+              onClick={onReject}
+              disabled={approveLoading || rejectLoading}
+            >
+              {rejectLoading ? 'Rejecting...' : 'Reject Application'}
+            </button>
+          }
+          {merchant.status === 'pending' &&
+            <button
+              className={`px-4 py-2 bg-green-700 text-white rounded-lg ${
+                rejectLoading || approveLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-green-800'
+              }`}
+              onClick={onApprove}
+              disabled={rejectLoading || approveLoading}
+            >
+              {approveLoading? 'Approving...' : 'Approve Application'}
+            </button>
+          }
         </div>
       </div>
     </div>
