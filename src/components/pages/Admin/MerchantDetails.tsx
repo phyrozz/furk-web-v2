@@ -253,20 +253,32 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant }) => {
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
         <div className="flex justify-end space-x-4">
-          <button
-            className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50"
-            onClick={onReject}
-            disabled={approveLoading || rejectLoading}
-          >
-            {rejectLoading ? 'Rejecting...' : 'Reject Application'}
-          </button>
-          <button
-            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
-            onClick={onApprove}
-            disabled={rejectLoading || approveLoading}
-          >
-            {approveLoading? 'Approving...' : 'Approve Application'}
-          </button>
+          {merchant.status === 'pending' && 
+            <button
+              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg ${
+                approveLoading || rejectLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-red-50'
+              }`}
+              onClick={onReject}
+              disabled={approveLoading || rejectLoading}
+            >
+              {rejectLoading ? 'Rejecting...' : 'Reject Application'}
+            </button>
+          }
+          {merchant.status === 'pending' &&
+            <button
+              className={`px-4 py-2 bg-green-700 text-white rounded-lg ${
+                rejectLoading || approveLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-green-800'
+              }`}
+              onClick={onApprove}
+              disabled={rejectLoading || approveLoading}
+            >
+              {approveLoading? 'Approving...' : 'Approve Application'}
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -296,12 +308,12 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ name, url }) => (
           <ExternalLink size={20} />
         </button>
       )}
-      <button className="p-2 text-green-500 hover:text-green-700">
+      {/* <button className="p-2 text-green-500 hover:text-green-700">
         <Check size={20} />
       </button>
       <button className="p-2 text-red-500 hover:text-red-700">
         <X size={20} />
-      </button>
+      </button> */}
     </div>
   </div>
 );
@@ -335,14 +347,14 @@ const PhotoItem: React.FC<PhotoItemProps> = ({ name, url, isVideo }) => (
     </div>
     <div className="p-4">
       <h4 className="font-medium text-gray-900">{name}</h4>
-      <div className="flex justify-between items-center mt-2">
+      {/* <div className="flex justify-between items-center mt-2">
         <button className="text-green-500 hover:text-green-700">
           <Check size={20} />
         </button>
         <button className="text-red-500 hover:text-red-700">
           <X size={20} />
         </button>
-      </div>
+      </div> */}
     </div>
   </div>
 );

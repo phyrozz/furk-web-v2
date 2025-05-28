@@ -23,7 +23,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
     try {
       setLoading(true);
       setError(null);
-      const response = await adminDashboardService.listServices(10, 0, searchTerm);
+      const response = await adminDashboardService.listServices(10, 0, searchTerm, filter);
       const filteredMerchants = response.data.filter(
         (merchant: MerchantApplication) => merchant.status === filter
       );
@@ -68,13 +68,13 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
           </button>
           <button
             className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'approved'
+              filter === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-gray-100 text-gray-600'
             }`}
-            onClick={() => setFilter('approved')}
+            onClick={() => setFilter('verified')}
           >
-            Approved
+            Verified
           </button>
           <button
             className={`px-3 py-1 rounded-full text-sm ${
