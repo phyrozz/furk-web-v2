@@ -3,6 +3,7 @@ import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
+import { refreshAuthTokens } from 'aws-amplify/auth/cognito';
 
 interface LoginFormProps {
   userType: 'user' | 'merchant' | 'admin';
@@ -23,6 +24,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
     setIsLoading(true);
 
     try {
+      if (await loginService.isAuthenticated()) {
+        const currentUser = await loginService.getCurrentUser();
+
+        if (currentUser) {
+          await refreshAuthTokens(currentUser);
+          return;
+        }
+      }
+
       const response = await loginService.login({
         userType: userType,
         email: email,

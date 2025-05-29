@@ -8,7 +8,8 @@ import {
   confirmSignUp, 
   resendSignUpCode,
   resetPassword,
-  confirmResetPassword
+  confirmResetPassword,
+  getCurrentUser
 } from 'aws-amplify/auth';
 import { ToastService } from '../toast/toast-service';
 
@@ -74,6 +75,15 @@ export class LoginService {
     return LoginService.instance;
   }
 
+  public async getCurrentUser(): Promise<any> {
+    try {
+      const user = await getCurrentUser();
+      return user;
+    } catch (error) {
+      throw this.handleCognitoError(error);
+    }
+  }
+
   public async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
       // Login to Cognito
@@ -89,7 +99,7 @@ export class LoginService {
         }
       }
 
-      const session = await fetchAuthSession();
+      const session = await fetchAuthSession({ forceRefresh: true });
 
       const tokens = {
         accessToken: session.tokens?.accessToken.toString() || '',
