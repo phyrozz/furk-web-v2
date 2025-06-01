@@ -101,7 +101,7 @@ const MerchantDashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {merchantStatus === 'unverified' && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between md:flex-row flex-col gap-4">
               <div>
                 <h2 className="text-lg font-medium text-warning-800">
                   Verification Required

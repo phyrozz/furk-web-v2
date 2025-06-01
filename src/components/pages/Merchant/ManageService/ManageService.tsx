@@ -91,7 +91,7 @@ const ManageService = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <Button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/merchant/dashboard')}
               className="flex items-center gap-2"
               variant='outline'
             >
