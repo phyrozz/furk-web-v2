@@ -50,8 +50,8 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'Core Services', path: '/services' },
-    { name: 'Rewards Program', path: '/rewards' },
+    { name: 'Services', path: '/services' },
+    { name: 'Rewards', path: '/rewards' },
   ];
 
   useEffect(() => {

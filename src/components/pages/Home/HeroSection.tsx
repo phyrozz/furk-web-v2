@@ -1,9 +1,19 @@
 import { ArrowRight, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
+import { useState } from 'react';
+
 
 const HeroSection = () => {
+  const [searchInput, setSearchInput] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/services?search=${searchInput}`);
+  };
+
   return (
     <section className="relative py-16 md:py-24 overflow-hidden">
       {/* Background Image */}
@@ -47,7 +57,7 @@ const HeroSection = () => {
           </div>
           
           {/* Search Bar */}
-          <div className="bg-white p-2 rounded-lg shadow-lg max-w-2xl mx-auto">
+          <form onSubmit={handleSubmit} className="bg-white p-2 rounded-lg shadow-lg max-w-2xl mx-auto">
             <div className="flex">
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
@@ -57,13 +67,15 @@ const HeroSection = () => {
                   type="text"
                   className="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none rounded-lg text-black"
                   placeholder="Search for pet services..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                 />
               </div>
               <button className="bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-6 rounded-lg ml-2 transition-colors">
                 Search
               </button>
             </div>
-          </div>
+          </form>
         </motion.div>
       </div>
     </section>

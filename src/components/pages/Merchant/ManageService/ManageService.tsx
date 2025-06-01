@@ -158,7 +158,6 @@ const ManageService = () => {
                   <motion.div
                     className="p-4 hover:bg-gray-50 flex justify-between items-center cursor-pointer"
                     onClick={() => toggleExpand(service.id)}
-                    whileHover={{ backgroundColor: 'rgba(249, 250, 251, 0.8)' }}
                     whileTap={{ scale: 0.99 }}
                   >
                     <div className="flex-1">
@@ -200,7 +199,7 @@ const ManageService = () => {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="px-4 pb-4 bg-gray-50 overflow-hidden"
+                        className="px-4 pb-4 overflow-hidden"
                       >
                         <h4 className="text-sm font-medium text-gray-700 mb-2">Attachments</h4>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -229,7 +228,7 @@ const ManageService = () => {
             </div>
           ) : (
             !loading && (
-              <motion.div className="p-4 text-center text-gray-500">
+              <motion.div className="p-4 text-center text-gray-500 h-full w-full flex justify-center items-center">
                 No services found. Add your first service to get started!
               </motion.div>
             )

@@ -16,6 +16,7 @@ import AddService from './components/pages/Merchant/AddService/AddService';
 import { ToastProvider } from './services/toast/ToastProvider';
 import ManageService from './components/pages/Merchant/ManageService/ManageService';
 import AuthWrapper from './components/AuthWrapper';
+import ServiceDetails from './components/pages/Services/ServiceDetails/ServiceDetails';
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/services" element={<ServicesPage />} />
                       <Route path="/rewards" element={<RewardsPage />} />
+                      <Route path="/service/:id" element={<ServiceDetails />} />
                     </Routes>
                   </main>
                   <Footer />
