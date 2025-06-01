@@ -264,6 +264,8 @@ export class LoginService {
     }
 
     try {
+      console.log('Checking session...');
+
       const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
       const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
       const currentTime = Date.now();
