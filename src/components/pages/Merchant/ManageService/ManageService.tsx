@@ -7,6 +7,8 @@ import Button from '../../../common/Button';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLazyLoad } from '../../../../hooks/useLazyLoad';
+import useScreenSize from '../../../../hooks/useScreenSize';
+import MobileMenu from '../../../common/MobileMenu';
 
 interface Service {
   id: string;
@@ -63,6 +65,21 @@ const ManageService = () => {
     }
   };
 
+  const { isMobile } = useScreenSize();
+
+  const menuItems = [
+    {
+      icon: <Plus size={20} />,
+      label: 'Add New Service',
+      onClick: () => navigate('/merchant/add-service')
+    },
+    {
+      icon: <RefreshCcw size={20} />,
+      label: 'Refresh',
+      onClick: reset
+    }
+  ];
+
   return (
     <div className="pt-16 min-h-screen bg-gray-50 flex flex-col h-screen overflow-y-hidden">
       <MerchantNavbar />
@@ -75,29 +92,35 @@ const ManageService = () => {
           <div className="flex items-center gap-4">
             <Button
               onClick={() => navigate(-1)}
-              className="text-gray-600 gap-2"
+              className="flex items-center gap-2"
+              variant='outline'
             >
               <ArrowLeft size={20} /> 
-              Back
+              {!isMobile && 'Back'}
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Services</h1>
+            <h1 className="font-bold text-gray-900 md:text-2xl text-md">Manage Services</h1>
           </div>
-          <div className='flex gap-2'>
+          {isMobile ? (
+            <MobileMenu items={menuItems} />
+          ) : (
+            <div className='flex gap-2'>
             <Button
               onClick={() => navigate('/merchant/add-service')}
               className="flex items-center gap-2"
             >
               <Plus size={20} />
-              Add New Service
+              {!isMobile && 'Add New Service'}
             </Button>
             <Button
               onClick={() => reset()}
               className="flex items-center gap-2"
+              variant='outline'
             >
               <RefreshCcw size={20} />
-              Refresh
+              {!isMobile && 'Refresh'}
             </Button>
           </div>
+          )}
         </div>
 
         {/* Search Bar */}
