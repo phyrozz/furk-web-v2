@@ -16,6 +16,7 @@ import AddService from './components/pages/Merchant/AddService/AddService';
 import { ToastProvider } from './services/toast/ToastProvider';
 import ManageService from './components/pages/Merchant/ManageService/ManageService';
 import AuthWrapper from './components/AuthWrapper';
+import ServiceDetails from './components/pages/Services/ServiceDetails';
 
 function App() {
   return (
@@ -29,11 +30,12 @@ function App() {
         <AuthWrapper>
           <div className="min-h-screen flex flex-col bg-gray-50">
             <Routes>
+              {/* Public Routes */}
               <Route path="/login" element={
                 <PublicRoute>
                   <LoginPage />
                 </PublicRoute>
-                } />
+              } />
               <Route path="/sign-up/merchant" element={
                 <PublicRoute>
                   <SignUpPage userType='merchant' />
@@ -43,34 +45,35 @@ function App() {
                 <PublicRoute>
                   <SignUpPage userType='user' />
                 </PublicRoute>
-                } />
-              <Route
-                path="/*"
-                element={
-                  <>
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/services" element={<ServicesPage />} />
-                        <Route path="/rewards" element={<RewardsPage />} />
-                      </Routes>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
+              } />
               <Route path="/reset-password" element={
                 <PublicRoute>
                   <ResetPasswordPage />
                 </PublicRoute>
               } />
-              <Route path='/admin' element={
+
+              {/* Main Routes */}
+              <Route path="/*" element={
+                <>
+                  <Navbar />
+                  <main className="flex-grow">
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/services" element={<ServicesPage />} />
+                      <Route path="/rewards" element={<RewardsPage />} />
+                      <Route path="/service/:id" element={<ServiceDetails />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </>
+              } />
+
+              {/* Protected Routes */}
+              <Route path='/admin/dashboard' element={
                 <ProtectedRoute requiredRole='admin'>
                   <AdminPage />
                 </ProtectedRoute>
               } />
-              {/* Routes within the merchant page */}
               <Route path="/merchant/dashboard" element={
                 <ProtectedRoute requiredRole='merchant'>
                   <MerchantDashboard />
@@ -94,6 +97,7 @@ function App() {
             </Routes>
           </div>
         </AuthWrapper>
+        
       </Router>
     </ToastProvider>
   );

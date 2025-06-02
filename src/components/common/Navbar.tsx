@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { PawPrint as Paw, Menu, X, LogOut, User } from 'lucide-react';
+import { PawPrint as Paw, Menu, X, LogOut, User, Shield } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -8,6 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -49,9 +50,23 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'Core Services', path: '/services' },
-    { name: 'Rewards Program', path: '/rewards' },
+    { name: 'Services', path: '/services' },
+    { name: 'Rewards', path: '/rewards' },
   ];
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await loginService.isAuthenticated();
+        setIsAuth(authenticated);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuth(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   return (
     <nav
@@ -88,7 +103,7 @@ const Navbar = () => {
               </Link>
             ))}
             {
-              loginService.isAuthenticated() ? (
+              isAuth ? (
                 <div className="relative">
                   <motion.button
                     onClick={(e) => {
@@ -117,18 +132,26 @@ const Navbar = () => {
                         transition={{ duration: 0.2 }}
                         className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                       >
-                        {
-                          loginService.getUserRole() === 'merchant' && (
-                            <Link
-                              to="/merchant/dashboard"
-                              className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
-                              onClick={() => setShowProfileMenu(false)}
-                            >
-                              <User size={16} className="mr-2" />
-                              Dashboard
-                            </Link>
-                          )
-                        }
+                        {loginService.getUserRole() === 'merchant' && (
+                          <Link
+                            to="/merchant/dashboard"
+                            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
+                            onClick={() => setShowProfileMenu(false)}
+                          >
+                            <User size={16} className="mr-2" />
+                            Dashboard
+                          </Link>
+                        )}
+                        {loginService.getUserRole() === 'admin' && (
+                          <Link
+                            to="/admin/dashboard"
+                            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
+                            onClick={() => setShowProfileMenu(false)}
+                          >
+                            <Shield size={16} className="mr-2" />
+                            Dashboard
+                          </Link>
+                        )}
                         <Link
                           to="/profile"
                           className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -200,7 +223,7 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            {loginService.isAuthenticated() ? (
+            {isAuth ? (
               <>
                 {loginService.getUserRole() === 'merchant' && (
                   <Link
@@ -209,6 +232,16 @@ const Navbar = () => {
                     onClick={closeMenu}
                   >
                     <User size={16} className="mr-2" />
+                    Dashboard
+                  </Link>
+                )}
+                {loginService.getUserRole() === 'admin' && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                    onClick={closeMenu}
+                  >
+                    <Shield size={16} className="mr-2" />
                     Dashboard
                   </Link>
                 )}

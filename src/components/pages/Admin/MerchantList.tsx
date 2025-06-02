@@ -1,15 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
+import { AdminDashboardService } from '../../../services/admin/admin-dashboard-service';
+import { MerchantApplication } from './types';
+
 
 interface MerchantListProps {
-  selectedMerchant: any;
-  onSelectMerchant: (merchant: any) => void;
+  selectedMerchant: MerchantApplication | null;
+  onSelectMerchant: (merchant: MerchantApplication | null) => void;
 }
+
+const adminDashboardService = new AdminDashboardService();
 
 const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectMerchant }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('pending'); // pending, approved, rejected
+  const [filter, setFilter] = useState('pending');
+  const [merchants, setMerchants] = useState<MerchantApplication[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMerchants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminDashboardService.listServices(10, 0, searchTerm, filter);
+      const filteredMerchants = response.data.filter(
+        (merchant: MerchantApplication) => merchant.status === filter
+      );
+      setMerchants(filteredMerchants);
+    } catch (err) {
+      setError('Failed to fetch merchant applications');
+      console.error('Error fetching merchants:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMerchants();
+  }, [searchTerm, filter]);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -39,13 +68,13 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
           </button>
           <button
             className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'approved'
+              filter === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-gray-100 text-gray-600'
             }`}
-            onClick={() => setFilter('approved')}
+            onClick={() => setFilter('verified')}
           >
-            Approved
+            Verified
           </button>
           <button
             className={`px-3 py-1 rounded-full text-sm ${
@@ -62,21 +91,43 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
 
       {/* Merchant List */}
       <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto">
-        {/* Sample merchant item - replace with actual data */}
-        <motion.button
-          className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-            selectedMerchant?.id === 1 ? 'bg-primary-50' : ''
-          }`}
-          onClick={() => onSelectMerchant({ id: 1, name: 'Sample Merchant' })}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-        >
-          <h3 className="font-medium text-gray-900">Sample Pet Shop</h3>
-          <p className="text-sm text-gray-500">Submitted on: Jan 1, 2024</p>
-          <span className="inline-block px-2 py-1 mt-2 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-            Pending Review
-          </span>
-        </motion.button>
+        {loading ? (
+          <div className="p-4 text-center text-gray-500">Loading...</div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500">{error}</div>
+        ) : merchants.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">
+            No merchant applications found
+          </div>
+        ) : (
+          merchants.map((merchant) => (
+            <motion.button
+              key={merchant.id}
+              className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
+                selectedMerchant?.id === merchant.id ? 'bg-primary-50' : ''
+              }`}
+              onClick={() => onSelectMerchant(merchant)}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <h3 className="font-medium text-gray-900">{merchant.business_name}</h3>
+              <p className="text-sm text-gray-500">
+                Submitted on: {new Date(merchant.created_at).toLocaleDateString()}
+              </p>
+              <span
+                className={`inline-block px-2 py-1 mt-2 text-xs font-medium rounded-full ${
+                  merchant.status === 'pending'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : merchant.status === 'verified'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
+                {merchant.status.charAt(0).toUpperCase() + merchant.status.slice(1)}
+              </span>
+            </motion.button>
+          ))
+        )}
       </div>
     </div>
   );
