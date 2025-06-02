@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Upload, X, Check } from 'lucide-react';
 import Button from '../../../common/Button';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
@@ -9,6 +9,8 @@ import MerchantNavbar from '../../../common/MerchantNavbar';
 import MultipleAutocomplete from '../../../common/MultipleAutocomplete';
 import { ServiceGroup, UploadRequirement, UploadedFile, freelanceMerchantRequirements, businessMerchantRequirements } from './types';
 import FreelanceMerchantForm from './FreelanceMerchantForm';
+import { LocationService } from '../../../../services/location/location-service';
+import Autocomplete from '../../../common/Autocomplete';
 
 
 const MerchantVerificationForm = () => {
@@ -18,8 +20,15 @@ const MerchantVerificationForm = () => {
   const [formData, setFormData] = useState({
     businessName: '',
     serviceGroups: [{}],
-    merchantType: 'BUSINESS'
+    merchantType: 'BUSINESS',
+    province: '',
+    city: '',
+    barangay: '',
+    address: ''
   });
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [barangays, setBarangays] = useState<string[]>([]);
   const [serviceGroups, setServiceGroups] = useState<ServiceGroup[]>([]);
   const [selectedServiceGroups, setSelectedServiceGroups] = useState<ServiceGroup[]>([]);
   const [isLoadingServiceGroups, setIsLoadingServiceGroups] = useState(false);
@@ -32,8 +41,34 @@ const MerchantVerificationForm = () => {
 
   const s3Service = new S3UploadService();
   const dataService = new MerchantVerificationService();
+  const locationService = new LocationService();
 
   const requirements = merchantType === 'freelance' ? freelanceMerchantRequirements : businessMerchantRequirements;
+
+  useEffect(() => {
+    // Load provinces on component mount
+    setProvinces(locationService.getProvinces());
+  }, []);
+
+  useEffect(() => {
+    // Load cities when province changes
+    if (formData.province) {
+      setCities(locationService.getCities(formData.province));
+      setFormData(prev => ({ ...prev, city: '', barangay: '' }));
+    } else {
+      setCities([]);
+    }
+  }, [formData.province]);
+
+  useEffect(() => {
+    // Load barangays when city changes
+    if (formData.province && formData.city) {
+      setBarangays(locationService.getBarangays(formData.province, formData.city));
+      setFormData(prev => ({ ...prev, barangay: '' }));
+    } else {
+      setBarangays([]);
+    }
+  }, [formData.city]);
 
   const handleFileChange = async (requirement: UploadRequirement, file: File) => {
     if (!file) return;
@@ -179,6 +214,77 @@ const MerchantVerificationForm = () => {
     }
   };
 
+  const locationFields = (
+    <div className="space-y-4 mb-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Province
+          <span className="text-red-500">*</span>
+        </label>
+        <Autocomplete
+          options={provinces.map(province => ({ value: province }))}
+          value={formData.province ? { value: formData.province } : null}
+          onChange={(value) => {
+            const provinceValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
+            setFormData({ ...formData, province: provinceValue });
+          }}
+          getOptionLabel={(option: { value: string }) => option.value}
+          placeholder="Select province"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          City/Municipality
+          <span className="text-red-500">*</span>
+        </label>
+        <Autocomplete
+          options={cities.map(city => ({ value: city }))}
+          value={formData.city ? { value: formData.city } : null}
+          onChange={(value) => {
+            const cityValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
+            setFormData({ ...formData, city: cityValue });
+          }}
+          getOptionLabel={(option: { value: string }) => option.value}
+          placeholder="Select city"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Barangay
+          <span className="text-red-500">*</span>
+        </label>
+        <Autocomplete
+          options={barangays.map(barangay => ({ value: barangay }))}
+          value={formData.barangay ? { value: formData.barangay } : null}
+          onChange={(value) => {
+            const barangayValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
+            setFormData({ ...formData, barangay: barangayValue });
+          }}
+          getOptionLabel={(option: { value: string }) => option.value}
+          placeholder="Select barangay"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          Address
+          <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="address"
+          maxLength={512}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          value={formData.address}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          required
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <MerchantNavbar />
@@ -241,6 +347,8 @@ const MerchantVerificationForm = () => {
                   required
                 />
               </div>
+
+              {locationFields}
 
               <div className="space-y-2">
                 <label htmlFor="serviceGroup" className="block text-sm font-medium text-gray-700">

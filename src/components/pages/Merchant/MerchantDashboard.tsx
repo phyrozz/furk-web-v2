@@ -107,7 +107,7 @@ const MerchantDashboard = () => {
                   Verification Required
                 </h2>
                 <p className="text-warning-600 mt-1">
-                  Please complete the verification process to unlock all merchant features
+                  Please complete the verification process to start listing services and unlock all merchant features.
                 </p>
               </div>
               <Button
@@ -136,20 +136,22 @@ const MerchantDashboard = () => {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {quickActions.map((action, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="lg"
-              onClick={action.onClick}
-              icon={action.icon}
-              fullWidth
-            >
-              {action.title}
-            </Button>
-          ))}
-        </div>
+        {merchantStatus !== 'unverified' && 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {quickActions.map((action, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="lg"
+                onClick={action.onClick}
+                icon={action.icon}
+                fullWidth
+              >
+                {action.title}
+              </Button>
+            ))}
+          </div>
+        }
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
