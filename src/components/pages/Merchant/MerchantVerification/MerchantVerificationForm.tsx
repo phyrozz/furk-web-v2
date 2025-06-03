@@ -11,6 +11,7 @@ import { ServiceGroup, UploadRequirement, UploadedFile, freelanceMerchantRequire
 import FreelanceMerchantForm from './FreelanceMerchantForm';
 import { LocationService } from '../../../../services/location/location-service';
 import Autocomplete from '../../../common/Autocomplete';
+import LocationPicker from '../../../common/LocationPicker';
 
 
 const MerchantVerificationForm = () => {
@@ -24,7 +25,9 @@ const MerchantVerificationForm = () => {
     province: '',
     city: '',
     barangay: '',
-    address: ''
+    address: '',
+    long: 0,
+    lat: 0
   });
   const [provinces, setProvinces] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
@@ -48,6 +51,7 @@ const MerchantVerificationForm = () => {
   useEffect(() => {
     // Load provinces on component mount
     setProvinces(locationService.getProvinces());
+    retrieveDeviceLocation();
   }, []);
 
   useEffect(() => {
@@ -69,6 +73,25 @@ const MerchantVerificationForm = () => {
       setBarangays([]);
     }
   }, [formData.city]);
+
+  const retrieveDeviceLocation = () => {
+    try {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          setFormData(prev => ({...prev, lat: latitude, long: longitude }));
+        },
+        error => {
+          console.error('Error retrieving device location:', error);
+          setFormData(prev => ({...prev, lat: 14.5995, long: 120.9842 })); // set to metro manila's coordinates for fallback
+        },
+        { enableHighAccuracy: true }
+      )
+    } catch (error) {
+      console.error('Error retrieving device location:', error);
+      setFormData(prev => ({...prev, lat: 14.5995, long: 120.9842 }));
+    }
+  }
 
   const handleFileChange = async (requirement: UploadRequirement, file: File) => {
     if (!file) return;
@@ -282,6 +305,26 @@ const MerchantVerificationForm = () => {
           required
         />
       </div>
+
+      { formData.long !== 0 && formData.lat !== 0 && <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          Business Location
+          <span className="text-red-500">*</span>
+        </label>
+        <LocationPicker 
+          initialLng={formData.long}
+          initialLat={formData.lat}
+          onChange={(long, lat) => {
+            setFormData(prev => ({
+              ...prev,
+              latitude: lat,
+              longitude: long
+            }));
+
+            console.log('Location changed:', long, lat);
+          }} 
+        />
+      </div>}
     </div>
   );
 
@@ -295,7 +338,7 @@ const MerchantVerificationForm = () => {
               Merchant Verification
             </h1>
             <p className="text-gray-600 mt-2">
-              Please submit the required documents to verify your business. We will review your application and get back to you within 2 - 3 business working days.
+              Please submit the required details and documents to verify your business. We will review your application and get back to you within 2 - 3 business working days.
             </p>
           </div>
 
@@ -348,8 +391,6 @@ const MerchantVerificationForm = () => {
                 />
               </div>
 
-              {locationFields}
-
               <div className="space-y-2">
                 <label htmlFor="serviceGroup" className="block text-sm font-medium text-gray-700">
                   Business Type
@@ -368,6 +409,8 @@ const MerchantVerificationForm = () => {
                   onLoadMore={handleLoadMoreServiceGroups}
                 />
               </div>
+
+              {locationFields}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {requirements.map((requirement) => (

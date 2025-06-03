@@ -222,17 +222,14 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant }) => {
                 <PhotoItem
                   name="Exterior Photo"
                   url={getAttachmentValue(merchant.attachments, 'exterior_photo')}
-                  isVideo
                 />
                 <PhotoItem
                   name="Interior Photo 1"
                   url={getAttachmentValue(merchant.attachments, 'interior_photo_1')}
-                  isVideo
                 />
                 <PhotoItem
                   name="Interior Photo 2"
                   url={getAttachmentValue(merchant.attachments, 'interior_photo_2')}
-                  isVideo
                 />
                 <PhotoItem
                   name="Service Video 1"
