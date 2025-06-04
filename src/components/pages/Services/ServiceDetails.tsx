@@ -122,7 +122,7 @@ const ServiceDetails = () => {
               <h2 className="text-2xl font-semibold mb-4">Pricing</h2>
               <div className="border rounded-lg p-4">
                 <p className="text-2xl font-bold text-primary-500 my-2">
-                  ${service.price}
+                  ₱{service.price}
                 </p>
               </div>
             </div>
