@@ -31,41 +31,58 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
   const navigate = useNavigate();
   const observerTarget = useRef<HTMLDivElement>(null);
   const petServicesService = new PetServicesService();
-  const [coords, setCoords] = useState<{ longitude: number, latitude: number}>({ longitude: 0, latitude: 0});
+  const [coords, setCoords] = useState<{ longitude: number, latitude: number} | null>(null);
   const [finishedLocationPrompt, setFinishedLocationPrompt] = useState<boolean>(false);
 
   const fetchServices = useCallback(
     async (limit: number, offset: number, searchKeyword: string) => {
-      console.log('Passed long and lat', coords.longitude, coords.latitude);
-
-      const response = await petServicesService.listServices(limit, offset, searchKeyword, coords.longitude, coords.latitude);
+      if (!coords) return [];
+      
+      const response = await petServicesService.listServices(
+        limit,
+        offset,
+        searchKeyword,
+        coords.longitude,
+        coords.latitude
+      );
       return response.data;
     },
-    [coords]
+    [coords, petServicesService]
   );
 
-  const { items: services, loadMore, loading, hasMore } = useLazyLoad<Service>({
-    fetchData: fetchServices,
-    limit: 10,
-    keyword
-  });
-
+  // Get location first
   useEffect(() => {
-    // retrieve location from user device
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setCoords({ latitude: latitude, longitude: longitude });
+          setCoords({ latitude, longitude });
           setFinishedLocationPrompt(true);
-          console.log('User Location:', latitude, longitude);
         },
         (error) => {
           console.error('Error getting user location:', error);
           setFinishedLocationPrompt(true);
+          // Set default coordinates or handle error case
+          setCoords({ latitude: 0, longitude: 0 });
         }
       );
+    } else {
+      setFinishedLocationPrompt(true);
+      setCoords({ latitude: 0, longitude: 0 });
     }
+  }, []);
+
+  // Only initialize useLazyLoad when we have coordinates
+  const { items: services, loadMore, loading, hasMore } = useLazyLoad<Service>({
+    fetchData: fetchServices,
+    limit: 10,
+    keyword,
+    dependencies: [coords]
+  });
+
+  // Separate effect for intersection observer
+  useEffect(() => {
+    if (!coords) return; // Don't set up observer until we have coordinates
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -81,7 +98,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [loadMore, hasMore, coords]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -104,7 +121,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
 
   return (
     <>
-    {finishedLocationPrompt && <div className="py-8">
+    {finishedLocationPrompt && coords && <div className="py-8">
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         variants={containerVariants}
