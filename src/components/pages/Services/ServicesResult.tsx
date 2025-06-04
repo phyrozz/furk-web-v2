@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import Button from '../../common/Button';
@@ -17,9 +17,10 @@ interface Service {
   email: string;
   phone_number: string;
   attachments: string[];
-//   imageUrl: string;
-//   location: string;
-//   rating: number;
+  long: number,
+  lat: number,
+  distance_meters: number,
+  average_rating: number
 }
 
 interface ServicesResultProps {
@@ -30,22 +31,59 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
   const navigate = useNavigate();
   const observerTarget = useRef<HTMLDivElement>(null);
   const petServicesService = new PetServicesService();
+  const [coords, setCoords] = useState<{ longitude: number, latitude: number} | null>(null);
+  const [finishedLocationPrompt, setFinishedLocationPrompt] = useState<boolean>(false);
 
   const fetchServices = useCallback(
     async (limit: number, offset: number, searchKeyword: string) => {
-      const response = await petServicesService.listServices(limit, offset, searchKeyword);
+      if (!coords) return [];
+      
+      const response = await petServicesService.listServices(
+        limit,
+        offset,
+        searchKeyword,
+        coords.longitude,
+        coords.latitude
+      );
       return response.data;
     },
-    []
+    [coords, petServicesService]
   );
 
+  // Get location first
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCoords({ latitude, longitude });
+          setFinishedLocationPrompt(true);
+        },
+        (error) => {
+          console.error('Error getting user location:', error);
+          setFinishedLocationPrompt(true);
+          // Set default coordinates or handle error case
+          setCoords({ latitude: 0, longitude: 0 });
+        }
+      );
+    } else {
+      setFinishedLocationPrompt(true);
+      setCoords({ latitude: 0, longitude: 0 });
+    }
+  }, []);
+
+  // Only initialize useLazyLoad when we have coordinates
   const { items: services, loadMore, loading, hasMore } = useLazyLoad<Service>({
     fetchData: fetchServices,
     limit: 10,
-    keyword
+    keyword,
+    dependencies: [coords]
   });
 
+  // Separate effect for intersection observer
   useEffect(() => {
+    if (!coords) return; // Don't set up observer until we have coordinates
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore) {
@@ -60,7 +98,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     }
 
     return () => observer.disconnect();
-  }, [loadMore, hasMore]);
+  }, [loadMore, hasMore, coords]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -82,7 +120,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
   };
 
   return (
-    <div className="py-8">
+    <>
+    {finishedLocationPrompt && coords && <div className="py-8">
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         variants={containerVariants}
@@ -103,19 +142,19 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                 <h3 className="text-white text-xl font-semibold">{service.name}</h3>
-                {/* <div className="flex items-center text-white/90 text-sm">
+                <div className="flex items-center text-white/90 text-sm">
                   <MapPin size={16} className="mr-1" />
-                  <span>{service.location}</span>
-                </div> */}
+                  <span>{service.distance_meters.toFixed(2)} KM</span>
+                </div>
               </div>
             </div>
             <div className="p-4">
               <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
               <div className="flex justify-between items-center">
-                {/* <div className="flex items-center">
+                <div className="flex items-center">
                   <span className="text-yellow-400">★</span>
-                  <span className="ml-1 text-gray-700">{service.rating.toFixed(1)}</span>
-                </div> */}
+                  <span className="ml-1 text-gray-700">{service.average_rating.toFixed(1)}</span>
+                </div>
                 <Button
                   variant="primary"
                   size="sm"
@@ -150,7 +189,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
           <p className="mt-2">Try adjusting your search criteria</p>
         </div>
       )}
-    </div>
+    </div>}
+    </>
   );
 };
 

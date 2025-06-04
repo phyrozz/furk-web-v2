@@ -1,11 +1,13 @@
 import axios from "axios";
 
 export class PetServicesService {
-    async listServices(limit: number, offset: number, keyword: string) {
+    async listServices(limit: number, offset: number, keyword: string, longitude: number, latitude: number) {
         const data = {
             limit: limit,
             offset: offset,
-            keyword: keyword
+            keyword: keyword,
+            long: longitude,
+            lat: latitude
         }
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/pet-services/list", data);

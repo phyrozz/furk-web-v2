@@ -4,12 +4,14 @@ interface LazyLoadOptions<T> {
   fetchData: (limit: number, offset: number, keyword: string) => Promise<T[]>;
   limit?: number;
   keyword?: string;
+  dependencies?: any[];
 }
 
 export const useLazyLoad = <T>({
   fetchData,
   limit = 10,
   keyword = '',
+  dependencies = []
 }: LazyLoadOptions<T>) => {
   const [items, setItems] = useState<T[]>([]);
   const [offset, setOffset] = useState(0);
@@ -25,7 +27,7 @@ export const useLazyLoad = <T>({
       setItems((prev) => [...prev, ...newItems]);
       setOffset((prev) => prev + limit);
       if (newItems.length < limit) {
-        setHasMore(false); // No more data
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Failed to load items', error);
@@ -40,23 +42,22 @@ export const useLazyLoad = <T>({
     setHasMore(true);
     setLoading(true);
     try {
-        const newItems = await fetchData(limit, 0, keyword);
-        setItems(newItems);
-        setOffset(limit);
-        if (newItems.length < limit) {
-            setHasMore(false);
-        }
+      const newItems = await fetchData(limit, 0, keyword);
+      setItems(newItems);
+      setOffset(limit);
+      if (newItems.length < limit) {
+        setHasMore(false);
+      }
     } catch (error) {
-        console.error('Failed to load items', error);
+      console.error('Failed to load items', error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [keyword]);
+  }, [keyword, ...dependencies]);
 
   return { items, loadMore, loading, hasMore, reset };
 };

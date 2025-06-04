@@ -127,8 +127,8 @@ const AddService = () => {
       ToastService.show('Service added successfully')
 
       navigate(-1);
-    } catch (error) {
-      ToastService.show('Error adding service')
+    } catch (error: any) {
+      ToastService.show('Error adding service' + (error?.response?.data && ': ') + error?.response?.data?.error)
       console.error('Error adding service:', error);
     } finally {
       setIsSubmitting(false);

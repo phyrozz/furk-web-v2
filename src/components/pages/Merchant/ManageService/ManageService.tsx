@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2, Search, Plus, ChevronDown, RefreshCcw, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ManageServicesService } from '../../../../services/manage-services/manage-services-service';
@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 import useScreenSize from '../../../../hooks/useScreenSize';
 import MobileMenu from '../../../common/MobileMenu';
+import { LocalStorageService } from '../../../../services/local-storage/local-storage-service';
 
 interface Service {
   id: string;
@@ -22,6 +23,7 @@ interface Service {
 const ManageService = () => {
   const [keyword, setKeyword] = useState('');
   const [expandedService, setExpandedService] = useState<string | null>(null);
+  const [isAllowed, setIsAllowed] = useState<boolean>(false);
   const navigate = useNavigate();
   const serviceApi = new ManageServicesService();
   const {
@@ -35,6 +37,8 @@ const ManageService = () => {
       serviceApi.listServices(limit, offset, keyword).then((res) => res.data || []),
     keyword,
   });
+
+  const localStorageService = new LocalStorageService();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
@@ -66,6 +70,11 @@ const ManageService = () => {
   };
 
   const { isMobile } = useScreenSize();
+
+  useEffect(() => {
+    const isAllowed = localStorageService.getMerchantStatus();
+    setIsAllowed(isAllowed !== 'unverified' && isAllowed !== 'suspended');
+  }, []);
 
   const menuItems = [
     {
@@ -100,13 +109,15 @@ const ManageService = () => {
             </Button>
             <h1 className="font-bold text-gray-900 md:text-2xl text-md">Manage Services</h1>
           </div>
-          {isMobile ? (
+          {
+          isMobile ? (isAllowed &&
             <MobileMenu items={menuItems} />
           ) : (
             <div className='flex gap-2'>
             <Button
               onClick={() => navigate('/merchant/add-service')}
               className="flex items-center gap-2"
+              disabled={!isAllowed}
             >
               <Plus size={20} />
               {!isMobile && 'Add New Service'}
@@ -115,6 +126,7 @@ const ManageService = () => {
               onClick={() => reset()}
               className="flex items-center gap-2"
               variant='outline'
+              disabled={!isAllowed}
             >
               <RefreshCcw size={20} />
               {!isMobile && 'Refresh'}
@@ -124,7 +136,7 @@ const ManageService = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        {isAllowed && <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -135,10 +147,10 @@ const ManageService = () => {
               onChange={handleSearch}
             />
           </div>
-        </div>
+        </div>}
 
         {/* Services List */}
-        <motion.div
+        {isAllowed && <motion.div
           onScroll={handleScroll}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -233,7 +245,15 @@ const ManageService = () => {
               </motion.div>
             )
           )}
-        </motion.div>
+        </motion.div>}
+
+        {!isAllowed && 
+          <div className="flex-1 bg-white rounded-lg shadow overflow-y-auto relative">
+            <div className="p-4 text-center text-gray-500 h-full w-full flex justify-center items-center">
+              Managing services are only allowed for verified merchants. Please submit an application to verify your account.
+            </div>
+          </div>
+        }
       </motion.div>
     </div>
   );
