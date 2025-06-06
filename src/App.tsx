@@ -77,11 +77,11 @@ function App() {
                   <AdminPage />
                 </ProtectedRoute>
               } />
-              <Route path='/admin/profile' element={
+              {/* <Route path='/admin/profile' element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <AdminProfilePage />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/merchant/dashboard" element={
                 <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantDashboard />
@@ -102,11 +102,11 @@ function App() {
                   <ManageService />
                 </ProtectedRoute>
               } />
-              <Route path='/merchant/profile' element={
+              {/* <Route path='/merchant/profile' element={
                 <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantProfilePage />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/profile" element={
                 <ProtectedRoute requiredRoles={['user']}>
                   <ProfilePage />
