@@ -6,8 +6,9 @@ import Navbar from '../../common/Navbar';
 import DateUtils from '../../../utils/date-utils';
 import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
+import { ToastService } from '../../../services/toast/toast-service';
 
-interface UserProfile {
+export interface UserProfile {
   username: string;
   email: string;
   first_name: string;
@@ -31,12 +32,8 @@ const ProfilePage = () => {
   const navigate  = useNavigate();
 
   useEffect(() => {
-    // Update page title
     document.title = 'My Profile - FURK';
-
     getUserDetails();
-
-    console.log(profile);
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -68,6 +65,27 @@ const ProfilePage = () => {
     }
   };
 
+  const handleUserDetailsSave = async (e: any) => {
+    try {
+      e.preventDefault();
+      setLoadingSave(true);
+
+      await dataService.updateUserDetails(editFormData!);
+      setIsEdit(false);
+      setLoadingSave(false);
+      getUserDetails();
+      ToastService.show('User details updated successfully');
+    } catch (error: any) {
+      console.error('Error fetching user details:', error);
+      setLoadingSave(false);
+      if (error?.response?.data?.error) {
+        ToastService.show(error?.response?.data?.error);
+      } else {
+        ToastService.show('Error updating user details');
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
@@ -89,107 +107,112 @@ const ProfilePage = () => {
 
   const editForm = (
     <>
-      <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="mb-2">
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-            First Name
-          </label>
-          <input
-            type="text"
-            id="firstName"
-            maxLength={255}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={profile?.first_name ?? ''}
-            onChange={(e) => setEditFormData(prev => ({ ...prev!, first_name: e.target.value }))}
-          />
-        </div>
+      <form onSubmit={handleUserDetailsSave}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mb-2">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+              First Name
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.first_name ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, first_name: e.target.value }))}
+              required
+            />
+          </div>
 
-        <div className="mb-2">
-          <label htmlFor="middleName" className="block text-sm font-medium text-gray-700 mb-2">
-            Middle Name
-          </label>
-          <input
-            type="text"
-            id="middleName"
-            maxLength={255}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={profile?.middle_name ?? ''}
-            onChange={(e) => setEditFormData(prev => ({ ...prev!, middle_name: e.target.value }))}
-          />
-        </div>
+          <div className="mb-2">
+            <label htmlFor="middleName" className="block text-sm font-medium text-gray-700 mb-2">
+              Middle Name
+            </label>
+            <input
+              type="text"
+              id="middleName"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.middle_name ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, middle_name: e.target.value }))}
+            />
+          </div>
 
-        <div className="mb-2">
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-            Last Name
-          </label>
-          <input
-            type="text"
-            id="lastName"
-            maxLength={255}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={profile?.last_name ?? ''}
-            onChange={(e) => setEditFormData(prev => ({ ...prev!, last_name: e.target.value }))}
-          />
-        </div>
+          <div className="mb-2">
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.last_name ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, last_name: e.target.value }))}
+              required
+            />
+          </div>
 
-        <div className="mb-2">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            maxLength={255}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={profile?.email ?? ''}
-            onChange={(e) => setEditFormData(prev => ({ ...prev!, email: e.target.value }))}
-            disabled
-          />
-        </div>
+          <div className="mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.email ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, email: e.target.value }))}
+              disabled
+            />
+          </div>
 
-        <div className="mb-2">
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-            Contact Number
-          </label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            maxLength={255}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            value={profile?.phone_number ?? ''}
-            onChange={(e) => setEditFormData(prev => ({ ...prev!, phone_number: e.target.value }))}
-          />
+          <div className="mb-2">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+              Contact Number
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.phone_number ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, phone_number: e.target.value }))}
+              required
+            />
+          </div>
+        </div>
+        
+        <div className="w-full flex flex-row justify-end items-center">
+          <Button
+            type='submit'
+            variant="primary"
+            className="ml-2"
+            icon={<Save size={18} />}
+            loading={loadingSave}
+          >
+            Save
+          </Button>
         </div>
       </form>
-      <div className="w-full flex flex-row justify-end items-center">
-        <Button
-          variant="primary"
-          className="ml-2"
-          icon={<Save size={18} />}
-          onClick={() => {
-            // Handle save logic here
-          }}
-        >
-          Save
-        </Button>
-      </div>
     </>
   );
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
+    <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
         {/* Profile Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-center">
+        <div className="bg-white rounded-xl shadow-sm mb-8">
+          <div className="flex sm:flex-row flex-col sm:items-center items-start gap-2 w-full overflow-x-auto p-6">
             {/* <img
               src={profile?.avatar}
               alt={profile?.username}
               className="w-24 h-24 rounded-full border-4 border-primary-100"
             /> */}
             <div className="ml-6">
-              <h1 className="text-2xl font-bold text-gray-800">{profile?.first_name} {profile?.last_name}</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
               <p className="text-gray-600">{profile?.email}</p>
               <div className="flex items-center mt-2 text-sm text-gray-500">
                 <span>Member since {profile?.created_at && DateUtils.formatDateStringFromTimestamp(profile.created_at)}</span>
@@ -201,9 +224,7 @@ const ProfilePage = () => {
               variant="outline"
               className="ml-auto"
               icon={<LogOut size={18} />}
-              onClick={() => {
-                handleLogout();
-              }}
+              onClick={handleLogout}
               loading={signOutLoading}
             >
               Sign Out
@@ -212,11 +233,11 @@ const ProfilePage = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 mb-8">
+        <div className="flex border-b border-gray-200 mb-8 w-full overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`flex items-center px-6 py-3 text-sm font-medium ${
+              className={`flex items-center px-6 py-3 text-sm font-medium whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'text-primary-600 border-b-2 border-primary-500'
                   : 'text-gray-500 hover:text-gray-700'
@@ -230,10 +251,10 @@ const ProfilePage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex-1 bg-white rounded-xl shadow-sm h-full overflow-y-hidden">
           {activeTab === 'profile' && (
-            <div className="space-y-6">
-              <div className="flex flex-row justify-between items-center">
+            <div className="space-y-6 h-full overflow-y-hidden">
+              <div className="flex flex-row justify-between items-center px-6 pt-4">
                 <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
                 <button
                   onClick={() => {
@@ -248,52 +269,53 @@ const ProfilePage = () => {
                 </button>
               </div>
               
-              {isEdit? editForm : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                    <input
-                      type="text"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      value={`${profile?.first_name ?? ''} ${profile?.middle_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
-                      readOnly
-                    />
+              <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
+                {isEdit? editForm : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        value={[profile?.first_name, profile?.middle_name, profile?.last_name].filter(Boolean).join(' ')}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <input
+                        type="email"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        value={profile?.email ?? ''}
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                      <input
+                        type="tel"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        value={profile?.phone_number ?? ''}
+                        readOnly
+                      />
+                    </div>
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700">Location</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        value={profile?.location}
+                        readOnly
+                      />
+                    </div> */}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      value={profile?.email ?? ''}
-                      readOnly
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Contact Number</label>
-                    <input
-                      type="tel"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      value={profile?.phone_number ?? ''}
-                      readOnly
-                    />
-                  </div>
-                  {/* <div>
-                    <label className="block text-sm font-medium text-gray-700">Location</label>
-                    <input
-                      type="text"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                      value={profile?.location}
-                      readOnly
-                    />
-                  </div> */}
-                </div>
-              )}
-              
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === 'preferences' && (
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
               <h2 className="text-xl font-semibold text-gray-800">Preferences</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -350,14 +372,14 @@ const ProfilePage = () => {
           )}
 
           {activeTab === 'history' && (
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
               <h2 className="text-xl font-semibold text-gray-800">Booking History</h2>
               <p className="text-gray-600">Your booking history will appear here</p>
             </div>
           )}
 
           {activeTab === 'favorites' && (
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
               <h2 className="text-xl font-semibold text-gray-800">Favorite Services</h2>
               <p className="text-gray-600">Your favorite services will appear here</p>
             </div>
