@@ -17,6 +17,9 @@ import { ToastProvider } from './services/toast/ToastProvider';
 import ManageService from './components/pages/Merchant/ManageService/ManageService';
 import AuthWrapper from './components/AuthWrapper';
 import ServiceDetails from './components/pages/Services/ServiceDetails';
+import ProfilePage from './components/pages/Profile/ProfilePage';
+import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
+import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 
 function App() {
   return (
@@ -70,30 +73,45 @@ function App() {
 
               {/* Protected Routes */}
               <Route path='/admin/dashboard' element={
-                <ProtectedRoute requiredRole='admin'>
+                <ProtectedRoute requiredRoles={['admin']}>
                   <AdminPage />
                 </ProtectedRoute>
               } />
+              {/* <Route path='/admin/profile' element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <AdminProfilePage />
+                </ProtectedRoute>
+              } /> */}
               <Route path="/merchant/dashboard" element={
-                <ProtectedRoute requiredRole='merchant'>
+                <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/merchant/verify" element={
-                <ProtectedRoute requiredRole='merchant'>
+                <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantVerificationForm />
                 </ProtectedRoute>
               } />
               <Route path="/merchant/add-service" element={
-                <ProtectedRoute requiredRole='merchant'>
+                <ProtectedRoute requiredRoles={['merchant']}>
                   <AddService />
                 </ProtectedRoute>
               } />
               <Route path="/merchant/manage-services" element={
-                <ProtectedRoute requiredRole='merchant'>
+                <ProtectedRoute requiredRoles={['merchant']}>
                   <ManageService />
                 </ProtectedRoute>
               } />
+              {/* <Route path='/merchant/profile' element={
+                <ProtectedRoute requiredRoles={['merchant']}>
+                  <MerchantProfilePage />
+                </ProtectedRoute>
+              } /> */}
+              <Route path="/profile" element={
+                <ProtectedRoute requiredRoles={['user']}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }></Route>
             </Routes>
           </div>
         </AuthWrapper>
