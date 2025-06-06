@@ -341,15 +341,16 @@ export class LoginService {
     // Only clear localStorage for authentication errors, not for network errors
     const authError = error as AuthError;
 
-    // Only clear tokens for actual auth errors, not temporary issues
-    if (authError.code && [
-      'NotAuthorizedException',
-      'UserNotFoundException',
-      'UserNotConfirmedException',
-      'PasswordResetRequiredException'
-    ].includes(authError.code)) {
-      localStorage.clear();
-    }
+    // // Only clear tokens for actual auth errors, not temporary issues
+    // if (authError.code && [
+    //   'NotAuthorizedException',
+    //   'UserNotFoundException',
+    //   'UserNotConfirmedException',
+    //   'PasswordResetRequiredException'
+    // ].includes(authError.code)) {
+    //   localStorage.clear();
+    // }
+    localStorage.clear();
 
     switch (authError.code) {
       case 'NotAuthorizedException':

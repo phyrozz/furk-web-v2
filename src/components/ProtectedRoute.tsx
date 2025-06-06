@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'user' | 'merchant' | 'admin';
+  requiredRoles?: Array<'user' | 'merchant' | 'admin'>;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
+  if (requiredRoles && !requiredRoles.includes(userRole as any)) {
     // Redirect to appropriate page if role doesn't match
     return <Navigate to="/" replace />;
   }
