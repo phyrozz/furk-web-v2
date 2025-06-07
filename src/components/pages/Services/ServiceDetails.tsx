@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { MapPin, Star, Clock, Phone, Mail } from 'lucide-react';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
+import PawLoading from '../../common/PawLoading';
 
 interface ServiceDetail {
   id: number;
@@ -10,6 +11,7 @@ interface ServiceDetail {
   description: string;
   service_category_name: string;
   price: string;
+  merchant_id: number;
   business_name: number;
   merchant_type: string;
   email: string;
@@ -53,12 +55,8 @@ const ServiceDetails = () => {
 
   if (loading) {
     return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex space-x-2">
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-100" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-200" />
-        </div>
+      <div className="w-screen h-screen flex justify-center items-center overflow-hidden">
+        <PawLoading />
       </div>
     );
   }
@@ -95,7 +93,9 @@ const ServiceDetails = () => {
             <div className="flex items-center space-x-6 text-white">
               <div className="flex items-center">
                 <MapPin className="w-5 h-5 mr-2" />
-                <span>{service.business_name}</span>
+                <Link to={`/merchant/${service.merchant_id}`} className="hover:underline">
+                  {service.business_name}
+                </Link>
               </div>
               <div className="flex items-center">
                 <Star className="w-5 h-5 mr-2 text-yellow-400" />

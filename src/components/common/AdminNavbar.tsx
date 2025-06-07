@@ -68,8 +68,9 @@ const AdminNavbar = () => {
             className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
             onClick={closeMenu}
           >
-            <Paw size={28} className="text-primary-500" />
-            <span className="text-2xl font-bold">FURK ADMIN</span>
+            {/* <Paw size={28} className="text-primary-500" />
+            <span className="text-2xl font-bold">FURK ADMIN</span> */}
+            <img src="/logo_new.png" alt="Logo" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}
