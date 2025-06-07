@@ -38,10 +38,10 @@ const LoginPage = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-center mb-6">
+          {/* <div className="flex justify-center mb-6">
             <Paw size={64} />
-          </div>
-          <h1 className="text-4xl font-bold mb-4">Welcome to FURK</h1>
+          </div> */}
+          <span className="text-4xl font-bold mb-4">Welcome to FURK</span>
           <p className="text-xl mb-8">Your one-stop platform for all pet services in the Philippines</p>
           <div className="space-y-4">
             <div className="flex items-center space-x-4 bg-white bg-opacity-10 p-4 rounded-lg">
@@ -79,8 +79,7 @@ const LoginPage = () => {
             variants={itemVariants}
           >
             <Link to="/" className="flex items-center text-primary-500">
-              <Paw size={32} className="mr-2" />
-              <span className="text-2xl font-bold">FURK</span>
+              <img src="logo_new.png" alt="Logo" className="h-10" />
             </Link>
           </motion.div>
 

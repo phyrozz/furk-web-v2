@@ -7,6 +7,7 @@ import DateUtils from '../../../utils/date-utils';
 import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
 import { ToastService } from '../../../services/toast/toast-service';
+import PawLoading from '../../common/PawLoading';
 
 export interface UserProfile {
   username: string;
@@ -88,12 +89,8 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex space-x-2">
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-100" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-200" />
-        </div>
+      <div className="w-screen h-screen flex justify-center items-center overflow-hidden">
+        <PawLoading />
       </div>
     );
   }
