@@ -1,0 +1,16 @@
+# Allow all crawlers
+User-agent: *
+
+# Block sensitive routes
+Disallow: /merchant/
+Disallow: /admin/
+Disallow: /profile/
+
+# Disallow source maps and dev artifacts
+Disallow: /assets/*.map$
+Disallow: /vite.svg
+Disallow: /favicon.svg
+Disallow: /favicon_192x192.png
+Disallow: /favicon_512x512.png
+Disallow: /logo_new.png
+Disallow: /logo.png
