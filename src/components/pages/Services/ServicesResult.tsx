@@ -5,6 +5,7 @@ import Button from '../../common/Button';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import { useNavigate } from 'react-router-dom';
+import PawLoading from '../../common/PawLoading';
 
 interface Service {
   id: number;
@@ -171,10 +172,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
       {/* Loading indicator and observer target */}
       <div ref={observerTarget} className="mt-8 text-center">
         {loading && (
-          <div className="flex justify-center items-center space-x-2">
-            <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce" />
-            <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-100" />
-            <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-200" />
+          <div className="w-full h-full flex justify-center items-center">
+            <PawLoading />
           </div>
         )}
       </div>

@@ -45,11 +45,11 @@ p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(49 151 149);
+  background: #a6926a;
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(41, 126, 124);
+  background: #8e7a56;
 }

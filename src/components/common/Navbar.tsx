@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { PawPrint as Paw, Menu, X, LogOut, User, Shield } from 'lucide-react';
+import { Menu, X, LogOut, User, Shield } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
+import Paw from './Paw';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,8 +84,10 @@ const Navbar = () => {
             className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
             onClick={closeMenu}
           >
-            <Paw size={28} className="text-primary-500" />
-            <span className="text-2xl font-bold">FURK</span>
+            {/* <div className="flex items-center justify-center overflow-hidden w-10 h-10 -m-2">
+              <Paw size={128} />
+            </div> */}
+            <img src="logo_new.png" alt="Logo" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}
