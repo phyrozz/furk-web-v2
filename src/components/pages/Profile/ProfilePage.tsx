@@ -97,7 +97,7 @@ const ProfilePage = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
+    // { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'history', label: 'Booking History', icon: History },
     { id: 'favorites', label: 'Favorites', icon: Heart }
   ];
