@@ -2,12 +2,21 @@ import { ArrowRight, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
+const HERO_IMAGE_URL = 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=1600';
 
 const HeroSection = () => {
   const [searchInput, setSearchInput] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Preload the hero image
+    const img = new Image();
+    img.src = HERO_IMAGE_URL;
+    img.onload = () => setImageLoaded(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,12 +25,22 @@ const HeroSection = () => {
 
   return (
     <section className="relative py-16 md:py-24 overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-cover bg-center z-0" style={{ 
-        backgroundImage: 'url(https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=1600)',
-        backgroundPosition: 'center',
-        filter: 'brightness(0.6)'
-      }}></div>
+      {/* Background Image with loading state */}
+      <div 
+        className={`absolute inset-0 bg-cover bg-center z-0 transition-opacity duration-500 ${
+          imageLoaded ? 'opacity-100' : 'opacity-0'
+        }`} 
+        style={{ 
+          backgroundImage: `url(${HERO_IMAGE_URL})`,
+          backgroundPosition: 'center',
+          filter: 'brightness(0.6)'
+        }}
+      >
+        {/* Fallback background color while image loads */}
+        <div className={`absolute inset-0 bg-gray-800 transition-opacity duration-500 ${
+          imageLoaded ? 'opacity-0' : 'opacity-100'
+        }`} />
+      </div>
       
       <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8 flex flex-col items-center">
         <motion.div 

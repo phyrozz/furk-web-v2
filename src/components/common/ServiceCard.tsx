@@ -7,6 +7,8 @@ interface ServiceCardProps {
   icon: React.ReactNode;
   imageUrl?: string;
   onClick?: () => void;
+  isImageLoaded?: boolean;
+  onImageLoad?: () => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -15,13 +17,15 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   icon,
   imageUrl,
   onClick,
+  isImageLoaded = true,
+  onImageLoad,
 }) => {
   return (
     <motion.div
       className="bg-white rounded-xl shadow-md overflow-hidden h-full flex flex-col transition-all hover:shadow-lg"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isImageLoaded ? 1 : 0, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       {imageUrl && (
@@ -30,6 +34,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
             src={imageUrl}
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            onLoad={onImageLoad}
           />
         </div>
       )}
