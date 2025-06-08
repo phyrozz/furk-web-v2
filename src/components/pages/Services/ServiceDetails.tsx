@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { MapPin, Star, Clock, Phone, Mail } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { MapPin, Star, Phone, Mail, Tag } from 'lucide-react';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import PawLoading from '../../common/PawLoading';
+import ReviewsList from './ReviewsList';
+import BookingDialog from './BookingDialog';
+import { loginService } from '../../../services/auth/auth-service';
 
 interface ServiceDetail {
   id: number;
@@ -25,9 +28,23 @@ const ServiceDetails = () => {
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<number>(0);
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const fetchIsAuthenticated = async () => {
+      try {
+        const isAuthenticated = await loginService.isAuthenticated();
+        const userRole = loginService.getUserRole();
+        setIsAuthenticated(isAuthenticated && userRole === 'user');
+      } catch (error) {
+        console.error('Error fetching authentication status:', error);
+      }
+    };
 
     const fetchServiceDetails = async () => {
       try {
@@ -52,12 +69,13 @@ const ServiceDetails = () => {
       if (defaultTitle) {
         document.title = defaultTitle.textContent || '';
       }
+      fetchIsAuthenticated();
     };
   }, [id]);
 
   if (loading) {
     return (
-      <div className="w-screen h-screen flex justify-center items-center overflow-hidden">
+      <div className="w-full h-screen flex justify-center items-center overflow-hidden">
         <PawLoading />
       </div>
     );
@@ -79,59 +97,77 @@ const ServiceDetails = () => {
   }
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="relative h-96">
-        {service.attachments.length > 0 && (
-          <img
-            src={service.attachments[0]}
-            alt={service.name}
-            className="w-full h-full object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
-          <div className="container mx-auto">
-            <h1 className="text-4xl font-bold text-white mb-4">{service.name}</h1>
-            <div className="flex items-center space-x-6 text-white">
+    <div className="pt-24 min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Left Column - Service Information */}
+          <div className="bg-white rounded-lg shadow-sm p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold text-gray-900 mb-6">{service.name}</h1>
               <div className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2" />
-                <Link to={`/merchants/${service.merchant_id}`} className="hover:underline">
+                <MapPin className="w-6 h-6 mr-3 text-primary-500" />
+                <Link to={`/merchants/${service.merchant_id}`} className="text-lg hover:underline">
                   {service.business_name}
                 </Link>
               </div>
               <div className="flex items-center">
-                <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                <span>{service.average_rating.toFixed(1)}</span>
+                <Star className="w-6 h-6 mr-3 text-accent-400" />
+                <span className="text-lg font-semibold">{service.average_rating.toFixed(1)} Rating</span>
               </div>
               <div className="flex items-center">
-                <Clock className="w-5 h-5 mr-2" />
-                <span>{service.service_category_name}</span>
+                <Tag className="w-6 h-6 mr-3 text-primary-500" />
+                <span className="text-lg">{service.service_category_name}</span>
               </div>
+              
+            </div>
+            <div className="mt-6">
+              <p className="text-2xl font-bold text-primary-500">₱{service.price}</p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-8">
+          {/* Right Column - Image Gallery */}
+          <div className="relative rounded-lg overflow-hidden shadow-lg">
+            {service.attachments.length > 0 && (
+              <>
+                <img
+                  src={service.attachments[selectedImage]}
+                  alt={`${service.name} - Image ${selectedImage + 1}`}
+                  className="w-full h-[400px] object-cover"
+                />
+                <div className="absolute bottom-4 left-4 right-4 bg-white/90 rounded-lg p-3">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {service.attachments.map((attachment, index) => (
+                      <img
+                        key={index}
+                        src={attachment}
+                        alt={`${service.name} - Thumbnail ${index + 1}`}
+                        className={`w-16 h-16 object-cover rounded cursor-pointer transition-all flex-shrink-0 ${
+                          selectedImage === index ? 'ring-2 ring-primary-500' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        onClick={() => setSelectedImage(index)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="lg:col-span-2 space-y-8 lg:pb-8 pb-0">
+            <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">About</h2>
               <p className="text-gray-600">{service.description}</p>
             </div>
-
+            
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">Pricing</h2>
-              <div className="border rounded-lg p-4">
-                <p className="text-2xl font-bold text-primary-500 my-2">
-                  ₱{service.price}
-                </p>
-              </div>
+              <ReviewsList serviceId={service.id} />
             </div>
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
+          <div className="lg:col-span-1 h-full pb-8">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20 h-full">
               <h2 className="text-2xl font-semibold mb-4">Contact</h2>
               <div className="space-y-4">
                 <div className="flex items-center text-gray-600">
@@ -143,15 +179,32 @@ const ServiceDetails = () => {
                   <a href={`mailto:${service.email}`}>{service.email}</a>
                 </div>
               </div>
-              <Button
-                variant="primary"
-                className="w-full mt-6"
-                onClick={() => alert('Booking functionality coming soon!')}
-              >
-                Book Now
-              </Button>
+              {isAuthenticated ? (
+                <Button
+                  variant="primary"
+                  className="w-full mt-6"
+                  onClick={() => setIsBookingDialogOpen(true)}
+                >
+                  Book Now
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  className="w-full mt-6"
+                  onClick={() => navigate('/login')}
+                >
+                  Sign in now to book
+                </Button>
+              )
+              }
             </div>
           </div>
+
+          <BookingDialog
+            isOpen={isBookingDialogOpen}
+            onClose={() => setIsBookingDialogOpen(false)}
+            serviceId={service.id}
+          />
         </div>
       </div>
     </div>

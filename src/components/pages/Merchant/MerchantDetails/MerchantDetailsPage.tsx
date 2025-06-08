@@ -49,7 +49,7 @@ const MerchantDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="w-screen h-screen flex justify-center items-center overflow-hidden">
+      <div className="w-full h-screen flex justify-center items-center overflow-hidden">
         <PawLoading />
       </div>
     );
