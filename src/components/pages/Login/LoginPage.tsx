@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PawPrint as Paw, User, Store } from 'lucide-react';
+import { User, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import LoginForm from './LoginForm';
@@ -79,7 +79,7 @@ const LoginPage = () => {
             variants={itemVariants}
           >
             <Link to="/" className="flex items-center text-primary-500">
-              <img src="logo_new.png" alt="Logo" className="h-10" />
+              <img src="logo_new_small.png" alt="Logo" className="h-10" />
             </Link>
           </motion.div>
 

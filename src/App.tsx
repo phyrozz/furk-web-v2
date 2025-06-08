@@ -20,6 +20,7 @@ import ServiceDetails from './components/pages/Services/ServiceDetails';
 import ProfilePage from './components/pages/Profile/ProfilePage';
 import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
+import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
 
 function App() {
   return (
@@ -64,7 +65,8 @@ function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/services" element={<ServicesPage />} />
                       <Route path="/rewards" element={<RewardsPage />} />
-                      <Route path="/service/:id" element={<ServiceDetails />} />
+                      <Route path="/services/:id" element={<ServiceDetails />} />
+                      <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
                     </Routes>
                   </main>
                   <Footer />

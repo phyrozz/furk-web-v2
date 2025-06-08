@@ -10,6 +10,7 @@ import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 import useScreenSize from '../../../../hooks/useScreenSize';
 import MobileMenu from '../../../common/MobileMenu';
 import { LocalStorageService } from '../../../../services/local-storage/local-storage-service';
+import { useDebounce } from 'use-debounce';
 
 interface Service {
   id: string;
@@ -22,6 +23,7 @@ interface Service {
 
 const ManageService = () => {
   const [keyword, setKeyword] = useState('');
+  const [debouncedKeyword] = useDebounce(keyword, 500);
   const [expandedService, setExpandedService] = useState<string | null>(null);
   const [isAllowed, setIsAllowed] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ const ManageService = () => {
   } = useLazyLoad<Service>({
     fetchData: (limit, offset, keyword) =>
       serviceApi.listServices(limit, offset, keyword).then((res) => res.data || []),
-    keyword,
+    keyword: debouncedKeyword,
   });
 
   const localStorageService = new LocalStorageService();

@@ -186,7 +186,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ userType, onCance
             type="submit"
             variant="primary"
             size="md"
-            disabled={isLoading}
+            loading={isLoading}
           >
             {isLoading 
               ? (showVerification ? 'Verifying...' : 'Sending Code...') 

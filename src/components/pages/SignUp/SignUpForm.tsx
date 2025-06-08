@@ -302,7 +302,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
           variant="primary"
           size="lg"
           fullWidth
-          disabled={isLoading}
+          loading={isLoading}
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
