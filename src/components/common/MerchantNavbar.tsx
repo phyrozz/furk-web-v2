@@ -70,7 +70,7 @@ const MerchantNavbar = () => {
           >
             {/* <Paw size={28} className="text-primary-500" />
             <span className="text-2xl font-bold">FURK</span> */}
-            <img src="/logo_new.png" alt="Logo" className="h-8" />
+            <img src="/logo_new_small.png" alt="Logo" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}

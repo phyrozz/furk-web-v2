@@ -65,8 +65,8 @@ function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/services" element={<ServicesPage />} />
                       <Route path="/rewards" element={<RewardsPage />} />
-                      <Route path="/service/:id" element={<ServiceDetails />} />
-                      <Route path="/merchant/:id" element={<MerchantDetailsPage />} />
+                      <Route path="/services/:id" element={<ServiceDetails />} />
+                      <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
                     </Routes>
                   </main>
                   <Footer />

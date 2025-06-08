@@ -87,7 +87,7 @@ const Navbar = () => {
             {/* <div className="flex items-center justify-center overflow-hidden w-10 h-10 -m-2">
               <Paw size={128} />
             </div> */}
-            <img src="/logo_new.png" alt="Logo" className="h-8" />
+            <img src="/logo_new_small.png" alt="Logo" className="h-8" />
           </Link>
 
           {/* Desktop Navigation */}

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
-import Button from '../../common/Button';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import PawLoading from '../../common/PawLoading';
 
 interface Service {
@@ -29,30 +28,44 @@ interface ServicesResultProps {
 }
 
 const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
-  const navigate = useNavigate();
   const observerTarget = useRef<HTMLDivElement>(null);
   const petServicesService = new PetServicesService();
   const [coords, setCoords] = useState<{ longitude: number, latitude: number} | null>(null);
   const [finishedLocationPrompt, setFinishedLocationPrompt] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   const fetchServices = useCallback(
     async (limit: number, offset: number, searchKeyword: string) => {
       if (!coords) return [];
       
-      const response = await petServicesService.listServices(
-        limit,
-        offset,
-        searchKeyword,
-        coords.longitude,
-        coords.latitude
-      );
-      return response.data;
+      try {
+        const response = await petServicesService.listServices(
+          limit,
+          offset,
+          searchKeyword,
+          coords.longitude,
+          coords.latitude
+        );
+        
+        if (!response || !response.data) {
+          setError(true);
+          return [];
+        }
+        
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError(true);
+        return [];
+      }
     },
     [coords, petServicesService]
   );
 
   // Get location first
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -63,7 +76,6 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
         (error) => {
           console.error('Error getting user location:', error);
           setFinishedLocationPrompt(true);
-          // Set default coordinates or handle error case
           setCoords({ latitude: 0, longitude: 0 });
         }
       );
@@ -73,7 +85,6 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     }
   }, []);
 
-  // Only initialize useLazyLoad when we have coordinates
   const { items: services, loadMore, loading, hasMore } = useLazyLoad<Service>({
     fetchData: fetchServices,
     limit: 10,
@@ -81,13 +92,12 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     dependencies: [coords]
   });
 
-  // Separate effect for intersection observer
   useEffect(() => {
-    if (!coords) return; // Don't set up observer until we have coordinates
+    if (!coords || error) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
+        if (entries[0].isIntersecting && hasMore && !error) {
           loadMore();
         }
       },
@@ -99,7 +109,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     }
 
     return () => observer.disconnect();
-  }, [loadMore, hasMore, coords]);
+  }, [loadMore, hasMore, coords, error]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -120,6 +130,15 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     }
   };
 
+  if (error) {
+    return (
+      <div className="text-center text-gray-600 mt-24">
+        <p className="text-xl font-semibold">Hmm... something went wrong</p>
+        <p className="mt-2">Please try again later</p>
+      </div>
+    );
+  }
+
   return (
     <>
     {finishedLocationPrompt && coords && <div className="py-8">
@@ -135,41 +154,38 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
             variants={itemVariants}
             className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
           >
-            <div className="relative h-48">
-              <img
-                src={service.attachments[0]}
-                alt={service.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                <h3 className="text-white text-xl font-semibold">{service.name}</h3>
-                <div className="flex items-center text-white/90 text-sm">
-                  <MapPin size={16} className="mr-1" />
-                  <span>{service.distance_meters.toFixed(2)} KM</span>
+            <Link to={`/services/${service.id}`}>
+              <div className="relative h-48">
+                <img
+                  src={service.attachments[0]}
+                  alt={service.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                  <h3 className="text-white text-xl font-semibold">{service.name}</h3>
+                  <div className="flex items-center text-white/90 text-sm">
+                    <MapPin size={16} className="mr-1" />
+                    <span>{service.distance_meters.toFixed(2)} KM</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="p-4">
-              <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <span className="text-yellow-400">★</span>
-                  <span className="ml-1 text-gray-700">{service.average_rating.toFixed(1)}</span>
+              <div className="p-4">
+                <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <span className="text-yellow-400">★</span>
+                    <span className="ml-1 text-gray-700">{service.average_rating.toFixed(1)}</span>
+                  </div>
+                  <span className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full mt-3">
+                    {service.service_category_name}
+                  </span>
                 </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => navigate(`/service/${service.id}`)}
-                >
-                  View Details
-                </Button>
               </div>
-            </div>
+            </Link>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Loading indicator and observer target */}
       <div ref={observerTarget} className="mt-8 text-center">
         {loading && (
           <div className="w-full h-full flex justify-center items-center">

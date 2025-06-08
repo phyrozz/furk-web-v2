@@ -27,6 +27,8 @@ const ServiceDetails = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     const fetchServiceDetails = async () => {
       try {
         setLoading(true);
@@ -93,7 +95,7 @@ const ServiceDetails = () => {
             <div className="flex items-center space-x-6 text-white">
               <div className="flex items-center">
                 <MapPin className="w-5 h-5 mr-2" />
-                <Link to={`/merchant/${service.merchant_id}`} className="hover:underline">
+                <Link to={`/merchants/${service.merchant_id}`} className="hover:underline">
                   {service.business_name}
                 </Link>
               </div>

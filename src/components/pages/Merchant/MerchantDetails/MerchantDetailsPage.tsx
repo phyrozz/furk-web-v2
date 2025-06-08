@@ -30,6 +30,8 @@ const MerchantDetailsPage = () => {
   const merchantService = new MerchantDetailsService();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     const fetchMerchantDetails = async () => {
       try {
         if (!id) return;
