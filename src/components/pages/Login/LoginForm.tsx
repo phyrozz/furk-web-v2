@@ -152,7 +152,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
           variant="primary"
           size="lg"
           fullWidth
-          disabled={isLoading}
+          loading={isLoading}
         >
           {isLoading 
             ? 'Signing in...'
