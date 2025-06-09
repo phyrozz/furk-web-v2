@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { MerchantDetailsService } from '../../../../services/merchant-details/merchant-details';
 import ServicesList from './ServicesList';
 import LocationPicker from '../../../common/LocationPicker';
@@ -64,9 +65,19 @@ const MerchantDetailsPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto mt-14 px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-7xl mx-auto mt-14 px-4 sm:px-6 lg:px-8 py-8 space-y-8"
+    >
       {/* Hero Section with Business Photo */}
-      <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative h-96 rounded-xl overflow-hidden shadow-lg"
+      >
         <img
           src={merchant.exterior_photo}
           alt={merchant.business_name}
@@ -74,17 +85,34 @@ const MerchantDetailsPage = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
           <div className="absolute bottom-0 left-0 p-8">
-            <h1 className="text-4xl font-bold text-white mb-2">{merchant.business_name}</h1>
-            <div className="flex items-center space-x-2">
+            <motion.h1 
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-4xl font-bold text-white mb-2"
+            >
+              {merchant.business_name}
+            </motion.h1>
+            <motion.div 
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center space-x-2"
+            >
               <span className="text-accent-400 text-xl">★</span>
               <span className="text-white font-semibold">{merchant.overall_rating.toFixed(1)}</span>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Business Information */}
-      <div className="bg-white rounded-xl shadow-md p-6">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="bg-white rounded-xl shadow-md p-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Business Details</h2>
@@ -109,21 +137,31 @@ const MerchantDetailsPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Services Section */}
-      <div className="bg-gray-50 rounded-xl shadow-md p-6">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="bg-gray-50 rounded-xl shadow-md p-6"
+      >
         <ServicesList merchantId={merchant.id} />
-      </div>
+      </motion.div>
 
       {/* Map Location */}
-      <div className="bg-white rounded-xl shadow-md p-6">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+        className="bg-white rounded-xl shadow-md p-6"
+      >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
         <div className="h-96 rounded-lg overflow-hidden bg-gray-100">
           {merchant.latitude && merchant.longitude && <LocationPicker initialLat={merchant.latitude} initialLng={merchant.longitude} onChange={() => {}}/>}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
