@@ -62,11 +62,16 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
     [coords, petServicesService]
   );
 
-  // Get location first
   useEffect(() => {
     window.scrollTo(0, 0);
 
     if (navigator.geolocation) {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      };
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -77,7 +82,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
           console.error('Error getting user location:', error);
           setFinishedLocationPrompt(true);
           setCoords({ latitude: 0, longitude: 0 });
-        }
+        },
+        options
       );
     } else {
       setFinishedLocationPrompt(true);
