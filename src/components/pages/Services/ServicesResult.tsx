@@ -25,9 +25,10 @@ interface Service {
 
 interface ServicesResultProps {
   keyword: string;
+  serviceGroupId?: number;
 }
 
-const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
+const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId }) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const petServicesService = new PetServicesService();
   const [coords, setCoords] = useState<{ longitude: number, latitude: number} | null>(null);
@@ -44,7 +45,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword }) => {
           offset,
           searchKeyword,
           coords.longitude,
-          coords.latitude
+          coords.latitude,
+          serviceGroupId || 0,
         );
         
         if (!response || !response.data) {

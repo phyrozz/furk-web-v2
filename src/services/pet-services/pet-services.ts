@@ -7,6 +7,7 @@ export class PetServicesService {
         keyword: string, 
         longitude: number, 
         latitude: number, 
+        serviceGroupId: number = 0,
         sortBy: string = "distance_meters",
         sortOrder: string = "DESC"
     ) {
@@ -17,7 +18,8 @@ export class PetServicesService {
             long: longitude,
             lat: latitude,
             sort_by: sortBy,
-            sort_order: sortOrder
+            sort_order: sortOrder,
+            service_group_id: serviceGroupId
         }
 
         const response = await axios.post(import.meta.env.VITE_API_URL + "/pet-services/list", data);

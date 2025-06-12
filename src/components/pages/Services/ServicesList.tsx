@@ -12,8 +12,16 @@ interface Service {
   imageUrl: string;
 }
 
-const ServicesList = () => {
+interface ServicesListProps {
+  onFindMerchant: (serviceId: number) => void;
+}
+
+const ServicesList: React.FC<ServicesListProps> = ({ onFindMerchant }) => {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  const onServiceSelect = (serviceId: number) => {
+    onFindMerchant(serviceId);
+  }
   
   const services: Service[] = [
     {
@@ -210,7 +218,7 @@ const ServicesList = () => {
                 <div className="flex items-center">
                   <Button
                     variant="primary"
-                    onClick={() => alert(`You would now see providers for ${selectedService.title}`)}
+                    onClick={() => onServiceSelect(selectedService.id)}
                   >
                     Find Merchants
                   </Button>
