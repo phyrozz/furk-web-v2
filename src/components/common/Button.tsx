@@ -5,7 +5,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
@@ -81,7 +81,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled || loading}
     >
-      {icon && !loading && <span className="mr-2">{icon}</span>}
+      {icon && !loading && <span className={children ? "mr-2" : ""}>{icon}</span>}
       {loading && <BouncingPaw />}
       {children}
     </button>

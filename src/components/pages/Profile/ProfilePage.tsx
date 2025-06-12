@@ -10,6 +10,7 @@ import { ToastService } from '../../../services/toast/toast-service';
 import PawLoading from '../../common/PawLoading';
 import BookingHistory from './BookingHistory';
 import useScreenSize from '../../../hooks/useScreenSize';
+import Favorites from './Favorites';
 
 export interface UserProfile {
   username: string;
@@ -380,9 +381,9 @@ const ProfilePage = () => {
           )}
 
           {activeTab === 'favorites' && (
-            <div className="space-y-6 p-6">
-              <h2 className="text-xl font-semibold text-gray-800">Favorite Services</h2>
-              <p className="text-gray-600">Your favorite services will appear here</p>
+            <div className="overflow-y-hidden h-full">
+              <h2 className="text-xl font-semibold text-gray-800 py-4 px-6">Favorites</h2>
+              <Favorites />
             </div>
           )}
         </div>

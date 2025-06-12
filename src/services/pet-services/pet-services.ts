@@ -27,7 +27,14 @@ export class PetServicesService {
     }
 
     async getServiceDetails(id: number) {
-        const response = await axios.get(import.meta.env.VITE_API_URL + `/pet-services/get/${id}`);
+        const cognitoIdToken = localStorage.getItem("cognitoIdToken");
+        const config: any = {};
+        if (cognitoIdToken) {
+            config.headers = {
+                "Authorization": cognitoIdToken
+            };
+        }
+        const response = await axios.get(import.meta.env.VITE_API_URL + `/pet-services/get/${id}`, config);
         return response.data;
     }
 
@@ -56,6 +63,26 @@ export class PetServicesService {
         const response = await axios.post(import.meta.env.VITE_API_URL + "/booking", data, {
             headers: {
                 Authorization: localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
+
+    async addToFavorites(serviceId: number) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/favorite/add`, {
+            service_id: serviceId
+        }, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
+
+    async removeToFavorites(serviceId: number) {
+        const response = await axios.delete(import.meta.env.VITE_API_URL + `/favorite/delete/${serviceId}`, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
             }
         });
         return response.data;

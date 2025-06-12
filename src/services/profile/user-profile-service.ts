@@ -31,4 +31,16 @@ export class UserProfileService {
         });
         return response.data;
     }
+
+    async listFavorites(limit: number, offset: number) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/favorite/list`, {
+            limit: limit,
+            offset: offset
+        }, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
 }

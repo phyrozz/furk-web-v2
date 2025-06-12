@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Star, Phone, Mail, Tag } from 'lucide-react';
+import { MapPin, Star, Phone, Mail, Tag, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -8,6 +8,7 @@ import PawLoading from '../../common/PawLoading';
 import ReviewsList from './ReviewsList';
 import BookingDialog from './BookingDialog';
 import { loginService } from '../../../services/auth/auth-service';
+import { ToastService } from '../../../services/toast/toast-service';
 
 interface ServiceDetail {
   id: number;
@@ -32,6 +33,8 @@ const ServiceDetails = () => {
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,15 +52,18 @@ const ServiceDetails = () => {
 
     const fetchServiceDetails = async () => {
       try {
+        setIsFavoriteLoading(true);
         setLoading(true);
         const petServicesService = new PetServicesService();
         const response = await petServicesService.getServiceDetails(Number(id));
         setService(response.data);
+        setIsFavorite(response.data.is_favorite);
         document.title = `${response.data.name} - FURK`;
       } catch (err) {
         setError('Failed to load service details');
       } finally {
         setLoading(false);
+        setIsFavoriteLoading(false);
       }
     };
 
@@ -99,6 +105,35 @@ const ServiceDetails = () => {
         </motion.div>
       </div>
     );
+  }
+
+  const onFavorite = async () => {
+    setIsFavoriteLoading(true);
+    const dataService = new PetServicesService();
+
+    if (isFavorite) {
+      await dataService.removeToFavorites(Number(id)).then(
+        () => {
+          setIsFavorite(false);
+          ToastService.show('Service removed from favorites');
+        },
+        () => {
+          ToastService.show('Error removing service from favorites');
+        }
+      );
+    } else {
+      await dataService.addToFavorites(Number(id)).then(
+        () => {
+          setIsFavorite(true);
+          ToastService.show('Service added to favorites');
+        },
+        () => {
+          ToastService.show('Error adding service to favorites');
+        }
+      );
+    }
+
+    setIsFavoriteLoading(false);
   }
 
   return (
@@ -146,9 +181,23 @@ const ServiceDetails = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="mt-6"
+              className="mt-6 flex flex-row justify-between items-center"
             >
               <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">₱{service.price}</p>
+              <div>
+                <Button
+                  icon={<Heart fill={isFavorite ? "currentColor" : "none"} />}
+                  variant="ghost"
+                  onClick={async () => {
+                    if (!isAuthenticated) {
+                      navigate('/login');
+                    } else {
+                      await onFavorite();
+                    }
+                  }}
+                  loading={isFavoriteLoading}
+                />
+              </div>            
             </motion.div>
           </motion.div>
 

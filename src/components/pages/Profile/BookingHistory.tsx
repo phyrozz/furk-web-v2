@@ -2,6 +2,7 @@ import { useRef, useCallback } from "react";
 import { UserProfileService } from "../../../services/profile/user-profile-service";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
 import PawLoading from "../../common/PawLoading";
+import { useNavigate } from "react-router-dom";
 
 interface Booking {
   booking_id: string;
@@ -16,6 +17,7 @@ interface Booking {
   remarks: string | null;
   created_at: string;
   username: string;
+  service_id: number;
   service_name: string;
   service_description: string;
   service_category_name: string;
@@ -81,6 +83,7 @@ const statusBadge = (status: string) => {
 
 const BookingHistory = () => {
   const service = new UserProfileService();
+  const navigate = useNavigate();
 
   const fetchBookings = async (limit: number, offset: number) => {
     const res = await service.listBookingHistory(limit, offset);
@@ -141,13 +144,16 @@ const BookingHistory = () => {
           <div
             key={booking.booking_id}
             ref={isLast ? lastBookingRef : undefined}
-            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row md:items-center gap-4 ${
+            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row md:items-center gap-4 cursor-pointer ${
               isCancelled
                 ? "bg-red-50 border-red-100"
                 : isCompleted
                 ? "bg-green-50 border-green-100"
                 : ""
             }`}
+            onClick={() => {
+              navigate(`/services/${booking.service_id}`);
+            }}
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
