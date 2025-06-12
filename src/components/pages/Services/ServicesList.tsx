@@ -90,11 +90,11 @@ const ServicesList = () => {
     },
     {
       id: 10,
-      title: 'Pet Funeral',
+      title: 'Pet Events',
       icon: <FlowerSad size={24} />,
-      description: 'Compassionate end-of-life services for your beloved pets. We provide dignified cremation, burial options, memorials, and grief support.',
-      subservices: ['Cremation Services', 'Burial Services', 'Memorial Products', 'Grief Counseling', 'Home Euthanasia'],
-      imageUrl: 'https://images.pexels.com/photos/5731861/pexels-photo-5731861.jpeg?auto=compress&cs=tinysrgb&w=1600'
+      description: 'Organize memorable pet events and celebrations. We provide planning services for pet birthdays, adoption celebrations, pet competitions, and social gatherings.',
+      subservices: ['Birthday Parties', 'Pet Competitions', 'Social Meetups', 'Adoption Celebrations', 'Photo Sessions', 'Pet Funerals'],
+      imageUrl: 'https://images.pexels.com/photos/7788657/pexels-photo-7788657.jpeg?auto=compress&cs=tinysrgb&w=1600'
     }
   ];
 
