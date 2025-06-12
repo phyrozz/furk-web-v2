@@ -19,4 +19,16 @@ export class UserProfileService {
         });
         return response.data;
     }
+
+    async listBookingHistory(limit: number, offset: number) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/pet-owner-profile/list-bookings`, {
+            limit: limit,
+            offset: offset
+        }, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
 }

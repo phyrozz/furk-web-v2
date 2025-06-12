@@ -8,6 +8,8 @@ import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
 import { ToastService } from '../../../services/toast/toast-service';
 import PawLoading from '../../common/PawLoading';
+import BookingHistory from './BookingHistory';
+import useScreenSize from '../../../hooks/useScreenSize';
 
 export interface UserProfile {
   username: string;
@@ -31,6 +33,8 @@ const ProfilePage = () => {
 
   const dataService = new UserProfileService();
   const navigate  = useNavigate();
+
+  const { isMobile } = useScreenSize();
 
   useEffect(() => {
     document.title = 'My Profile - FURK';
@@ -201,7 +205,7 @@ const ProfilePage = () => {
       <Navbar />
       <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
         {/* Profile Header */}
-        <div className="bg-white rounded-xl shadow-sm mb-8">
+        {(!isMobile || activeTab == 'profile' ) && <div className="bg-white rounded-xl shadow-sm mb-8">
           <div className="flex sm:flex-row flex-col sm:items-center items-start gap-2 w-full overflow-x-auto p-6">
             {/* <img
               src={profile?.avatar}
@@ -227,7 +231,7 @@ const ProfilePage = () => {
               Sign Out
             </Button>
           </div>
-        </div>
+        </div>}
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-gray-200 mb-8 w-full overflow-x-auto">
@@ -369,9 +373,9 @@ const ProfilePage = () => {
           )}
 
           {activeTab === 'history' && (
-            <div className="space-y-6 p-6">
-              <h2 className="text-xl font-semibold text-gray-800">Booking History</h2>
-              <p className="text-gray-600">Your booking history will appear here</p>
+            <div className="overflow-y-hidden h-full">
+              <h2 className="text-xl font-semibold text-gray-800 py-4 px-6">Booking History</h2>
+              <BookingHistory />
             </div>
           )}
 

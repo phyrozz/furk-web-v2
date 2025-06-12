@@ -174,7 +174,7 @@ const ServiceDetails = () => {
                   transition={{ delay: 0.4 }}
                   className="absolute bottom-4 left-4 right-4 bg-white/90 rounded-lg p-3"
                 >
-                  <div className="flex gap-2 overflow-x-auto">
+                  <div className="flex gap-2 overflow-x-auto overflow-y-hidden">
                     {service.attachments.map((attachment, index) => (
                       <motion.img
                         whileHover={{ scale: 1.1 }}
@@ -201,7 +201,7 @@ const ServiceDetails = () => {
             transition={{ delay: 0.6 }}
             className="lg:col-span-1 h-full lg:pb-8 pb-0 order-1 lg:order-2"
           >
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20 h-full">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
               <h2 className="text-2xl font-semibold mb-4">Contact</h2>
               <div className="space-y-4">
                 <motion.div 
