@@ -4,6 +4,7 @@ import WhatsNewSection from './WhatsNewSection';
 import WhyFurkSection from './WhyFurkSection';
 import PartnerSection from './PartnerSection';
 import { loginService } from '../../../services/auth/auth-service';
+import Footer from '../../common/Footer';
 
 const HomePage = () => {
   useEffect(() => {
@@ -26,6 +27,7 @@ const HomePage = () => {
       <WhyFurkSection />
       { !loginService.isAuthenticated() && 
       <PartnerSection />}
+      <Footer />
     </div>
   );
 };

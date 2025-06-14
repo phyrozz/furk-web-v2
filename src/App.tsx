@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
-import Footer from './components/common/Footer';
 import HomePage from './components/pages/Home/HomePage';
 import ServicesPage from './components/pages/Services/ServicesPage';
 import RewardsPage from './components/pages/Rewards/RewardsPage';
@@ -69,7 +68,6 @@ function App() {
                       <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
                     </Routes>
                   </main>
-                  <Footer />
                 </>
               } />
 
