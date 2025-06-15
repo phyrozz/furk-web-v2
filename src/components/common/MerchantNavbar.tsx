@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { PawPrint as Paw, Menu, X, LogOut, User, Package, FileText, Bell } from 'lucide-react';
+import { PawPrint as Paw, Menu, X, LogOut, User, Package, FileText, Bell, Calendar } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -50,6 +50,7 @@ const MerchantNavbar = () => {
   const navItems = [
     { name: 'Dashboard', path: '/merchant/dashboard', icon: Package },
     { name: 'Services', path: '/merchant/manage-services', icon: FileText },
+    { name: 'Bookings', path: '/merchant/bookings', icon: Calendar },
     { name: 'Notifications', path: '/merchant/notifications', icon: Bell },
   ];
 

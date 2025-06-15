@@ -88,6 +88,11 @@ const MerchantDashboard = () => {
       icon: <History size={20} />,
       onClick: () => console.log('Navigate to booking history'),
     },
+    {
+      title: 'View Calendar',
+      icon: <Calendar size={20} />,
+      onClick: () => navigate('/merchant/bookings'),
+    },
   ];
 
   useEffect(() => {

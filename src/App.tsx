@@ -20,6 +20,7 @@ import ProfilePage from './components/pages/Profile/ProfilePage';
 import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
+import BookingCalendar from './components/pages/Merchant/BookingCalendar';
 
 function App() {
   return (
@@ -100,6 +101,11 @@ function App() {
               <Route path="/merchant/manage-services" element={
                 <ProtectedRoute requiredRoles={['merchant']}>
                   <ManageService />
+                </ProtectedRoute>
+              } />
+              <Route path="/merchant/bookings" element={
+                <ProtectedRoute requiredRoles={['merchant']}>
+                  <BookingCalendar />
                 </ProtectedRoute>
               } />
               {/* <Route path='/merchant/profile' element={

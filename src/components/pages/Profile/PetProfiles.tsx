@@ -11,6 +11,7 @@ import DateInput from '../../common/DateInput';
 import { motion } from 'framer-motion';
 import FileUploadField, { UploadedFile } from '../../common/FileUploadField';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
+import Switch from '../../common/Switch';
 
 export interface PetProfile {
     id: string;
@@ -401,14 +402,12 @@ const PetProfiles = () => {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.is_neutered}
-                                                onChange={(e) => setFormData({ ...formData, is_neutered: e.target.checked })}
-                                                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                            />
+                                    <div className="flex gap-2 justify-start items-center">
+                                        <Switch
+                                            isOn={formData.is_neutered ? true : false}
+                                            handleToggle={() => setFormData({ ...formData, is_neutered: !formData.is_neutered })}
+                                        />
+                                        <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">    
                                             <span>Neutered</span>
                                         </label>
                                     </div>
