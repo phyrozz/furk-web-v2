@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Settings, History, Heart, LogOut, Save } from 'lucide-react';
+import { User, Settings, History, Heart, LogOut, Save, PawPrint } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -11,15 +11,19 @@ import PawLoading from '../../common/PawLoading';
 import BookingHistory from './BookingHistory';
 import useScreenSize from '../../../hooks/useScreenSize';
 import Favorites from './Favorites';
+import PetProfiles from './PetProfiles';
 
 export interface UserProfile {
+  id: number;
   username: string;
   email: string;
   first_name: string;
   middle_name: string;
   last_name: string;
   phone_number: string;
+  created_by: string;
   created_at: string;
+  modified_by: string;
   modified_at: string;
 }
 
@@ -102,6 +106,7 @@ const ProfilePage = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'pets', label: 'My Pets', icon: PawPrint },
     // { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'history', label: 'Booking History', icon: History },
     { id: 'favorites', label: 'Favorites', icon: Heart }
@@ -256,7 +261,7 @@ const ProfilePage = () => {
         <div className="flex-1 bg-white rounded-xl shadow-sm h-full overflow-y-hidden">
           {activeTab === 'profile' && (
             <div className="space-y-6 h-full overflow-y-hidden">
-              <div className="flex flex-row justify-between items-center px-6 pt-4">
+              <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
                 <button
                   onClick={() => {
@@ -375,15 +380,21 @@ const ProfilePage = () => {
 
           {activeTab === 'history' && (
             <div className="overflow-y-hidden h-full">
-              <h2 className="text-xl font-semibold text-gray-800 py-4 px-6">Booking History</h2>
+              <h2 className="text-xl font-semibold text-gray-800 py-6 px-6">Booking History</h2>
               <BookingHistory />
             </div>
           )}
 
           {activeTab === 'favorites' && (
             <div className="overflow-y-hidden h-full">
-              <h2 className="text-xl font-semibold text-gray-800 py-4 px-6">Favorites</h2>
+              <h2 className="text-xl font-semibold text-gray-800 py-6 px-6">Favorites</h2>
               <Favorites />
+            </div>
+          )}
+
+          {activeTab === 'pets' && (
+            <div className="overflow-y-hidden h-full">
+              <PetProfiles />
             </div>
           )}
         </div>

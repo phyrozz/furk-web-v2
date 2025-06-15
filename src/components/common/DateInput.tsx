@@ -83,7 +83,7 @@ const DateInput = ({
   };
 
   const getYearRange = () => {
-    let startYear = new Date().getFullYear() - 10;
+    let startYear = new Date().getFullYear() - 50;
     let endYear = new Date().getFullYear() + 10;
 
     if (min) startYear = Math.min(startYear, min.getFullYear());

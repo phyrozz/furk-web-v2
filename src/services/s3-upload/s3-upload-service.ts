@@ -25,7 +25,7 @@ export class S3UploadService {
     });
   }
 
-  async uploadFile(file: File, key: string): Promise<string> {
+  async uploadFile(file: File, key: string, returnKeyWithDomain: boolean = false): Promise<string> {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
@@ -40,7 +40,11 @@ export class S3UploadService {
       await this.s3Client.send(command);
 
       // Return the URL of the uploaded file
-      return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+      if (returnKeyWithDomain) {
+        return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+      } else {
+        return key;
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       throw new Error('Failed to upload file');

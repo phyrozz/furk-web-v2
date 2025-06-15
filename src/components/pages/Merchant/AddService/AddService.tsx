@@ -6,6 +6,7 @@ import Autocomplete from '../../../common/Autocomplete';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 import MerchantNavbar from '../../../common/MerchantNavbar';
+import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
 
 // interface ServiceFormData {
 //   category: string;
@@ -18,12 +19,7 @@ interface ServiceCategory {
   name: string;
 }
 
-interface UploadedImage {
-  file: File;
-  preview: string;
-  uploading: boolean;
-  error?: string;
-}
+
 
 const AddService = () => {
   const navigate = useNavigate();
@@ -34,7 +30,7 @@ const AddService = () => {
     price: 0,
     images: [],
   });
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,27 +73,7 @@ const AddService = () => {
     }
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
 
-    const newImages: UploadedImage[] = Array.from(files).map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      uploading: false
-    }));
-
-    setUploadedImages(prev => [...prev, ...newImages]);
-  };
-
-  const handleImageDelete = (index: number) => {
-    setUploadedImages(prev => {
-      const newImages = [...prev];
-      URL.revokeObjectURL(newImages[index].preview);
-      newImages.splice(index, 1);
-      return newImages;
-    });
-  };
 
   const uploadImages = async (serviceId: string): Promise<string[]> => {
     const uploadPromises = uploadedImages.map(async (image) => {
@@ -217,49 +193,15 @@ const AddService = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Service Images
-              <span className="text-red-500">*</span>
-            </label>
-            <div className="mt-2 grid grid-cols-2 gap-4">
-              {uploadedImages.map((image, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={image.preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-40 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleImageDelete(index)}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {uploadedImages.length < 5 && (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center">
-                  <label className="cursor-pointer text-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <span className="text-primary-600 hover:text-primary-500">
-                      Upload Image
-                    </span>
-                  </label>
-                </div>
-              )}
-            </div>
-            <p className="mt-2 text-sm text-gray-500">
-              Upload up to 5 images (PNG, JPG, JPEG)
-            </p>
-          </div>
+          <FileUploadField
+            label="Service Images"
+            required
+            accept="image/*"
+            maxFiles={5}
+            files={uploadedImages}
+            onFilesChange={setUploadedImages}
+            helperText="Upload up to 5 images (PNG, JPG, JPEG)"
+          />
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button
