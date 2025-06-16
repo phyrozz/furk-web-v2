@@ -28,4 +28,40 @@ export class MerchantBookingsService {
     });
     return response.data;
   }
+
+  async confirmBooking(id: number) {
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/confirm/${id}`, {}, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
+
+  async cancelBooking(id: number) {
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/cancel/${id}`, {}, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
+
+  async startService(id: number) {
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/start/${id}`, {}, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
+
+  async completeService(id: number) {
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/complete/${id}`, {}, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
 }

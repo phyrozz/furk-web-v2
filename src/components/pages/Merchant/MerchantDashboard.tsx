@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, DollarSign, Package, Users, Plus, List, History, Bell } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Package, Users, Plus, List, Bell } from 'lucide-react';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
@@ -20,7 +20,6 @@ interface Activity {
 }
 
 const MerchantDashboard = () => {
-  const [merchantName] = useState('John\'s Pet Services');
   const [merchantStatus, setMerchantStatus] = useState<'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended'>('pending');
   const navigate = useNavigate();
   
@@ -84,12 +83,7 @@ const MerchantDashboard = () => {
       onClick: () => navigate('/merchant/manage-services'),
     },
     {
-      title: 'View History',
-      icon: <History size={20} />,
-      onClick: () => console.log('Navigate to booking history'),
-    },
-    {
-      title: 'View Calendar',
+      title: 'View Bookings',
       icon: <Calendar size={20} />,
       onClick: () => navigate('/merchant/bookings'),
     },

@@ -3,10 +3,12 @@ import Paw from './Paw';
 
 type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonColor = 'primary' | 'secondary' | 'accent' | 'red' | 'yellow';
 
 interface ButtonProps {
   children?: React.ReactNode;
   variant?: ButtonVariant;
+  color?: ButtonColor;
   size?: ButtonSize;
   className?: string;
   onClick?: () => void;
@@ -21,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   size = 'md',
+  color = 'primary',
   className = '',
   onClick,
   type = 'button',
@@ -31,12 +34,23 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center';
   
+  const getColorClasses = (color: ButtonColor) => {
+    const colorMap = {
+      primary: 'bg-primary-500 hover:bg-primary-600',
+      secondary: 'bg-secondary-500 hover:bg-secondary-600',
+      accent: 'bg-accent-500 hover:bg-accent-600',
+      red: 'bg-red-500 hover:bg-red-600',
+      yellow: 'bg-yellow-500 hover:bg-yellow-600'
+    };
+    return colorMap[color];
+  };
+
   const variantStyles = {
-    primary: 'bg-primary-500 hover:bg-primary-600 text-white',
-    secondary: 'bg-secondary-500 hover:bg-secondary-600 text-white',
-    accent: 'bg-accent-500 hover:bg-accent-600 text-white',
-    outline: 'bg-transparent border-2 border-primary-500 text-primary-500 hover:bg-primary-50',
-    ghost: 'bg-transparent text-primary-500 hover:bg-primary-50',
+    primary: `${getColorClasses(color)} text-white`,
+    secondary: `${getColorClasses(color)} text-white`,
+    accent: `${getColorClasses(color)} text-white`,
+    outline: `bg-transparent border-2 border-${color}-500 text-${color}-500 hover:bg-${color}-50`,
+    ghost: `bg-transparent text-${color}-500 hover:bg-${color}-50`,
   };
   
   const sizeStyles = {
