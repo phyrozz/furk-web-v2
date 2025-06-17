@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useCallback } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -6,6 +6,8 @@ import { ToastService } from '../../../services/toast/toast-service';
 import Select from '../../common/Select';
 import DateInput from '../../common/DateInput';
 import TimeInput from '../../common/TimeInput';
+import { useLazyLoad } from '../../../hooks/useLazyLoad';
+import Autocomplete from '../../common/Autocomplete';
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -19,6 +21,11 @@ interface PaymentMethod {
   displayName: string;
 }
 
+interface Pet {
+  id: number;
+  name: string;
+}
+
 const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 1, code: 'card', displayName: 'Card (Debit/Credit)' },
   { id: 2, code: 'gcash', displayName: 'GCash' },
@@ -30,31 +37,66 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
+  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const petServicesService = new PetServicesService();
+
+  const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
+    try {
+      const response = await petServicesService.listPets(limit, offset);
+      const filteredPets = response.data.filter((pet: any) =>
+        pet.name.toLowerCase().includes(query.toLowerCase())
+      );
+      return filteredPets.map((pet: any) => ({ id: pet.id, name: pet.name }));
+    } catch (err) {
+      ToastService.show('Failed to load pets');
+      return [];
+    }
+  }, []);
+
+  const { items: pets, loading: loadingPets, hasMore, loadMore } = useLazyLoad<Pet>({
+    fetchData: fetchPets,
+    keyword: searchQuery,
+    enabled: isOpen,
+  });
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedDate('');
       setSelectedTime('');
       setSelectedPaymentMethod(3);
+      setSelectedPet(null);
       setError(null);
+      setSearchQuery('');
     }
   }, [isOpen]);
+
+  const searchItems = useCallback(async (query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    if (!selectedPet) {
+      setError('Please select a pet.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const bookingDateTime = new Date(`${selectedDate}T${selectedTime}`);
 
-      const petServicesService = new PetServicesService();
       await petServicesService.createBooking({
         service_id: serviceId,
         booking_datetime: bookingDateTime.toISOString(),
         payment_method_id: selectedPaymentMethod,
+        pet_ids: [selectedPet.id]
       });
 
       ToastService.show('Booking created successfully');
@@ -122,6 +164,24 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
                       minuteStep={30}
                     />
                   </div>
+
+                  {isOpen && (
+                    <div className="relative">
+                      <label className="block text-sm font-medium text-gray-700">Pet</label>
+                      <Autocomplete
+                        options={pets}
+                        value={selectedPet}
+                        onChange={setSelectedPet}
+                        getOptionLabel={(pet) => pet.name}
+                        placeholder="Select your pet"
+                        className="mt-1"
+                        onLoadMore={loadMore}
+                        onSearch={searchItems}
+                        isLoading={loadingPets}
+                        hasMore={hasMore}
+                      />
+                    </div>
+                  )}
 
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700">Payment Method</label>

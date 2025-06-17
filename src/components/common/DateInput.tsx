@@ -234,6 +234,7 @@ const DateInput = ({
                     onClick={() => {
                       if (day !== null && !isDisabled) {
                         const selected = new Date(selectedYear, selectedMonth, day);
+                        selected.setHours(12, 0, 0, 0); // set to noon to avoid timezone issues
                         onChange(selected);
                         setIsOpen(false);
                       }

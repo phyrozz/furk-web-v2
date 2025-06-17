@@ -59,6 +59,7 @@ export class PetServicesService {
         service_id: number;
         booking_datetime: string;
         payment_method_id: number;
+        pet_ids: number[];
     }) {
         const response = await axios.post(import.meta.env.VITE_API_URL + "/booking", data, {
             headers: {
@@ -81,6 +82,18 @@ export class PetServicesService {
 
     async removeToFavorites(serviceId: number) {
         const response = await axios.delete(import.meta.env.VITE_API_URL + `/favorite/delete/${serviceId}`, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
+
+    async listPets(limit: number, offset: number) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/pets/list`, {
+            limit: limit,
+            offset: offset
+        }, {
             headers: {
                 "Authorization": localStorage.getItem("cognitoIdToken")
             }

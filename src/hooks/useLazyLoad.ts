@@ -5,13 +5,15 @@ interface LazyLoadOptions<T> {
   limit?: number;
   keyword?: string;
   dependencies?: any[];
+  enabled?: boolean;
 }
 
 export const useLazyLoad = <T>({
   fetchData,
   limit = 10,
   keyword = '',
-  dependencies = []
+  dependencies = [],
+  enabled = true,
 }: LazyLoadOptions<T>) => {
   const [items, setItems] = useState<T[]>([]);
   const [offset, setOffset] = useState(0);
@@ -19,7 +21,7 @@ export const useLazyLoad = <T>({
   const [hasMore, setHasMore] = useState(true);
 
   const loadMore = async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || !enabled) return;
 
     setLoading(true);
     try {
@@ -56,8 +58,10 @@ export const useLazyLoad = <T>({
   };
 
   useEffect(() => {
-    reset();
-  }, [keyword, ...dependencies]);
+    if (enabled) {
+      reset();
+    }
+  }, [keyword, enabled, ...dependencies]);
 
   return { items, loadMore, loading, hasMore, reset };
 };
