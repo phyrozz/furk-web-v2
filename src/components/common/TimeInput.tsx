@@ -17,6 +17,8 @@ const TimeInput = ({
   minuteStep = 15
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -64,17 +66,63 @@ const TimeInput = ({
     return slots;
   };
 
+  const timeSlots = generateTimeSlots();
+
   const isCurrentTime = (timeSlot: Date) => {
     return value && 
       timeSlot.getHours() === value.getHours() && 
       timeSlot.getMinutes() === value.getMinutes();
   };
 
+  useEffect(() => {
+    if (focusedIndex !== null && optionRefs.current[focusedIndex]) {
+      optionRefs.current[focusedIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [focusedIndex]);  
+
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
+        tabIndex={0}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer flex justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (!isOpen) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setIsOpen(true);
+              setFocusedIndex(0);
+              e.preventDefault();
+            }
+            return;
+          }
+        
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setFocusedIndex((prev) => {
+              const next = prev === null ? 0 : Math.min(prev + 1, timeSlots.length - 1);
+              return next;
+            });
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setFocusedIndex((prev) => {
+              const next = prev === null ? 0 : Math.max(prev - 1, 0);
+              return next;
+            });
+          } else if (e.key === 'Enter') {
+            if (focusedIndex !== null) {
+              const selectedTime = timeSlots[focusedIndex];
+              const newDate = value ? new Date(value) : new Date();
+              newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+              onChange(newDate);
+              setIsOpen(false);
+            }
+          } else if (e.key === 'Escape') {
+            setIsOpen(false);
+          }
+        }}        
       >
         <span className={value ? 'text-gray-900' : 'text-gray-500'}>
           {value ? formatTime(value) : placeholder}
@@ -91,23 +139,26 @@ const TimeInput = ({
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           <div className="py-1">
-            {generateTimeSlots().map((timeSlot, index) => (
-              <div
-                key={index}
-                className={`
-                  px-4 py-2 cursor-pointer hover:bg-gray-100
-                  ${isCurrentTime(timeSlot) ? 'bg-primary-100' : ''}
-                `}
-                onClick={() => {
-                  const newDate = value ? new Date(value) : new Date();
-                  newDate.setHours(timeSlot.getHours(), timeSlot.getMinutes(), 0, 0);
-                  onChange(newDate);
-                  setIsOpen(false);
-                }}
-              >
-                {formatTime(timeSlot)}
-              </div>
-            ))}
+          {timeSlots.map((timeSlot, index) => (
+            <div
+              key={index}
+              ref={(el) => optionRefs.current[index] = el}
+              className={`
+                px-4 py-2 cursor-pointer hover:bg-gray-100
+                ${isCurrentTime(timeSlot) ? 'bg-primary-100' : ''}
+                ${focusedIndex === index ? 'bg-blue-100' : ''}
+              `}
+              onMouseEnter={() => setFocusedIndex(index)}
+              onClick={() => {
+                const newDate = value ? new Date(value) : new Date();
+                newDate.setHours(timeSlot.getHours(), timeSlot.getMinutes(), 0, 0);
+                onChange(newDate);
+                setIsOpen(false);
+              }}
+            >
+              {formatTime(timeSlot)}
+            </div>
+          ))}
           </div>
         </div>
       )}

@@ -24,6 +24,7 @@ const DateInput = ({
 
   const [selectedMonth, setSelectedMonth] = useState(() => value ? value.getMonth() : new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(() => value ? value.getFullYear() : new Date().getFullYear());
+  const [focusedDate, setFocusedDate] = useState<Date | null>(value);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,6 +45,14 @@ const DateInput = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        dropdownRef.current?.focus();
+      }, 0);
+    }
+  }, [isOpen]);  
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -98,8 +107,18 @@ const DateInput = ({
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
+        onClick={() => setIsOpen((prev) => !prev)}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Space' || e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+            e.preventDefault();
+            setIsOpen(true);
+          }
+          if (e.key === 'Escape' || e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            setIsOpen(false);
+          }
+        }}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer flex justify-between items-center"
-        onClick={() => setIsOpen(!isOpen)}
       >
         <span className={value ? 'text-gray-900' : 'text-gray-500'}>
           {value ? formatDate(value) : placeholder}
@@ -113,6 +132,44 @@ const DateInput = ({
       {isOpen && (
         <div 
           ref={dropdownRef}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (!focusedDate) return;
+        
+            const newDate = new Date(focusedDate);
+            switch (e.key) {
+              case 'ArrowUp':
+                newDate.setDate(focusedDate.getDate() - 7);
+                break;
+              case 'ArrowDown':
+                newDate.setDate(focusedDate.getDate() + 7);
+                break;
+              case 'ArrowLeft':
+                newDate.setDate(focusedDate.getDate() - 1);
+                break;
+              case 'ArrowRight':
+                newDate.setDate(focusedDate.getDate() + 1);
+                break;
+              case 'Enter':
+                if (!isDateDisabled(newDate)) {
+                  onChange(newDate);
+                  setIsOpen(false);
+                }
+                return;
+              case 'Escape':
+                setIsOpen(false);
+                return;
+              default:
+                return;
+            }
+        
+            if (
+              newDate.getMonth() === selectedMonth &&
+              newDate.getFullYear() === selectedYear
+            ) {
+              setFocusedDate(newDate);
+            }
+          }}
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg"
         >
           <div className="p-4">
@@ -151,21 +208,33 @@ const DateInput = ({
                 const currentDate = day !== null ? new Date(selectedYear, selectedMonth, day) : null;
                 const isDisabled = currentDate ? isDateDisabled(currentDate) : false;
 
+                const isFocused =
+                  currentDate &&
+                  focusedDate &&
+                  currentDate.getDate() === focusedDate.getDate() &&
+                  currentDate.getMonth() === focusedDate.getMonth() &&
+                  currentDate.getFullYear() === focusedDate.getFullYear();
+
+                const isSelected =
+                  value &&
+                  currentDate &&
+                  currentDate.getDate() === value.getDate() &&
+                  currentDate.getMonth() === value.getMonth() &&
+                  currentDate.getFullYear() === value.getFullYear();
+
                 return (
                   <div
                     key={index}
                     className={`
                       text-center p-2 rounded-lg
                       ${day === null ? 'invisible' : isDisabled ? 'cursor-not-allowed text-gray-300' : 'cursor-pointer hover:bg-gray-100'}
-                      ${value && day === value.getDate() && 
-                        selectedMonth === value.getMonth() && 
-                        selectedYear === value.getFullYear() 
-                        ? 'bg-primary-100' 
-                        : ''}
+                      ${isSelected ? 'bg-primary-100' : ''}
+                      ${isFocused ? 'outline outline-2 outline-primary-500' : ''}
                     `}
                     onClick={() => {
                       if (day !== null && !isDisabled) {
-                        onChange(new Date(selectedYear, selectedMonth, day));
+                        const selected = new Date(selectedYear, selectedMonth, day);
+                        onChange(selected);
                         setIsOpen(false);
                       }
                     }}

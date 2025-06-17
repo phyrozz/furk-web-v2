@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Shield } from 'lucide-react';
+import { Menu, X, LogOut, User, Shield, LayoutDashboard } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
-import Paw from './Paw';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -141,7 +140,7 @@ const Navbar = () => {
                             className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                             onClick={() => setShowProfileMenu(false)}
                           >
-                            <User size={16} className="mr-2" />
+                            <LayoutDashboard size={16} className="mr-2" />
                             Dashboard
                           </Link>
                         )}

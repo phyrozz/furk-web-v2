@@ -9,6 +9,7 @@ import ReviewsList from './ReviewsList';
 import BookingDialog from './BookingDialog';
 import { loginService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../../services/toast/toast-service';
+import WarningContainer from '../../common/WarningContainer';
 
 interface ServiceDetail {
   id: number;
@@ -33,6 +34,7 @@ const ServiceDetails = () => {
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isNotUser, setIsNotUser] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -44,7 +46,8 @@ const ServiceDetails = () => {
       try {
         const isAuthenticated = await loginService.isAuthenticated();
         const userRole = loginService.getUserRole();
-        setIsAuthenticated(isAuthenticated && userRole === 'user');
+        setIsAuthenticated(isAuthenticated);
+        if (userRole !== 'user') setIsNotUser(true);
       } catch (error) {
         console.error('Error fetching authentication status:', error);
       }
@@ -268,15 +271,17 @@ const ServiceDetails = () => {
                   <a href={`mailto:${service.email}`}>{service.email}</a>
                 </motion.div>
               </div>
-              {isAuthenticated ? (
-                <Button
-                  variant="primary"
-                  className="w-full mt-6"
-                  onClick={() => setIsBookingDialogOpen(true)}
-                >
-                  Book Now
-                </Button>
+              {isAuthenticated ? (isNotUser ? (
+                <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
               ) : (
+                <Button
+                variant="primary"
+                className="w-full mt-6"
+                onClick={() => setIsBookingDialogOpen(true)}
+              >
+                Book Now
+              </Button>
+              )) : (
                 <motion.div whileHover={{ scale: 1.02 }}>
                   <Button
                     variant="primary"

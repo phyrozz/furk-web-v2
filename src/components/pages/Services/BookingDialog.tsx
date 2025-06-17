@@ -138,7 +138,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
                   {error && <p className="text-sm text-error-600">{error}</p>}
 
                   <div className="mt-6 flex justify-end space-x-3">
-                    <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
+                    <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
                       Cancel
                     </Button>
                     <Button type="submit" variant="primary" loading={loading}>
