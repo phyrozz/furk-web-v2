@@ -222,14 +222,14 @@ const ServicesList: React.FC<ServicesListProps> = ({ onFindMerchant }) => {
                   >
                     Find Merchants
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="outline"
                     className="ml-4"
                     onClick={() => alert(`Location filter would open here`)}
                     icon={<MapPin size={16} />}
                   >
                     Filter by Location
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>

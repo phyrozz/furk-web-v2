@@ -40,13 +40,6 @@ const RewardsHero = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex justify-center"
           >
-            <Button 
-              variant="accent"
-              size="lg"
-              onClick={() => alert('Sign up for rewards would start here')}
-            >
-              Join the Rewards Program
-            </Button>
           </motion.div>
         </div>
       </div>

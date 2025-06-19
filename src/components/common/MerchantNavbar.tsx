@@ -51,7 +51,7 @@ const MerchantNavbar = () => {
     { name: 'Dashboard', path: '/merchant/dashboard', icon: Package },
     { name: 'Services', path: '/merchant/manage-services', icon: FileText },
     { name: 'Bookings', path: '/merchant/bookings', icon: Calendar },
-    { name: 'Notifications', path: '/merchant/notifications', icon: Bell },
+    // { name: 'Notifications', path: '/merchant/notifications', icon: Bell },
   ];
 
   return (
@@ -118,14 +118,14 @@ const MerchantNavbar = () => {
                     transition={{ duration: 0.2 }}
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                   >
-                    <Link
+                    {/* <Link
                       to="/merchant/profile"
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                       onClick={() => setShowProfileMenu(false)}
                     >
                       <User size={16} className="mr-2" />
                       Profile
-                    </Link>
+                    </Link> */}
                     <button
                       onClick={() => {
                         handleLogout();
@@ -176,14 +176,14 @@ const MerchantNavbar = () => {
                 <span>{item.name}</span>
               </Link>
             ))}
-            <Link
+            {/* <Link
               to="/merchant/profile"
               className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
               onClick={closeMenu}
             >
               <User size={16} className="mr-2" />
               Profile
-            </Link>
+            </Link> */}
             <button
               onClick={() => {
                 handleLogout();

@@ -66,13 +66,13 @@ const HeroSection = () => {
                 Explore Services
               </Button>
             </Link>
-            <Button 
+            {/* <Button 
               variant="outline" 
               size="lg"
               className="bg-white bg-opacity-20 border-white text-white hover:bg-white hover:bg-opacity-30"
             >
               Find a Vet Near You
-            </Button>
+            </Button> */}
           </div>
           
           {/* Search Bar */}

@@ -30,13 +30,13 @@ const RewardItem: React.FC<RewardItemProps> = ({ title, pointsCost, icon, descri
           <div className="font-medium text-secondary-600">
             {pointsCost} points
           </div>
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={() => alert(`You would redeem ${title} here`)}
           >
             Redeem
-          </Button>
+          </Button> */}
         </div>
       </div>
     </motion.div>
@@ -107,7 +107,7 @@ const RewardsRedemption = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
+        {/* <div className="mt-12 text-center">
           <Button
             variant="primary"
             size="lg"
@@ -118,7 +118,7 @@ const RewardsRedemption = () => {
           <p className="mt-4 text-gray-600">
             New rewards and redemption options are added regularly. Check back often!
           </p>
-        </div>
+        </div> */}
       </div>
     </section>
   );

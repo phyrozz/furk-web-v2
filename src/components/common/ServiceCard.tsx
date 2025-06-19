@@ -46,13 +46,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
         </div>
         <p className="text-gray-600 mb-4 flex-grow">{description}</p>
-        <Button
+        {/* <Button
           variant="outline"
           onClick={onClick}
           fullWidth
         >
           Learn More
-        </Button>
+        </Button> */}
       </div>
     </motion.div>
   );

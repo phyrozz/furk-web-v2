@@ -117,14 +117,14 @@ const AdminNavbar = () => {
                     transition={{ duration: 0.2 }}
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                   >
-                    <Link
+                    {/* <Link
                       to="/admin/profile"
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                       onClick={() => setShowProfileMenu(false)}
                     >
                       <User size={16} className="mr-2" />
                       Profile
-                    </Link>
+                    </Link> */}
                     <button
                       onClick={() => {
                         handleLogout();
@@ -175,14 +175,14 @@ const AdminNavbar = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
-              <Link
+              {/* <Link
                 to="/admin/profile"
                 className="flex items-center space-x-2 px-4 py-2 font-medium text-gray-700 hover:text-primary-500 transition-colors"
                 onClick={closeMenu}
               >
                 <User size={20} />
                 <span>Profile</span>
-              </Link>
+              </Link> */}
               <button
                 onClick={() => {
                   handleLogout();
