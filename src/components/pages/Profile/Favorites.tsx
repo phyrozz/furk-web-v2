@@ -33,6 +33,7 @@ interface Favorite {
     modified_at: string;
     modified_by: string;
   };
+  attachment: string | null;
   created_at: string;
   modified_at: string;
   created_by: string;
@@ -103,39 +104,45 @@ const Favorites = () => {
   }
 
   return (
-    <div className="space-y-4 overflow-y-auto max-h-full pb-20 px-6 py-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-full pb-20 px-6 py-2">
       {favorites.map((fav, idx) => {
         const isLast = idx === favorites.length - 1;
         return (
           <div
             key={fav.id}
             ref={isLast ? lastFavoriteRef : undefined}
-            className="transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row md:items-center gap-4 cursor-pointer"
+            className="transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border cursor-pointer overflow-hidden flex flex-col"
             onClick={() => {
               navigate(`/services/${fav.service.id}`);
             }}
           >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="font-semibold text-gray-800 text-base truncate">
+            {fav.attachment && (
+              <div className="h-48 relative">
+                <img
+                  src={fav.attachment}
+                  alt={fav.service.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1 p-4">
+              <div className="flex items-start gap-2 mb-2 flex-wrap">
+                <div className="font-semibold text-gray-800 text-lg truncate">
                   {fav.service.name}
                 </div>
                 <span className="text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5">
                   {fav.service.service_category.name}
                 </span>
               </div>
-              <div className="text-sm text-gray-500 mb-1">
-                <span className="font-medium"></span> {fav.merchant.business_name}
+              <div className="text-sm text-gray-500">
+                {fav.merchant.business_name}
               </div>
-              {/* <div className="text-sm text-gray-500">
-                <span className="font-medium">Favorited on:</span> {formatDate(fav.created_at)}
-              </div> */}
             </div>
           </div>
         );
       })}
       {loading && (
-        <div className="flex justify-center items-center py-4">
+        <div className="col-span-full flex justify-center items-center py-4">
           <PawLoading />
         </div>
       )}

@@ -23,6 +23,7 @@ interface Booking {
   service_category_name: string;
   service_category_description: string;
   payment_method_name: string;
+  attachment: string | null;
 }
 
 const formatDate = (dateStr: string) =>
@@ -144,7 +145,7 @@ const BookingHistory = () => {
           <div
             key={booking.booking_id}
             ref={isLast ? lastBookingRef : undefined}
-            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row md:items-center gap-4 cursor-pointer ${
+            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row gap-4 cursor-pointer ${
               isCancelled
                 ? "bg-red-50 border-red-100"
                 : isCompleted
@@ -155,46 +156,58 @@ const BookingHistory = () => {
               navigate(`/services/${booking.service_id}`);
             }}
           >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="font-semibold text-gray-800 text-base truncate">{booking.service_name}</div>
-                <span className="text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5">{booking.service_category_name}</span>
-              </div>
-              <div className="text-sm text-gray-500 mb-1">
-                <span className="font-medium">Booked:</span> {formatDate(booking.booking_datetime)}
-              </div>
-              <div className="text-sm text-gray-500 mb-1">
-                <span className="font-medium">Schedule:</span>{" "}
-                {booking.start_datetime && booking.end_datetime ? (
-                  <>
-                    {formatDate(booking.start_datetime)} - {formatDate(booking.end_datetime)}
-                  </>
-                ) : (
-                  <span className="italic text-gray-400">Not yet scheduled by merchant</span>
-                )}
-              </div>
-              <div className="text-sm text-gray-500 mb-1">
-                <span className="font-medium">Payment:</span> {booking.payment_method_name}{" "}
-                <span className="ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs">{booking.payment_status}</span>
-              </div>
-              {booking.cancelled_at && (
-                <div className="text-xs text-red-500 flex items-center gap-1 mt-1" title={`Cancelled by ${booking.cancelled_by || "unknown"}`}>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                  Cancelled at {formatDate(booking.cancelled_at)}
-                  {booking.cancelled_by && (
-                    <span className="ml-1 text-gray-400">(by {booking.cancelled_by})</span>
+            <div className="flex-shrink-0">
+              <img 
+                src={booking.attachment!} 
+                alt={booking.service_name}
+                className="w-32 h-32 object-cover rounded-lg shadow-sm"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/default-service-image.jpg';
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="font-semibold text-gray-800 text-lg truncate">{booking.service_name}</div>
+                  <span className="text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5">{booking.service_category_name}</span>
+                  {statusBadge(booking.status)}
+                </div>
+                <div className="text-sm text-gray-500 mb-1">
+                  <span className="font-medium">Booked:</span> {formatDate(booking.booking_datetime)}
+                </div>
+                <div className="text-sm text-gray-500 mb-1">
+                  <span className="font-medium">Schedule:</span>{" "}
+                  {booking.start_datetime && booking.end_datetime ? (
+                    <>
+                      {formatDate(booking.start_datetime)} - {formatDate(booking.end_datetime)}
+                    </>
+                  ) : (
+                    <span className="italic text-gray-400">Not yet scheduled by merchant</span>
                   )}
                 </div>
-              )}
-              {booking.remarks && (
-                <div className="text-xs text-gray-400 mt-1 truncate" title={booking.remarks}>
-                  <svg className="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m2-4h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
-                  Remarks: {booking.remarks}
+                <div className="text-sm text-gray-500 mb-1">
+                  <span className="font-medium">Payment:</span> {booking.payment_method_name}{" "}
+                  <span className="ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs">{booking.payment_status}</span>
                 </div>
-              )}
-            </div>
-            <div className="flex-shrink-0 flex flex-col items-end gap-2">
-              {statusBadge(booking.status)}
+              </div>
+              <div>
+                {booking.cancelled_at && (
+                  <div className="text-xs text-red-500 flex items-center gap-1 mt-2" title={`Cancelled by ${booking.cancelled_by || "unknown"}`}>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    Cancelled at {formatDate(booking.cancelled_at)}
+                    {booking.cancelled_by && (
+                      <span className="ml-1 text-gray-400">(by {booking.cancelled_by})</span>
+                    )}
+                  </div>
+                )}
+                {booking.remarks && (
+                  <div className="text-xs text-gray-400 mt-2 truncate" title={booking.remarks}>
+                    <svg className="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m2-4h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
+                    Remarks: {booking.remarks}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
