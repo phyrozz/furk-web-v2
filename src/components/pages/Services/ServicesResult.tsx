@@ -169,16 +169,15 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <h3 className="text-white text-xl font-semibold">{service.name}</h3>
-                  <div className="flex items-center text-white/90 text-sm">
-                    <MapPin size={16} className="mr-1" />
-                    <span>{service.distance_meters.toFixed(2)} KM</span>
-                  </div>
-                </div>
               </div>
               <div className="p-4">
-                <p className="text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+                <p className="text-gray-600 font-bold text-lg line-clamp-2">{service.name}</p>
+                <div className="flex items-center text-gray-600 text-xs mb-4">
+                  {service.distance_meters < 500 && <>
+                    <MapPin size={16} className="mr-1" />
+                    <span>{service.distance_meters.toFixed(2)} KM</span>
+                  </>}
+                </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <span className="text-yellow-400">★</span>

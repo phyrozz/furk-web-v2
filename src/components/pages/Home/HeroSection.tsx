@@ -49,7 +49,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl md:text-5xl font-bold mb-6">
+          <h1 className="font-cursive text-3xl md:text-5xl font-bold mb-6">
             Your One-Stop Shop for All Pet Needs
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-gray-100">
