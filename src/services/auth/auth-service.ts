@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Amplify } from 'aws-amplify';
+import { eventEmitter } from '../../utils/event-emitter';
 import { 
   signIn, 
   signOut, 
@@ -274,8 +275,9 @@ export class LoginService {
       // Check if token is expired but not more than a week old
       if (currentTime >= expirationTime && currentTime - expirationTime < oneWeek) {
         try {
-          console.log('Refreshing session...');
-          await this.refreshSession();
+          eventEmitter.emit('tokenExpired');
+          console.log('Awaiting user response for refreshing session...');
+          // await this.refreshSession();
           return true;
         } catch (error) {
           console.error('Error refreshing session:', error);

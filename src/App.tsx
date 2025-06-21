@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import HomePage from './components/pages/Home/HomePage';
@@ -21,8 +22,36 @@ import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
 import BookingCalendar from './components/pages/Merchant/BookingCalendar';
+import TokenExpiredDialog from './components/common/TokenExpiredDialog';
+import { eventEmitter } from './utils/event-emitter';
+import { loginService } from './services/auth/auth-service';
 
 function App() {
+  const [isTokenExpired, setIsTokenExpired] = useState(false);
+
+  useEffect(() => {
+    const handleTokenExpired = () => {
+      setIsTokenExpired(true);
+    };
+
+    eventEmitter.on('tokenExpired', handleTokenExpired);
+
+    // Periodically check token status
+    const intervalId = setInterval(async () => {
+      await loginService.isAuthenticated();
+    }, 60 * 1000); // Check every 1 minute
+
+    return () => {
+      eventEmitter.off('tokenExpired', handleTokenExpired);
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const handleConfirmRefresh = () => {
+    setIsTokenExpired(false);
+    window.location.reload();
+  };
+
   return (
     <ToastProvider>
       <Router
@@ -123,6 +152,7 @@ function App() {
         </AuthWrapper>
         
       </Router>
+      <TokenExpiredDialog isOpen={isTokenExpired} onConfirm={handleConfirmRefresh} />
     </ToastProvider>
   );
 }
