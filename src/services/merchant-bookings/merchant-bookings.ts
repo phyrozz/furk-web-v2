@@ -4,12 +4,14 @@ export class MerchantBookingsService {
   async listBookings(
     status: string = 'All',
     startDate: Date = new Date(new Date().setDate(1)),
-    endDate: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+    endDate: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+    keyword: string = ''
   ) {
     const data = {
       status: status === 'All' ? null : status,
       start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0]
+      end_date: endDate.toISOString().split('T')[0],
+      keyword: keyword,
     }
 
     const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant/booking/list", data, {

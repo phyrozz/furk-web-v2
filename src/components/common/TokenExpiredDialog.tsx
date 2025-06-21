@@ -1,6 +1,7 @@
 import React from 'react';
 import Button from './Button';
 import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 
 interface TokenExpiredDialogProps {
   isOpen: boolean;
@@ -26,12 +27,13 @@ const TokenExpiredDialog: React.FC<TokenExpiredDialogProps> = ({ isOpen, onConfi
         className="bg-white p-8 rounded-2xl shadow-xl max-w-sm mx-auto"
       >
         <h2 className="text-xl font-bold mb-4">Session Expired</h2>
-        <p className="mb-6">Your session has expired. Please confirm to refresh the page.</p>
+        <p className="mb-6">Your session has expired. Please refresh the page or click the button below.</p>
         <div className="flex justify-end">
           <Button
             variant='primary'
+            icon={<RefreshCw />}
             onClick={onConfirm}
-          >Confirm</Button>
+          >Refresh</Button>
         </div>
       </motion.div>
     </motion.div>

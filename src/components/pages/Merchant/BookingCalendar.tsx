@@ -10,6 +10,8 @@ import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import PawLoading from '../../common/PawLoading';
+import Input from '../../common/Input';
+import { useDebounce } from 'use-debounce';
 
 const localizer = momentLocalizer(moment);
 
@@ -40,6 +42,8 @@ const BookingCalendar: React.FC = () => {
   const [startLoading, setStartLoading] = useState<boolean>(false);
   const [cancelLoading, setCancelLoading] = useState<boolean>(false);
   const [completeLoading, setCompleteLoading] = useState<boolean>(false);
+  const [keyword, setKeyword] = useState('');
+  const [debouncedKeyword] = useDebounce(keyword, 500);
   const bookingsService = new MerchantBookingsService();
 
   const statusOptions = [
@@ -54,7 +58,7 @@ const BookingCalendar: React.FC = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await bookingsService.listBookings(statusFilter, startDate, endDate);
+      const response = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
       const formattedEvents: BookingEvent[] = response.data.map((booking: any) => {
         const eventDate = booking.start_datetime || booking.booking_datetime;
         const endDate = booking.end_datetime || moment(booking.booking_datetime).add(1, 'hour').toDate();
@@ -91,7 +95,7 @@ const BookingCalendar: React.FC = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, [statusFilter, startDate, endDate]);
+  }, [statusFilter, startDate, endDate, debouncedKeyword]);
 
   const handleNavigate = (newDate: Date) => {
     let firstDay, lastDay;
@@ -116,6 +120,10 @@ const BookingCalendar: React.FC = () => {
       setStartDate(firstDay);
       setEndDate(lastDay);
     }
+  };
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value);
   };
 
   const eventPropGetter = (event: BookingEvent) => {
@@ -178,7 +186,7 @@ const BookingCalendar: React.FC = () => {
           transition={{ duration: 0.2, ease: "easeInOut" }}
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-4">
+            <div className="flex sm:flex-row flex-col items-start gap-2">
               <Select
                 options={statusOptions}
                 value={{ value: statusFilter, label: statusOptions.find(opt => opt.value === statusFilter)?.label }}
@@ -188,6 +196,13 @@ const BookingCalendar: React.FC = () => {
                   }
                 }}
                 getOptionLabel={(option: { value: string; label: string | undefined; }) => option.label || ''}
+              />
+              <Input 
+                id="search"
+                placeholder="Search..."
+                value={keyword}
+                onChange={handleSearch}
+                className="w-full"
               />
             </div>
             <div className="grid grid-cols-2 lg:flex md:items-center gap-2 lg:space-x-4">

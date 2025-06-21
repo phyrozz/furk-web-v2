@@ -277,7 +277,7 @@ export class LoginService {
         try {
           eventEmitter.emit('tokenExpired');
           console.log('Awaiting user response for refreshing session...');
-          // await this.refreshSession();
+          await this.refreshSession();
           return true;
         } catch (error) {
           console.error('Error refreshing session:', error);
