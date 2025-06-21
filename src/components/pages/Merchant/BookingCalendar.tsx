@@ -164,7 +164,7 @@ const BookingCalendar: React.FC = () => {
       <MerchantNavbar />
       <div className="p-6 pt-24 h-screen overflow-y-hidden flex flex-col cursor-default container mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Bookings</h1>
+          <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
           <Button icon={isControlsCollapsed ? <ChevronDownIcon /> : <ChevronUpIcon />} onClick={() => setIsControlsCollapsed(!isControlsCollapsed)} variant='ghost'>
             {isControlsCollapsed ? 'Show' : 'Hide'}
           </Button>

@@ -66,7 +66,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-6">
         {userType === 'user' 
           ? 'Sign in to your Pet Owner account' 
           : 'Sign in to your Merchant account'}

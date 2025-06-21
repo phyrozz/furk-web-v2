@@ -69,7 +69,7 @@ const MerchantProfilePage = () => {
   ];
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
+    <div className="pt-16 min-h-screen bg-gray-50 cursor-default">
       <div className="container mx-auto px-4 py-8">
         {/* Profile Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">

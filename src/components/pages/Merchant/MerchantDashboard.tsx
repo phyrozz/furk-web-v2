@@ -95,7 +95,7 @@ const MerchantDashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
+    <div className="min-h-screen bg-gray-50 pt-16 cursor-default">
       <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
         {merchantStatus === 'unverified' && (
@@ -182,7 +182,7 @@ const MerchantDashboard = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Recent Activity</h2>
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">Recent Activity</h2>
                 <Bell size={20} className="text-gray-500" />
               </div>
               <div className="space-y-4">
@@ -204,7 +204,7 @@ const MerchantDashboard = () => {
           {/* Today's Schedule */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Today's Schedule</h2>
+              <h2 className="text-xl font-cursive font-semibold text-gray-800">Today's Schedule</h2>
               <Users size={20} className="text-gray-500" />
             </div>
             <div className="text-center py-8">

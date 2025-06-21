@@ -219,7 +219,7 @@ const ProfilePage = () => {
               className="w-24 h-24 rounded-full border-4 border-primary-100"
             /> */}
             <div className="ml-6">
-              <h1 className="text-2xl font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
+              <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
               <p className="text-gray-600">{profile?.email}</p>
               <div className="flex items-center mt-2 text-sm text-gray-500">
                 <span>Member since {profile?.created_at && DateUtils.formatDateStringFromTimestamp(profile.created_at)}</span>
@@ -262,7 +262,7 @@ const ProfilePage = () => {
           {activeTab === 'profile' && (
             <div className="space-y-6 h-full overflow-y-hidden">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
-                <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">Personal Information</h2>
                 <button
                   onClick={() => {
                     if (!isEdit && profile) {
@@ -380,14 +380,14 @@ const ProfilePage = () => {
 
           {activeTab === 'history' && (
             <div className="overflow-y-hidden h-full">
-              <h2 className="text-xl font-semibold text-gray-800 py-6 px-6">Booking History</h2>
+              <h2 className="text-xl font-cursive font-semibold text-gray-800 py-6 px-6">Booking History</h2>
               <BookingHistory />
             </div>
           )}
 
           {activeTab === 'favorites' && (
             <div className="overflow-y-hidden h-full">
-              <h2 className="text-xl font-semibold text-gray-800 py-6 px-6">Favorites</h2>
+              <h2 className="text-xl font-cursive font-semibold text-gray-800 py-6 px-6">Favorites</h2>
               <Favorites />
             </div>
           )}

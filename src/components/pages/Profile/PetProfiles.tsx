@@ -173,7 +173,7 @@ const PetProfiles = () => {
     return (
         <div className="h-full overflow-y-hidden">
             <div className="flex justify-between items-center px-6 pt-4">
-                <h2 className="text-xl font-semibold text-gray-800">My Pets</h2>
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">My Pets</h2>
                 <Button
                     variant="primary"
                     icon={<Plus size={18} />}

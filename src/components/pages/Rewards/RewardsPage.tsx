@@ -19,7 +19,7 @@ const RewardsPage = () => {
   }, []);
 
   return (
-    <div className="pt-16">
+    <div className="pt-16 cursor-default">
       <RewardsHero />
       <RewardsExplanation />
       <RewardsTiers />

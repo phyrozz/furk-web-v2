@@ -48,7 +48,7 @@ const RewardsExplanation = () => {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          <h2 className="text-3xl font-cursive font-bold text-gray-800 mb-4">
             How It Works
           </h2>
           <p className="text-xl text-gray-600">
@@ -82,7 +82,7 @@ const RewardsExplanation = () => {
         </motion.div>
 
         <div className="mt-16 max-w-4xl mx-auto bg-gray-50 rounded-xl p-6 md:p-8 shadow-sm">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+          <h3 className="text-2xl font-cursive font-bold text-gray-800 mb-4 text-center">
             Ways to Earn Points
           </h3>
           

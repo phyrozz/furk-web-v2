@@ -17,7 +17,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center sm:py-12 py-0 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center sm:py-12 py-0 sm:px-6 lg:px-8 cursor-default">
       <div className="sm:mt-8 mt-0 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <SignUpForm 

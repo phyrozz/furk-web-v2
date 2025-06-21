@@ -51,7 +51,7 @@ const ServicesPage = () => {
   };
 
   return (
-    <div className="pt-16">
+    <div className="pt-16 cursor-default">
       <ServiceHero onSearch={handleSearch} />
       <div className="container mx-auto px-4 md:px-6 lg:px-8 relative">
         {isSearching ? (

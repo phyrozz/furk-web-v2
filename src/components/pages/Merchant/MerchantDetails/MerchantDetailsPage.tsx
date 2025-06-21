@@ -69,7 +69,7 @@ const MerchantDetailsPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="max-w-7xl mx-auto mt-14 px-4 sm:px-6 lg:px-8 py-8 space-y-8"
+      className="max-w-7xl mx-auto mt-14 px-4 sm:px-6 lg:px-8 py-8 space-y-8 cursor-default"
     >
       {/* Hero Section with Business Photo */}
       <motion.div 

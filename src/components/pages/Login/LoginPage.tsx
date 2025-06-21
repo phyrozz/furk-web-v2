@@ -29,7 +29,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row cursor-default">
       {/* Left Column - Banner */}
       <div className="hidden md:flex md:w-1/2 bg-primary-500 text-white p-12 items-center justify-center">
         <motion.div
@@ -41,7 +41,7 @@ const LoginPage = () => {
           {/* <div className="flex justify-center mb-6">
             <Paw size={64} />
           </div> */}
-          <span className="text-4xl font-bold mb-4">Welcome to FURK</span>
+          <span className="text-4xl font-cursive font-bold mb-4">Welcome to FURK</span>
           <p className="text-xl mb-8">Your one-stop platform for all pet services in the Philippines</p>
           <div className="space-y-4">
             <div className="flex items-center space-x-4 bg-white bg-opacity-10 p-4 rounded-lg">

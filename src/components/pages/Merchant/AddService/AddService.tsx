@@ -112,11 +112,11 @@ const AddService = () => {
   };1
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 h-screen overflow-y-hidden flex flex-col">
+    <div className="min-h-screen bg-gray-50 pt-16 h-screen overflow-y-hidden flex flex-col cursor-default">
       <MerchantNavbar />
       <div className="container max-w-2xl p-8 mx-auto flex flex-col overflow-y-hidden">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-cursive font-bold text-gray-800">
             List New Service
           </h1>
           <p className="text-gray-600 mt-2">

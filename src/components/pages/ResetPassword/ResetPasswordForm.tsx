@@ -55,7 +55,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ userType, onCance
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-6">
         {!showVerification ? 'Reset Your Password' : 'Verify Your Email'}
       </h2>
 

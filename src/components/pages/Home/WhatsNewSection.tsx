@@ -49,7 +49,7 @@ const WhatsNewSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">What's New at FURK</h2>
+          <h2 className="text-3xl font-cursive font-bold text-gray-800 mb-4">What's New at FURK</h2>
           <p className="text-xl text-gray-600">
             Discover our newest services and featured offerings for your beloved pets
           </p>

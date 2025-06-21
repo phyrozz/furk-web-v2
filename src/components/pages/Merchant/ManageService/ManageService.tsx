@@ -92,7 +92,7 @@ const ManageService = () => {
   ];
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 flex flex-col h-screen overflow-y-hidden">
+    <div className="pt-16 min-h-screen bg-gray-50 flex flex-col h-screen overflow-y-hidden cursor-default">
       <MerchantNavbar />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -109,7 +109,7 @@ const ManageService = () => {
               <ArrowLeft size={20} /> 
               {!isMobile && 'Back'}
             </Button>
-            <h1 className="font-bold text-gray-900 md:text-2xl text-md">Manage Services</h1>
+            <h1 className="font-bold font-cursive text-gray-900 md:text-2xl text-md">Manage Services</h1>
           </div>
           {
           isMobile ? (isAllowed &&

@@ -100,9 +100,9 @@ const Footer = () => {
             <p className="text-gray-300 mb-4">
               Phone: +63 917 821 0408
             </p>
-            <button className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg transition-colors text-sm">
+            {/* <button className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg transition-colors text-sm">
               Contact Support
-            </button>
+            </button> */}
           </div>
         </div>
 
