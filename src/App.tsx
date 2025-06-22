@@ -21,7 +21,7 @@ import ProfilePage from './components/pages/Profile/ProfilePage';
 import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
-import BookingCalendar from './components/pages/Merchant/BookingCalendar';
+import BookingCalendar from './components/pages/Merchant/BookingCalendar/BookingCalendar';
 import TokenExpiredDialog from './components/common/TokenExpiredDialog';
 import { eventEmitter } from './utils/event-emitter';
 import { loginService } from './services/auth/auth-service';

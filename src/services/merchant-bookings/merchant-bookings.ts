@@ -3,8 +3,8 @@ import axios from "axios";
 export class MerchantBookingsService {
   async listBookings(
     status: string = 'All',
-    startDate: Date = new Date(new Date().setDate(1)),
-    endDate: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+    startDate: Date = new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    endDate: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
     keyword: string = ''
   ) {
     const data = {

@@ -1,14 +1,18 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Button from './Button';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm?: () => void;
+  showConfirm?: boolean;
+  showCancel?: boolean;
   title: string;
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onConfirm, showConfirm, showCancel, title, children }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,6 +61,23 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
             <div className="mt-2 text-gray-600">
               {children}
             </div>
+            {(showCancel || showConfirm) && (
+              <div className="mt-4 flex justify-end gap-2">
+                {showCancel && (
+                  <Button onClick={onClose} variant="outline">
+                    Cancel
+                  </Button>
+                )}
+                {showConfirm && (
+                  <Button
+                    onClick={onConfirm}
+                    variant="primary"
+                  >
+                    Confirm
+                  </Button>
+                )}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

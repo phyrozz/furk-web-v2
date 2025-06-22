@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { MerchantBookingsService } from '../../../services/merchant-bookings/merchant-bookings';
-import Select from '../../common/Select';
-import MerchantNavbar from '../../common/MerchantNavbar';
-import Modal from '../../common/Modal';
+import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
+import Select from '../../../common/Select';
+import MerchantNavbar from '../../../common/MerchantNavbar';
 import { motion } from 'framer-motion';
-import Button from '../../common/Button';
+import Button from '../../../common/Button';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import PawLoading from '../../common/PawLoading';
-import Input from '../../common/Input';
+import PawLoading from '../../../common/PawLoading';
+import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
+import BookingDetails from './BookingDetails';
 
 const localizer = momentLocalizer(moment);
 
@@ -30,18 +30,13 @@ interface BookingEvent {
 const BookingCalendar: React.FC = () => {
   const [events, setEvents] = useState<BookingEvent[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('All');
-  const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [endDate, setEndDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), -9));
+  const [endDate, setEndDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10));
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState<boolean>(false);
   const [currentView, setCurrentView] = useState<View>('month');
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
   const [isControlsCollapsed, setIsControlsCollapsed] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
-  const [startLoading, setStartLoading] = useState<boolean>(false);
-  const [cancelLoading, setCancelLoading] = useState<boolean>(false);
-  const [completeLoading, setCompleteLoading] = useState<boolean>(false);
   const [keyword, setKeyword] = useState('');
   const [debouncedKeyword] = useDebounce(keyword, 500);
   const bookingsService = new MerchantBookingsService();
@@ -61,16 +56,28 @@ const BookingCalendar: React.FC = () => {
       const response = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
       const formattedEvents: BookingEvent[] = response.data.map((booking: any) => {
         const eventDate = booking.start_datetime || booking.booking_datetime;
-        const endDate = booking.end_datetime || moment(booking.booking_datetime).add(1, 'hour').toDate();
+        let startDateTime;
+        let endDateTime;
+        let isAllDay = false;
+        
+        if (booking.end_datetime) {
+          endDateTime = booking.end_datetime;
+        } else if (booking.status === 'in_progress') {
+          startDateTime = moment(eventDate).startOf('day').toDate();
+          endDateTime = moment(eventDate).endOf('day').toDate();
+          isAllDay = true;
+        } else {
+          endDateTime = moment(booking.booking_datetime).add(1, 'hour').toDate();
+        }
         
         return {
           id: booking.id,
           title: `${booking.service.name} - ${booking.user.first_name} ${booking.user.last_name}`,
-          start: moment(eventDate).toDate(),
-          end: moment(endDate).toDate(),
+          start: booking.status === 'in_progress' ? startDateTime : moment(eventDate).toDate(),
+          end: moment(endDateTime).toDate(),
           status: booking.status,
           bookingDetails: booking,
-          allDay: false,
+          allDay: isAllDay,
           resource: booking.service.name,
           isPending: !booking.start_datetime && !booking.end_datetime
         };
@@ -85,11 +92,11 @@ const BookingCalendar: React.FC = () => {
 
   const handleSelectEvent = (event: BookingEvent) => {
     setSelectedEvent(event.bookingDetails);
-    setIsModalOpen(true);
+    setIsBookingDetailsOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const handleCloseBookingDetails = () => {
+    setIsBookingDetailsOpen(false);
     setSelectedEvent(null);
   };
 
@@ -101,11 +108,11 @@ const BookingCalendar: React.FC = () => {
     let firstDay, lastDay;
     
     if (currentView === 'agenda') {
-      firstDay = moment(newDate).startOf('month').subtract(1, 'month').toDate();
-      lastDay = moment(newDate).endOf('month').add(1, 'month').toDate();
+      firstDay = moment(newDate).subtract(10, 'days').toDate();
+      lastDay = moment(newDate).add(1, 'month').add(10, 'days').toDate();
     } else {
-      firstDay = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
-      lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+      firstDay = new Date(newDate.getFullYear(), newDate.getMonth(), -9); // Start 10 days before first of month
+      lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 10); // End 10 days after last of month
     }
     
     setStartDate(firstDay);
@@ -115,8 +122,8 @@ const BookingCalendar: React.FC = () => {
   const handleViewChange = (view: View) => {
     setCurrentView(view);
     if (view === 'agenda') {
-      const firstDay = moment(startDate).subtract(1, 'month').toDate();
-      const lastDay = moment(endDate).add(1, 'month').toDate();
+      const firstDay = moment(startDate).add(1, 'month').subtract(10, 'days').toDate();
+      const lastDay = moment(startDate).add(2, 'month').add(10, 'days').toDate();
       setStartDate(firstDay);
       setEndDate(lastDay);
     }
@@ -137,6 +144,7 @@ const BookingCalendar: React.FC = () => {
         break;
       case 'confirmed':
         backgroundColor = '#28a745';
+        color = '#000000';
         break;
       case 'in_progress':
         backgroundColor = '#007bff';
@@ -254,117 +262,14 @@ const BookingCalendar: React.FC = () => {
         </div>
       </div>
 
-      {/* <Modal
-        isOpen={isConfirmModalOpen}
-        onClose={() => setIsConfirmModalOpen(false)}
-        title="Confirm Action"
-      >
-        <div className="p-4">
-          <p className="mb-4">Are you sure you want to {actionType === 'confirm' ? 'confirm' : 'cancel'} this booking?</p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsConfirmModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              loading={submitLoading}
-              onClick={executeAction}
-            ></Button>
-          </div>
-        </div>
-      </Modal> */}
-
       {selectedEvent && (
-        <Modal isOpen={isModalOpen} onClose={closeModal} title="Booking Details">
-          <div className="p-4 cursor-default">
-              <div className="space-y-4">
-                <p><strong>Service:</strong> {selectedEvent.service.name}</p>
-                <p><strong>Customer:</strong> {selectedEvent.user.first_name} {selectedEvent.user.last_name}</p>
-                <p><strong>Requested Date:</strong> {moment(selectedEvent.booking_datetime || selectedEvent.start_datetime).format('MMMM Do YYYY, h:mm a')}</p>
-                {selectedEvent.start_datetime && (
-                  <>
-                    <p><strong>Start:</strong> {moment(selectedEvent.start_datetime).format('MMMM Do YYYY, h:mm a')}</p>
-                    <p><strong>End:</strong> {moment(selectedEvent.end_datetime).format('MMMM Do YYYY, h:mm a')}</p>
-                  </>
-                )}
-                <p><strong>Status:</strong> {selectedEvent.status}</p>
-                <p><strong>Payment Status:</strong> {selectedEvent.payment_status}</p>
-                {selectedEvent.remarks && <p><strong>Remarks:</strong> {selectedEvent.remarks}</p>}
-              </div>
-
-              <div className="space-y-4">
-                <div className="pt-4">
-                  <div className="flex gap-2 justify-end">
-                    {selectedEvent.status === 'pending' && (
-                      <Button
-                        loading={confirmLoading}
-                        onClick={async () => {
-                          setConfirmLoading(true);
-                          await bookingsService.confirmBooking(selectedEvent.id);
-                          setConfirmLoading(false);
-                          fetchBookings();
-                          closeModal();
-                        }}
-                      >
-                        Confirm Booking
-                      </Button>
-                    )}
-                    
-                    {selectedEvent.status === 'confirmed' && (
-                      <>
-                        <Button
-                          loading={cancelLoading}
-                          variant="outline"
-                          color="red"
-                          onClick={async () => {
-                            setCancelLoading(true);
-                            await bookingsService.cancelBooking(selectedEvent.id);
-                            setCancelLoading(false);
-                            fetchBookings();
-                            closeModal();
-                          }}
-                        >
-                          Cancel Booking
-                        </Button>
-                        <Button
-                          loading={startLoading}
-                          onClick={async () => {
-                            setStartLoading(true);
-                            await bookingsService.startService(selectedEvent.id);
-                            setStartLoading(false);
-                            fetchBookings();
-                            closeModal();
-                          }}
-                        >
-                          Start Service
-                        </Button>
-                      </>
-                    )}
-                    
-                    {selectedEvent.status === 'in_progress' && (
-                      <Button
-                        loading={completeLoading}
-                        onClick={async () => {
-                          setCompleteLoading(true);
-                          await bookingsService.completeService(selectedEvent.id);
-                          setCompleteLoading(false);
-                          fetchBookings();
-                          closeModal();
-                        }}
-                      >
-                        Complete Service
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-          </div>
-        </Modal>
+        <BookingDetails
+          isOpen={isBookingDetailsOpen}
+          onClose={handleCloseBookingDetails}
+          bookingId={selectedEvent.id}
+          onUpdate={fetchBookings}
+        />
       )}
-
-
     </>
   );
 };

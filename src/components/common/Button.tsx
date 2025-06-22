@@ -45,13 +45,46 @@ const Button: React.FC<ButtonProps> = ({
     return colorMap[color];
   };
 
+  const getHoverBg = (color: ButtonColor) => {
+    const hoverBgMap = {
+      primary: 'hover:bg-primary-50',
+      secondary: 'hover:bg-secondary-50',
+      accent: 'hover:bg-accent-50',
+      red: 'hover:bg-red-50',
+      yellow: 'hover:bg-yellow-50'
+    };
+    return hoverBgMap[color];
+  };
+  
+  const getOutlineClasses = (color: ButtonColor) => {
+    const baseMap = {
+      primary: 'border-primary-500 text-primary-500',
+      secondary: 'border-secondary-500 text-secondary-500',
+      accent: 'border-accent-500 text-accent-500',
+      red: 'border-red-500 text-red-500',
+      yellow: 'border-yellow-500 text-yellow-500'
+    };
+    return `bg-transparent border border-solid ${baseMap[color]} ${getHoverBg(color)}`;
+  };
+  
+  const getGhostClasses = (color: ButtonColor) => {
+    const textMap = {
+      primary: 'text-primary-500',
+      secondary: 'text-secondary-500',
+      accent: 'text-accent-500',
+      red: 'text-red-500',
+      yellow: 'text-yellow-500'
+    };
+    return `bg-transparent ${textMap[color]} ${getHoverBg(color)}`;
+  };
+
   const variantStyles = {
     primary: `${getColorClasses(color)} text-white`,
     secondary: `${getColorClasses(color)} text-white`,
     accent: `${getColorClasses(color)} text-white`,
-    outline: `bg-transparent border-2 border-${color}-500 text-${color}-500 hover:bg-${color}-50`,
-    ghost: `bg-transparent text-${color}-500 hover:bg-${color}-50`,
-  };
+    outline: getOutlineClasses(color),
+    ghost: getGhostClasses(color),
+  };  
   
   const sizeStyles = {
     sm: 'text-sm py-1.5 px-3',
