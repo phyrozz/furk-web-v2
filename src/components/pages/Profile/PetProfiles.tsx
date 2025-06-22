@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import FileUploadField, { UploadedFile } from '../../common/FileUploadField';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
 import Switch from '../../common/Switch';
+import { checkImage } from '../../../utils/s3-file-utils';
 
 export interface PetProfile {
     id: string;
@@ -99,6 +100,13 @@ const PetProfiles = () => {
                     return;
                 }
 
+                // Do not insert anything on the db until the compressed image is finally ready
+                const imageReady = await checkImage(s3_key);
+                if (!imageReady) {
+                    ToastService.show('Error uploading pet image');
+                    return;
+                }
+
                 await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
                 ToastService.show('Pet profile added successfully');
             }
@@ -171,7 +179,7 @@ const PetProfiles = () => {
     }
 
     return (
-        <div className="h-full overflow-y-hidden">
+        <div className="h-full overflow-y-hidden cursor-default">
             <div className="flex justify-between items-center px-6 pt-4">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">My Pets</h2>
                 <Button
@@ -202,7 +210,7 @@ const PetProfiles = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {pets.map((pet) => (
                         <div key={pet.id} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                            <div className="flex justify-between items-start mb-4">
+                            <div className="flex justify-between items-start">
                                 <div className="flex items-start space-x-4">
                                     <img 
                                         src={pet.profile_image} 
@@ -233,14 +241,14 @@ const PetProfiles = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-sm text-gray-600">
+                            {/* <div className="space-y-2 text-sm text-gray-600">
                                 <p>Sex: {pet.sex}</p>
                                 <p>Birth Date: {pet.birth_date ? DateUtils.formatDateStringFromTimestamp(pet.birth_date) : 'N/A'}</p>
                                 <p>Weight: {pet.weight_kg} kg</p>
                                 <p>Color: {pet.color}</p>
                                 <p>Neutered: {pet.is_neutered ? 'Yes' : 'No'}</p>
                                 {pet.notes && <p>Notes: {pet.notes}</p>}
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </div>

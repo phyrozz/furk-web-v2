@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, DollarSign, Package, Users, Plus, List, Bell } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Package, Plus, List, Bell } from 'lucide-react';
+import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
@@ -201,25 +202,7 @@ const MerchantDashboard = () => {
             </div>
           </div>
 
-          {/* Today's Schedule */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-cursive font-semibold text-gray-800">Today's Schedule</h2>
-              <Users size={20} className="text-gray-500" />
-            </div>
-            <div className="text-center py-8">
-              <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600">No appointments scheduled for today</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4"
-                onClick={() => console.log('View calendar')}
-              >
-                View Calendar
-              </Button>
-            </div>
-          </div>
+          <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
         </div>
       </div>
     </div>
