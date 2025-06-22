@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, Save, X } from 'lucide-react';
+import ResizableRightSidebar from '../../common/ResizableRightSidebar';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import { ToastService } from '../../../services/toast/toast-service';
 import PawLoading from '../../common/PawLoading';
-import DateUtils from '../../../utils/date-utils';
 import { UserProfile } from './ProfilePage';
 import Select from '../../common/Select';
 import DateInput from '../../common/DateInput';
-import { motion } from 'framer-motion';
+
 import FileUploadField, { UploadedFile } from '../../common/FileUploadField';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
 import Switch from '../../common/Switch';
 import { checkImage } from '../../../utils/s3-file-utils';
+import { motion } from 'framer-motion';
 
 export interface PetProfile {
     id: string;
@@ -36,7 +37,7 @@ export interface PetProfile {
 const PetProfiles = () => {
     const [pets, setPets] = useState<PetProfile[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [editingPet, setEditingPet] = useState<PetProfile | null>(null);
     const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [petImage, setPetImage] = useState<UploadedFile | null>(null);
@@ -110,7 +111,7 @@ const PetProfiles = () => {
                 await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
                 ToastService.show('Pet profile added successfully');
             }
-            setShowModal(false);
+            setIsSidebarOpen(false);
             setEditingPet(null);
             setLoadingSubmit(false);
             setPetImage(null);
@@ -167,7 +168,7 @@ const PetProfiles = () => {
             notes: pet.notes,
             profile_image: pet.profile_image
         });
-        setShowModal(true);
+        setIsSidebarOpen(true);
     };
 
     if (loading) {
@@ -199,7 +200,7 @@ const PetProfiles = () => {
                             notes: '',
                             profile_image: ''
                         });
-                        setShowModal(true);
+                        setIsSidebarOpen(true);
                     }}
                 >
                     Add Pet
@@ -285,173 +286,149 @@ const PetProfiles = () => {
                 </motion.div>
             )}
 
-            {showModal && (
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto"
-                >
-                    <motion.div 
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.95, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-white w-full max-w-2xl rounded-2xl my-4 p-1"
-                    >
-                        <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
-                            <h3 className="text-xl font-semibold">
-                                {editingPet ? 'Edit Pet' : 'Add New Pet'}
-                            </h3>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="text-gray-600 hover:text-gray-800"
-                            >
-                                <X size={24} />
-                            </button>
+            <ResizableRightSidebar
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                title={editingPet ? 'Edit Pet' : 'Add New Pet'}
+            >
+                <form onSubmit={handleSubmit} className="p-6">
+                    {!editingPet && <div className="flex justify-stretch w-full items-center pb-6">
+                        <FileUploadField
+                            label="Pet Image"
+                            required
+                            accept="image/*"
+                            maxSizeMB={5}
+                            maxFiles={1}
+                            files={petImage ? [petImage] : []}
+                            onFilesChange={(files) => setPetImage(files[0])}
+                            helperText="Upload an image (PNG, JPG, JPEG)"
+                        />
+                    </div>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Name
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                disabled={editingPet ? true : false}
+                            />
                         </div>
-                        <div className="max-h-[calc(100vh-16rem)] overflow-y-auto">
-                            <form onSubmit={handleSubmit} className="p-6">
-                                {!editingPet && <div className="flex justify-stretch w-full items-center pb-6">
-                                    <FileUploadField
-                                        label="Pet Image"
-                                        required
-                                        accept="image/*"
-                                        maxSizeMB={5}
-                                        maxFiles={1}
-                                        files={petImage ? [petImage] : []}
-                                        onFilesChange={(files) => setPetImage(files[0])}
-                                        helperText="Upload an image (PNG, JPG, JPEG)"
-                                    />
-                                </div>}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                            disabled={editingPet ? true : false}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Species
-                                        </label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.species}
-                                            onChange={(e) => setFormData({ ...formData, species: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                            disabled={editingPet ? true : false}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Breed
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.breed}
-                                            onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Sex
-                                        </label>
-                                        <Select
-                                          options={SEX_OPTIONS}
-                                          value={SEX_OPTIONS.find((s) => s.code === formData.sex) || null}
-                                          onChange={(e) => setFormData({ ...formData, sex: e?.code })}
-                                          getOptionLabel={(m) => m.displayName}
-                                          placeholder="Select sex"
-                                          className="mt-1"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Birth Date
-                                        </label>
-                                        <DateInput 
-                                            value={formData.birth_date ? new Date(formData.birth_date) : null}
-                                            max={new Date()}
-                                            onChange={(date) => setFormData({ ...formData, birth_date: date ? date.toISOString().split('T')[0] : ''})}
-                                            className="mt-1"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Weight (kg)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            step="0.1"
-                                            min="0"
-                                            value={formData.weight_kg}
-                                            onChange={(e) => setFormData({ ...formData, weight_kg: parseFloat(e.target.value) })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Color
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.color}
-                                            onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 justify-start items-center">
-                                        <Switch
-                                            isOn={formData.is_neutered ? true : false}
-                                            handleToggle={() => setFormData({ ...formData, is_neutered: !formData.is_neutered })}
-                                        />
-                                        <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">    
-                                            <span>Neutered</span>
-                                        </label>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Notes
-                                        </label>
-                                        <textarea
-                                            value={formData.notes}
-                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                            rows={3}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="mt-6 flex justify-end space-x-3 sticky bottom-0 bg-white py-4">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setShowModal(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        variant="primary"
-                                        icon={<Save size={18} />}
-                                        loading={loadingSubmit}
-                                    >
-                                        {editingPet ? 'Update' : 'Save'}
-                                    </Button>
-                                </div>
-                            </form>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Species
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                value={formData.species}
+                                onChange={(e) => setFormData({ ...formData, species: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                disabled={editingPet ? true : false}
+                            />
                         </div>
-                    </motion.div>
-                </motion.div>
-            )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Breed
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.breed}
+                                onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Sex
+                            </label>
+                            <Select
+                                options={SEX_OPTIONS}
+                                value={SEX_OPTIONS.find((s) => s.code === formData.sex) || null}
+                                onChange={(e) => setFormData({ ...formData, sex: e?.code })}
+                                getOptionLabel={(m) => m.displayName}
+                                placeholder="Select sex"
+                                className="mt-1"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Birth Date
+                            </label>
+                            <DateInput
+                                value={formData.birth_date ? new Date(formData.birth_date) : null}
+                                max={new Date()}
+                                onChange={(date) => setFormData({ ...formData, birth_date: date ? date.toISOString().split('T')[0] : ''})}
+                                className="mt-1"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Weight (kg)
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                value={formData.weight_kg}
+                                onChange={(e) => setFormData({ ...formData, weight_kg: parseFloat(e.target.value) })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Color
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.color}
+                                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            />
+                        </div>
+                        <div className="flex gap-2 justify-start items-center">
+                            <Switch
+                                isOn={formData.is_neutered ? true : false}
+                                handleToggle={() => setFormData({ ...formData, is_neutered: !formData.is_neutered })}
+                            />
+                            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">    
+                                <span>Neutered</span>
+                            </label>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Notes
+                            </label>
+                            <textarea
+                                value={formData.notes}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                rows={3}
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-6 flex justify-end space-x-3 sticky bottom-0 bg-white py-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsSidebarOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            icon={<Save size={18} />}
+                            loading={loadingSubmit}
+                        >
+                            {editingPet ? 'Update' : 'Save'}
+                        </Button>
+                    </div>
+                </form>
+            </ResizableRightSidebar>
         </div>
     );
 };
