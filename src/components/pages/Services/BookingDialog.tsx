@@ -135,6 +135,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
               onChange={(time) => setSelectedTime(time ? time.toTimeString().split(' ')[0] : '')}
               className="mt-1"
               minuteStep={30}
+              min={selectedDate === new Date().toISOString().split('T')[0] ? new Date() : undefined}
             />
           </div>
 

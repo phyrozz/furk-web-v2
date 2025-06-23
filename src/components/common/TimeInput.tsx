@@ -7,6 +7,7 @@ interface TimeInputProps {
   placeholder?: string;
   className?: string;
   minuteStep?: number;
+  min?: Date;
 }
 
 const TimeInput = ({
@@ -14,7 +15,8 @@ const TimeInput = ({
   onChange,
   placeholder = 'Select time...',
   className = '',
-  minuteStep = 15
+  minuteStep = 15,
+  min
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -60,6 +62,9 @@ const TimeInput = ({
       const mins = minutes % 60;
       const date = new Date();
       date.setHours(hours, mins, 0, 0);
+      if (min && date < min) {
+        continue;
+      }
       slots.push(date);
     }
     

@@ -137,11 +137,11 @@ function App() {
                   <BookingCalendar />
                 </ProtectedRoute>
               } />
-              {/* <Route path='/merchant/profile' element={
+              <Route path='/merchant/profile' element={
                 <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantProfilePage />
                 </ProtectedRoute>
-              } /> */}
+              } />
               <Route path="/profile" element={
                 <ProtectedRoute requiredRoles={['user']}>
                   <ProfilePage />

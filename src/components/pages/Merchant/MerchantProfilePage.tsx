@@ -1,45 +1,50 @@
 import { useState, useEffect } from 'react';
-import { User, Settings, History, Heart, LogOut } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint } from 'lucide-react';
 import Button from '../../common/Button';
+import { loginService } from '../../../services/auth/auth-service';
+import { useNavigate } from 'react-router-dom';
+import { ToastService } from '../../../services/toast/toast-service';
+import PawLoading from '../../common/PawLoading';
+import useScreenSize from '../../../hooks/useScreenSize';
+import MerchantNavbar from '../../common/MerchantNavbar';
+import { MerchantProfileService } from '../../../services/profile/merchant-profile-service';
 
-interface UserProfile {
-  name: string;
-  email: string;
-  avatar: string;
-  joinDate: string;
-  location: string;
-  preferences: {
-    notifications: boolean;
-    newsletter: boolean;
-    language: string;
-  };
+export interface MerchantProfile {
+  id?: string;
+  business_name?: string;
+  merchant_type?: string;
+  address?: string;
+  city?: string;
+  province?: string;
+  barangay?: string;
+  business_hours?: BusinessHours[];
+}
+
+export interface BusinessHours {
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
 }
 
 const MerchantProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile');
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<MerchantProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signOutLoading, setSignOutLoading] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editFormData, setEditFormData] = useState<MerchantProfile | null>(null);
+  const [isBusinessHoursEdit, setIsBusinessHoursEdit] = useState(false);
+  const [editBusinessHoursFormData, setEditBusinessHoursFormData] = useState<BusinessHours[] | null>(null);
+  const [loadingSave, setLoadingSave] = useState(false);
+
+  const dataService = new MerchantProfileService();
+  const navigate  = useNavigate();
+
+  const { isMobile } = useScreenSize();
 
   useEffect(() => {
-    // Update page title
     document.title = 'My Profile - FURK';
-
-    // Mock profile data - replace with actual API call
-    setTimeout(() => {
-      setProfile({
-        name: 'John Doe',
-        email: 'john@example.com',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-        joinDate: 'January 2024',
-        location: 'New York, USA',
-        preferences: {
-          notifications: true,
-          newsletter: false,
-          language: 'English'
-        }
-      });
-      setLoading(false);
-    }, 1000);
+    getUserDetails();
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -49,62 +54,235 @@ const MerchantProfilePage = () => {
     };
   }, []);
 
+  const getUserDetails = async () => {
+    try {
+      const response = await dataService.getMerchantDetails();
+      setProfile(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setSignOutLoading(true);
+      await loginService.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setSignOutLoading(false);
+    }
+  };
+
+  const handleUserDetailsSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFormData) {
+      return;
+    }
+    try {
+      setLoadingSave(true);
+
+       await dataService.updateMerchantDetails({
+         business_name: editFormData.business_name,
+         merchant_type: editFormData.merchant_type,
+         address: editFormData.address,
+         city: editFormData.city,
+         province: editFormData.province,
+         barangay: editFormData.barangay,
+       });
+      setIsEdit(false);
+      setLoadingSave(false);
+      ToastService.show("Merchant profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating merchant profile:", error);
+      ToastService.show("Failed to update merchant profile.");
+    }
+  };
+
+  const handleBusinessHoursSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editBusinessHoursFormData) {
+      return;
+    }
+    try {
+      setLoadingSave(true);
+
+      await dataService.updateMerchantDetails({
+        business_hours: editBusinessHoursFormData,
+      });
+      setIsBusinessHoursEdit(false);
+      setLoadingSave(false);
+      ToastService.show("Business hours updated successfully!");
+    } catch (error) {
+      console.error("Error updating business hours:", error);
+      ToastService.show("Failed to update business hours.");
+    }
+  };
+
   if (loading) {
     return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex space-x-2">
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-100" />
-          <div className="w-4 h-4 rounded-full bg-primary-500 animate-bounce delay-200" />
-        </div>
+      <div className="w-screen h-screen flex justify-center items-center overflow-hidden">
+        <PawLoading />
       </div>
     );
   }
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
-    { id: 'history', label: 'Service History', icon: History },
-    { id: 'favorites', label: 'Favorites', icon: Heart }
+    { id: 'business-hours', label: 'Business Hours', icon: History }
   ];
 
-  return (
-    <div className="pt-16 min-h-screen bg-gray-50 cursor-default">
-      <div className="container mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-center">
-            <img
-              src={profile?.avatar}
-              alt={profile?.name}
-              className="w-24 h-24 rounded-full border-4 border-primary-100"
+  const editForm = (
+    <>
+      <form onSubmit={handleUserDetailsSave}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mb-2">
+            <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
+              Business Name
+            </label>
+            <input
+              type="text"
+              id="businessName"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.business_name ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, business_name: e.target.value }))}
+              required
             />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="merchantType" className="block text-sm font-medium text-gray-700 mb-2">
+              Merchant Type
+            </label>
+            <input
+              type="text"
+              id="merchantType"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.merchant_type ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, merchant_type: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+              Address
+            </label>
+            <input
+              type="text"
+              id="address"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.address ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, address: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+              City
+            </label>
+            <input
+              type="text"
+              id="city"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.city ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, city: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-2">
+              Province
+            </label>
+            <input
+              type="text"
+              id="province"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.province ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, province: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="barangay" className="block text-sm font-medium text-gray-700 mb-2">
+              Barangay
+            </label>
+            <input
+              type="text"
+              id="barangay"
+              maxLength={255}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.barangay ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, barangay: e.target.value }))}
+              required
+            />
+          </div>
+        </div>
+        
+        <div className="w-full flex flex-row justify-end items-center">
+          <Button
+            type='submit'
+            variant="primary"
+            className="ml-2"
+            icon={<Save size={18} />}
+            loading={loadingSave}
+          >
+            Save
+          </Button>
+        </div>
+      </form>
+    </>
+  );
+
+  return (
+    <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden">
+      <MerchantNavbar />
+      <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
+        {/* Profile Header */}
+        {(!isMobile || activeTab == 'profile' ) && <div className="bg-white rounded-xl shadow-sm mb-8">
+          <div className="flex sm:flex-row flex-col sm:items-center items-start gap-2 w-full overflow-x-auto p-6">
+            {/* <img
+              src={profile?.avatar}
+              alt={profile?.username}
+              className="w-24 h-24 rounded-full border-4 border-primary-100"
+            /> */}
             <div className="ml-6">
-              <h1 className="text-2xl font-bold text-gray-800">{profile?.name}</h1>
-              <p className="text-gray-600">{profile?.email}</p>
+              <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.business_name}</h1>
+              <p className="text-gray-600">{profile?.merchant_type}</p>
               <div className="flex items-center mt-2 text-sm text-gray-500">
-                <span>Member since {profile?.joinDate}</span>
-                <span className="mx-2">•</span>
-                <span>{profile?.location}</span>
+                <span>{profile?.address}, {profile?.city}, {profile?.province}, {profile?.barangay}</span>
+                {/* <span className="mx-2">•</span>
+                <span>{profile?.location}</span> */}
               </div>
             </div>
             <Button
               variant="outline"
               className="ml-auto"
               icon={<LogOut size={18} />}
-              onClick={() => alert('Implement logout')}
+              onClick={handleLogout}
+              loading={signOutLoading}
             >
               Sign Out
             </Button>
           </div>
-        </div>
+        </div>}
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 mb-8">
+        <div className="flex border-b border-gray-200 mb-8 w-full overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`flex items-center px-6 py-3 text-sm font-medium ${
+              className={`flex items-center px-6 py-3 text-sm font-medium whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'text-primary-600 border-b-2 border-primary-500'
                   : 'text-gray-500 hover:text-gray-700'
@@ -118,110 +296,160 @@ const MerchantProfilePage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex-1 bg-white rounded-xl shadow-sm h-full overflow-y-hidden">
           {activeTab === 'profile' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    value={profile?.name}
-                    readOnly
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    value={profile?.email}
-                    readOnly
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Location</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    value={profile?.location}
-                    readOnly
-                  />
-                </div>
+            <div className="space-y-6 h-full overflow-y-hidden">
+              <div className="flex flex-row justify-between items-center px-6 pt-6">
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">Profile</h2>
+                <button
+                  onClick={() => {
+                    if (!isBusinessHoursEdit) {
+                      if (profile?.business_hours && profile.business_hours.length > 0) {
+                        setEditBusinessHoursFormData([ ...profile.business_hours ]);
+                      } else {
+                        // Initialize with default business hours if none exist
+                        setEditBusinessHoursFormData([
+                          { day_of_week: 0, open_time: '09:00', close_time: '17:00' }, // Sunday
+                          { day_of_week: 1, open_time: '09:00', close_time: '17:00' }, // Monday
+                          { day_of_week: 2, open_time: '09:00', close_time: '17:00' }, // Tuesday
+                          { day_of_week: 3, open_time: '09:00', close_time: '17:00' }, // Wednesday
+                          { day_of_week: 4, open_time: '09:00', close_time: '17:00' }, // Thursday
+                          { day_of_week: 5, open_time: '09:00', close_time: '17:00' }, // Friday
+                          { day_of_week: 6, open_time: '09:00', close_time: '17:00' }  // Saturday
+                        ]);
+                      }
+                    }
+                    setIsBusinessHoursEdit(!isBusinessHoursEdit);
+                  }}                  
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                >
+                  {isBusinessHoursEdit ? 'Cancel' : 'Edit'}
+                </button>
+              </div>
+              
+              <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
+                {isEdit? editForm : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="mb-4">
+                      <p className="text-gray-600">Business Name:</p>
+                      <p className="font-semibold">{profile?.business_name}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">Merchant Type:</p>
+                      <p className="font-semibold">{profile?.merchant_type}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">Address:</p>
+                      <p className="font-semibold">{profile?.address}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">City:</p>
+                      <p className="font-semibold">{profile?.city}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">Province:</p>
+                      <p className="font-semibold">{profile?.province}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">Barangay:</p>
+                      <p className="font-semibold">{profile?.barangay}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {activeTab === 'preferences' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800">Preferences</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700">Push Notifications</h3>
-                    <p className="text-sm text-gray-500">Receive notifications about your services</p>
-                  </div>
-                  <button
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                      profile?.preferences.notifications ? 'bg-primary-600' : 'bg-gray-200'
-                    }`}
-                    role="switch"
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        profile?.preferences.notifications ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-700">Newsletter</h3>
-                    <p className="text-sm text-gray-500">Receive updates about new services</p>
-                  </div>
-                  <button
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                      profile?.preferences.newsletter ? 'bg-primary-600' : 'bg-gray-200'
-                    }`}
-                    role="switch"
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        profile?.preferences.newsletter ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Language</label>
-                  <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                    value={profile?.preferences.language}
-                  >
-                    <option>English</option>
-                    <option>Spanish</option>
-                    <option>French</option>
-                  </select>
-                </div>
+          {activeTab === 'business-hours' && (
+            <div className="space-y-6 h-full overflow-y-hidden">
+              <div className="flex flex-row justify-between items-center px-6 pt-6">
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">Business Hours</h2>
+                <button
+                  onClick={() => {
+                    if (!isBusinessHoursEdit) {
+                      if (profile?.business_hours && profile.business_hours.length > 0) {
+                        setEditBusinessHoursFormData([ ...profile.business_hours ]);
+                      } else {
+                        // Initialize with default business hours if none exist
+                        setEditBusinessHoursFormData([
+                          { day_of_week: 0, open_time: '09:00', close_time: '17:00' }, // Sunday
+                          { day_of_week: 1, open_time: '09:00', close_time: '17:00' }, // Monday
+                          { day_of_week: 2, open_time: '09:00', close_time: '17:00' }, // Tuesday
+                          { day_of_week: 3, open_time: '09:00', close_time: '17:00' }, // Wednesday
+                          { day_of_week: 4, open_time: '09:00', close_time: '17:00' }, // Thursday
+                          { day_of_week: 5, open_time: '09:00', close_time: '17:00' }, // Friday
+                          { day_of_week: 6, open_time: '09:00', close_time: '17:00' }  // Saturday
+                        ]);
+                      }
+                    }
+                    setIsBusinessHoursEdit(!isBusinessHoursEdit);
+                  }}                  
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                >
+                  {isBusinessHoursEdit ? 'Cancel' : 'Edit'}
+                </button>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'history' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800">Service History</h2>
-              <p className="text-gray-600">Your service history will appear here</p>
-            </div>
-          )}
-
-          {activeTab === 'favorites' && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800">Favorite Services</h2>
-              <p className="text-gray-600">Your favorite services will appear here</p>
+              
+              <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
+                {isBusinessHoursEdit? (
+                  <form onSubmit={handleBusinessHoursSave}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {editBusinessHoursFormData?.map((hours, index) => (
+                        <div key={index} className="mb-4">
+                          <p className="text-gray-600">{['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hours.day_of_week]}:</p>
+                          <div className="flex space-x-2">
+                            <input
+                              type="time"
+                              className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              value={hours.open_time}
+                              onChange={(e) => {
+                                const newFormData = [...editBusinessHoursFormData];
+                                newFormData[index].open_time = e.target.value;
+                                setEditBusinessHoursFormData(newFormData);
+                              }}
+                            />
+                            <input
+                              type="time"
+                              className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              value={hours.close_time}
+                              onChange={(e) => {
+                                const newFormData = [...editBusinessHoursFormData];
+                                newFormData[index].close_time = e.target.value;
+                                setEditBusinessHoursFormData(newFormData);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="w-full flex flex-row justify-end items-center">
+                      <Button
+                        type='submit'
+                        variant="primary"
+                        className="ml-2"
+                        icon={<Save size={18} />}
+                        loading={loadingSave}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Business Hours Display */}
+                    {profile?.business_hours && profile.business_hours.length > 0 ? (
+                      profile.business_hours.map((hours, index) => (
+                        <div key={index} className="mb-4">
+                          <p className="text-gray-600">{['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hours.day_of_week]}:</p>
+                          <p className="font-semibold">{hours.open_time} - {hours.close_time}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-600">No business hours set.</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
