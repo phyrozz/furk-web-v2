@@ -100,6 +100,12 @@ export class LoginService {
         }
       }
 
+      if (cognitoUser.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
+        return {
+          message: 'User is not confirmed'
+        }
+      }
+
       const session = await fetchAuthSession({ forceRefresh: true });
 
       const tokens = {
@@ -109,8 +115,8 @@ export class LoginService {
       };
 
       // get the username from the access token
-      const username = session.tokens?.accessToken.payload.username;
-      console.log('Username:', username);
+      // const username = session.tokens?.accessToken.payload.username;
+      // console.log('Username:', username);
 
       // Login to backend API
       const response = await axios.get<LoginResponse>(
@@ -137,7 +143,7 @@ export class LoginService {
       localStorage.setItem('merchantStatus', responseData.merchant_status!);
       
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       throw this.handleCognitoError(error);
     }
   }

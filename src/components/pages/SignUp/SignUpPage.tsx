@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SignUpForm from './SignUpForm';
 
 interface SignUpPageProps {
@@ -7,6 +7,8 @@ interface SignUpPageProps {
 
 const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email, password } = location.state || {};
 
   const handleSuccessfulSignUp = () => {
     if (userType === 'merchant') {
@@ -23,6 +25,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
           <SignUpForm 
             userType={userType} 
             onSuccessfulSignUp={handleSuccessfulSignUp} 
+            redirectToVerification={{ email, password }}
           />
           
           <div className="mt-6">

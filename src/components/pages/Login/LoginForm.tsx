@@ -39,10 +39,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
         password: password
       });
 
-      // console.log('Login response:', response);
-
       if (response.message === 'New password required') {
         setIsLoading(false);
+        return;
+      }
+
+      if (response.message === 'User is not confirmed') {
+        if (userType === 'user') {
+          navigate('/sign-up/user', { state: { email, password } });
+        } else {
+          navigate('/sign-up/merchant', { state: { email, password } });
+        }
         return;
       }
 

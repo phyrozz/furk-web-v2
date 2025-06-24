@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Mail, Lock, User, Phone, CheckCircle, EyeOff, Eye } from 'lucide-react';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
@@ -6,9 +6,13 @@ import { loginService } from '../../../services/auth/auth-service';
 interface SignUpFormProps {
   userType: 'user' | 'merchant';
   onSuccessfulSignUp: () => void;
+  redirectToVerification?: {
+    email: string;
+    password: string;
+  };
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, redirectToVerification = undefined }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,6 +25,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp })
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
+
+  // This is when the user tries to sign in and it's still unverified
+  // redirect to the verification with the given username and password for the verification code
+  useEffect(() => {
+    handleRedirectToVerification();
+  }, [redirectToVerification]);
+
+  const handleRedirectToVerification = () => {
+    if (redirectToVerification && redirectToVerification.email && redirectToVerification.password) {
+      setShowVerification(true);
+      setEmail(redirectToVerification.email);
+      setPassword(redirectToVerification.password);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
