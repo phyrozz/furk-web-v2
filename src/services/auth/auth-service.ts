@@ -141,6 +141,7 @@ export class LoginService {
       localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
       localStorage.setItem('roleName', responseData.role!);
       localStorage.setItem('merchantStatus', responseData.merchant_status!);
+      localStorage.setItem('hasBusinessHours', responseData.has_business_hours!);
       
       return response.data;
     } catch (error: any) {

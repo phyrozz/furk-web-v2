@@ -25,6 +25,7 @@ import BookingCalendar from './components/pages/Merchant/BookingCalendar/Booking
 import TokenExpiredDialog from './components/common/TokenExpiredDialog';
 import { eventEmitter } from './utils/event-emitter';
 import { loginService } from './services/auth/auth-service';
+import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
 
 function App() {
   const [isTokenExpired, setIsTokenExpired] = useState(false);
@@ -140,6 +141,11 @@ function App() {
               <Route path='/merchant/profile' element={
                 <ProtectedRoute requiredRoles={['merchant']}>
                   <MerchantProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path='/merchant/business-hours' element={
+                <ProtectedRoute requiredRoles={['merchant']}>
+                  <SetBusinessHoursPage />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={

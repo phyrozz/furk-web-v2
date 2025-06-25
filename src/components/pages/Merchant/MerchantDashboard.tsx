@@ -22,6 +22,7 @@ interface Activity {
 
 const MerchantDashboard = () => {
   const [merchantStatus, setMerchantStatus] = useState<'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended'>('pending');
+  const [hasBusinessHours, setHasBusinessHours] = useState<boolean>(false);
   const navigate = useNavigate();
   
   const cards: DashboardCard[] = [
@@ -92,6 +93,8 @@ const MerchantDashboard = () => {
 
   useEffect(() => {
     const status = localStorage.getItem('merchantStatus')!;
+    const hasBusinessHours = localStorage.getItem('hasBusinessHours')!;
+    setHasBusinessHours(hasBusinessHours === 'true');
     setMerchantStatus(status as 'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended');
   }, []);
 
@@ -99,6 +102,32 @@ const MerchantDashboard = () => {
     <div className="min-h-screen bg-gray-50 pt-16 cursor-default">
       <MerchantNavbar />
       <div className="container mx-auto px-4 py-8">
+        {(merchantStatus === 'unverified' || !hasBusinessHours) && (
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
+            <h1 className="text-2xl font-bold text-primary-800 mb-3">
+              Welcome to Furk! 🐾
+            </h1>
+            <p className="text-primary-600 text-lg mb-4">
+              We're excited to have you join our community of pet service providers. Let's get your business set up so you can start connecting with pet owners.
+            </p>
+            <p className="text-primary-600 mb-2 text-left">
+              To get started, you'll need to:
+            </p>
+            <div className="text-left">
+              <ul className="text-primary-700 mb-4 inline-block text-left">
+                <li className="flex items-center gap-2 mb-1 text-left">
+                  <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                  Complete the verification process
+                </li>
+                <li className="flex items-center gap-2 text-left">
+                  <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                  Set your business hours
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
+
         {merchantStatus === 'unverified' && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between md:flex-row flex-col gap-4">
@@ -110,12 +139,14 @@ const MerchantDashboard = () => {
                   Please complete the verification process to start listing services and unlock all merchant features.
                 </p>
               </div>
-              <Button
-                size="lg"
-                onClick={() => navigate('/merchant/verify')}
-              >
-                Complete Verification
-              </Button>
+              <div className="flex flex-col justify-center items-end">
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/merchant/verify')}
+                >
+                  Complete Verification
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -130,6 +161,35 @@ const MerchantDashboard = () => {
                 <p className="text-warning-600 mt-1">
                   Your account is currently pending verification. It may take 2 to 3 business working days.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!hasBusinessHours && (
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between md:flex-row flex-col gap-4">
+              <div>
+                <h2 className="text-lg font-medium text-warning-800">
+                  Business Hours Required
+                </h2>
+                <p className="text-warning-600 mt-1">
+                  Please set your business hours before proceeding with merchant verification. This helps customers know when your services are available.
+                </p>
+              </div>
+              <div className="flex flex-col justify-center md:items-end items-center">
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/merchant/business-hours')}
+                  disabled={merchantStatus === 'unverified'}
+                >
+                  Set Business Hours
+                </Button>
+                {merchantStatus === 'unverified' && (
+                  <p className="text-sm text-warning-600 mt-2 text-right">
+                    Please verify your business first before setting business hours
+                  </p>
+                )}
               </div>
             </div>
           </div>

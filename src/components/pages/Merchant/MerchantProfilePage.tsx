@@ -366,27 +366,11 @@ const MerchantProfilePage = () => {
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Business Hours</h2>
                 <button
                   onClick={() => {
-                    if (!isBusinessHoursEdit) {
-                      if (profile?.business_hours && profile.business_hours.length > 0) {
-                        setEditBusinessHoursFormData([ ...profile.business_hours ]);
-                      } else {
-                        // Initialize with default business hours if none exist
-                        setEditBusinessHoursFormData([
-                          { day_of_week: 0, open_time: '09:00', close_time: '17:00' }, // Sunday
-                          { day_of_week: 1, open_time: '09:00', close_time: '17:00' }, // Monday
-                          { day_of_week: 2, open_time: '09:00', close_time: '17:00' }, // Tuesday
-                          { day_of_week: 3, open_time: '09:00', close_time: '17:00' }, // Wednesday
-                          { day_of_week: 4, open_time: '09:00', close_time: '17:00' }, // Thursday
-                          { day_of_week: 5, open_time: '09:00', close_time: '17:00' }, // Friday
-                          { day_of_week: 6, open_time: '09:00', close_time: '17:00' }  // Saturday
-                        ]);
-                      }
-                    }
-                    setIsBusinessHoursEdit(!isBusinessHoursEdit);
+                    navigate("/merchant/business-hours")
                   }}                  
                   className="text-sm text-primary-600 hover:text-primary-700"
                 >
-                  {isBusinessHoursEdit ? 'Cancel' : 'Edit'}
+                  Edit
                 </button>
               </div>
               

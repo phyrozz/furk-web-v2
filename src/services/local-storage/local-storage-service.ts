@@ -11,6 +11,18 @@ export class LocalStorageService {
     return localStorage.getItem(this.MERCHANT_STATUS_KEY);
   }
 
+  setHasBusinessHours(hasBusinessHours: boolean): void {
+    localStorage.setItem('hasBusinessHours', hasBusinessHours.toString());
+  }
+
+  getHasBusinessHours(): boolean | null {
+    const hasBusinessHours = localStorage.getItem('hasBusinessHours');
+    if (hasBusinessHours === null) {
+      return null;
+    }
+    return hasBusinessHours === 'true';
+  }
+
   setRoleName(role: string): void {
     localStorage.setItem(this.ROLE_NAME_KEY, role);
   }
