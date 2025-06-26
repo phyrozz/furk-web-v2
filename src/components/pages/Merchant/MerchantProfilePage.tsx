@@ -301,30 +301,14 @@ const MerchantProfilePage = () => {
             <div className="space-y-6 h-full overflow-y-hidden">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Profile</h2>
-                <button
+                {/* <button
                   onClick={() => {
-                    if (!isBusinessHoursEdit) {
-                      if (profile?.business_hours && profile.business_hours.length > 0) {
-                        setEditBusinessHoursFormData([ ...profile.business_hours ]);
-                      } else {
-                        // Initialize with default business hours if none exist
-                        setEditBusinessHoursFormData([
-                          { day_of_week: 0, open_time: '09:00', close_time: '17:00' }, // Sunday
-                          { day_of_week: 1, open_time: '09:00', close_time: '17:00' }, // Monday
-                          { day_of_week: 2, open_time: '09:00', close_time: '17:00' }, // Tuesday
-                          { day_of_week: 3, open_time: '09:00', close_time: '17:00' }, // Wednesday
-                          { day_of_week: 4, open_time: '09:00', close_time: '17:00' }, // Thursday
-                          { day_of_week: 5, open_time: '09:00', close_time: '17:00' }, // Friday
-                          { day_of_week: 6, open_time: '09:00', close_time: '17:00' }  // Saturday
-                        ]);
-                      }
-                    }
-                    setIsBusinessHoursEdit(!isBusinessHoursEdit);
+                    
                   }}                  
                   className="text-sm text-primary-600 hover:text-primary-700"
                 >
-                  {isBusinessHoursEdit ? 'Cancel' : 'Edit'}
-                </button>
+                  Edit
+                </button> */}
               </div>
               
               <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
@@ -380,7 +364,7 @@ const MerchantProfilePage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {editBusinessHoursFormData?.map((hours, index) => (
                         <div key={index} className="mb-4">
-                          <p className="text-gray-600">{['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hours.day_of_week]}:</p>
+                          <p className="text-gray-600">{['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][hours.day_of_week]}:</p>
                           <div className="flex space-x-2">
                             <input
                               type="time"
@@ -424,8 +408,18 @@ const MerchantProfilePage = () => {
                     {profile?.business_hours && profile.business_hours.length > 0 ? (
                       profile.business_hours.map((hours, index) => (
                         <div key={index} className="mb-4">
-                          <p className="text-gray-600">{['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hours.day_of_week]}:</p>
-                          <p className="font-semibold">{hours.open_time} - {hours.close_time}</p>
+                          <p className="text-gray-600">{['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][hours.day_of_week]}:</p>
+                          <p className="font-semibold">
+                            {new Date(`2000-01-01T${hours.open_time}`).toLocaleTimeString('en-US', { 
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true 
+                            })} - {new Date(`2000-01-01T${hours.close_time}`).toLocaleTimeString('en-US', {
+                              hour: 'numeric', 
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </p>
                         </div>
                       ))
                     ) : (
