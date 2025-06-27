@@ -5,6 +5,8 @@ import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
+import { MerchantDashboardService } from '../../../services/merchant-dashboard/merchant-dashboard';
+import PawLoading from '../../common/PawLoading';
 
 interface DashboardCard {
   title: string;
@@ -20,27 +22,61 @@ interface Activity {
   timestamp: string;
 }
 
+interface Stats {
+  total_bookings_count: number;
+  pending_only_count: number;
+  confirmed_only_count: number;
+  completed_only_count: number;
+  cancelled_only_count: number;
+}
+
 const MerchantDashboard = () => {
   const [merchantStatus, setMerchantStatus] = useState<'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended'>('pending');
   const [hasBusinessHours, setHasBusinessHours] = useState<boolean>(false);
+  const [stats, setStats] = useState<Stats>({
+    total_bookings_count: 0,
+    pending_only_count: 0,
+    confirmed_only_count: 0,
+    completed_only_count: 0,
+    cancelled_only_count: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const service = new MerchantDashboardService();
+        const data = await service.getDashboardStats();
+        setStats(data.data || []);
+      } catch (err) {
+        console.error('Error fetching appointments:', err);
+        setStatsLoading(false);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const navigate = useNavigate();
   
   const cards: DashboardCard[] = [
     {
       title: 'Total Bookings',
-      value: 156,
+      value: stats.total_bookings_count,
       icon: <Package size={24} />,
       color: 'bg-primary-500',
     },
     {
       title: 'Pending Bookings',
-      value: 8,
+      value: stats.pending_only_count,
       icon: <Clock size={24} />,
       color: 'bg-warning-500',
     },
     {
       title: 'Confirmed Bookings',
-      value: 12,
+      value: stats.confirmed_only_count,
       icon: <Calendar size={24} />,
       color: 'bg-success-500',
     },
@@ -213,8 +249,12 @@ const MerchantDashboard = () => {
           </div>
         }
 
+        {statsLoading && <div className="w-full h-48 flex justify-center items-center">
+          <PawLoading />  
+        </div>}
+
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {!statsLoading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {cards.map((card, index) => (
             <motion.div
               key={index}
@@ -236,7 +276,7 @@ const MerchantDashboard = () => {
               </div>
             </motion.div>
           ))}
-        </div>
+        </div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Activity */}

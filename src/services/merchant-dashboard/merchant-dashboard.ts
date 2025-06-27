@@ -9,4 +9,13 @@ export class MerchantDashboardService {
     });
     return response.data;
   }
+
+  async getDashboardStats() {
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant-dashboard/stats`, {}, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
 }
