@@ -10,6 +10,7 @@ interface ResizableRightSidebarProps {
   minWidth?: number;
   maxWidth?: number;
   title?: string;
+  icon?: any;
 }
 
 const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
@@ -20,6 +21,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
   minWidth = 300,
   maxWidth = 800,
   title = 'Details',
+  icon = undefined
 }) => {
   const [width, setWidth] = useState(initialWidth);
   const isResizing = useRef(false);
@@ -90,7 +92,10 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
               onMouseDown={handleMouseDown}
             />
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">{title}</h2>
+              <div className="flex gap-3 justify-center items-center">
+                {icon && <div>{icon}</div>}
+                <h2 className="text-xl font-bold">{title}</h2>
+              </div>
               <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
                 <X size={20} />
               </button>

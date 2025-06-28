@@ -15,6 +15,7 @@ interface Notification {
   title: string;
   description: string;
   service_id?: string;
+  modified_at: string;
 }
 
 const Navbar = () => {
@@ -128,6 +129,15 @@ const Navbar = () => {
           >
             <h4 className="font-medium text-gray-900">{notification.title}</h4>
             <p className="text-sm text-gray-600">{notification.description}</p>
+            <p className="text-right text-xs mt-2 text-gray-600">
+              {new Date(notification.modified_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
           </button>
         ))
       ) : !loading ? (
@@ -358,6 +368,7 @@ const Navbar = () => {
         isOpen={showNotifications}
         onClose={() => setShowNotifications(false)}
         title="Notifications"
+        icon={<Bell />}
         initialWidth={400}
         minWidth={300}
         maxWidth={600}
