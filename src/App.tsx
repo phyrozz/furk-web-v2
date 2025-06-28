@@ -26,9 +26,11 @@ import TokenExpiredDialog from './components/common/TokenExpiredDialog';
 import { eventEmitter } from './utils/event-emitter';
 import { loginService } from './services/auth/auth-service';
 import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
+import BookingProgressTracker from './components/common/BookingProgressTracker';
 
 function App() {
   const [isTokenExpired, setIsTokenExpired] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleTokenExpired = () => {
@@ -55,13 +57,14 @@ function App() {
 
   return (
     <ToastProvider>
+      <BookingProgressTracker isAuthenticated={isAuthenticated} />
       <Router
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true
         }}
       >
-        <AuthWrapper>
+        <AuthWrapper onAuthStatusChange={setIsAuthenticated}>
           <div className="min-h-screen flex flex-col bg-gray-50">
             <Routes>
               {/* Public Routes */}

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Scissors, Stethoscope, Dog, GraduationCap, Shield, Truck, Heart, Building, Flower as FlowerSad, MapPin } from 'lucide-react';
+import { Home, Scissors, Stethoscope, Dog, GraduationCap, Shield, Truck, Heart, Building, Flower as FlowerSad } from 'lucide-react';
 import Button from '../../common/Button';
 
 interface Service {
