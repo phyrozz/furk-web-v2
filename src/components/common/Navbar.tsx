@@ -9,6 +9,11 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+  const [navItems, setNavItems] = useState([
+    { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services' },
+    { name: 'Rewards', path: '/rewards' },
+  ]);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,17 +53,14 @@ const Navbar = () => {
     };
   }, []);
 
-  const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Services', path: '/services' },
-    { name: 'Rewards', path: '/rewards' },
-  ];
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const authenticated = await loginService.isAuthenticated();
         setIsAuth(authenticated);
+        if (authenticated) {
+          setNavItems(prevItems => prevItems.filter(item => item.name !== 'Home'));
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuth(false);

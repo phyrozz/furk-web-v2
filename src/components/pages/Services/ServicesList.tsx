@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Scissors, Stethoscope, Dog, GraduationCap, Shield, Truck, Heart, Building, Flower as FlowerSad, MapPin } from 'lucide-react';
 import Button from '../../common/Button';
@@ -18,10 +18,20 @@ interface ServicesListProps {
 
 const ServicesList: React.FC<ServicesListProps> = ({ onFindMerchant }) => {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const selectedServiceRef = useRef<HTMLDivElement>(null);
 
   const onServiceSelect = (serviceId: number) => {
     onFindMerchant(serviceId);
   }
+
+  useEffect(() => {
+    if (selectedService && selectedServiceRef.current) {
+      selectedServiceRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [selectedService]);
   
   const services: Service[] = [
     {
@@ -168,6 +178,7 @@ const ServicesList: React.FC<ServicesListProps> = ({ onFindMerchant }) => {
         {/* Selected Service Details */}
         {selectedService && (
           <motion.div 
+            ref={selectedServiceRef}
             className="mt-12 bg-white rounded-xl shadow-md overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -222,14 +233,6 @@ const ServicesList: React.FC<ServicesListProps> = ({ onFindMerchant }) => {
                   >
                     Find Merchants
                   </Button>
-                  {/* <Button
-                    variant="outline"
-                    className="ml-4"
-                    onClick={() => alert(`Location filter would open here`)}
-                    icon={<MapPin size={16} />}
-                  >
-                    Filter by Location
-                  </Button> */}
                 </div>
               </div>
             </div>
