@@ -18,4 +18,18 @@ export class MerchantDashboardService {
     });
     return response.data;
   }
+
+  async getRecentActivities(limit: number, offset: number) {
+    const data = {
+      limit: limit,
+      offset: offset
+    }
+
+    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant-notifications/list`, data, {
+      headers: {
+        "Authorization": localStorage.getItem("cognitoIdToken")
+      }
+    });
+    return response.data;
+  }
 }

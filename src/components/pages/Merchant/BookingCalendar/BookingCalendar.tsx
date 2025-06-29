@@ -139,24 +139,28 @@ const BookingCalendar: React.FC = () => {
     
     switch (event.status) {
       case 'pending':
-        backgroundColor = '#ffc107';
+        backgroundColor = '#fde047';
         color = '#000000';
         break;
       case 'confirmed':
-        backgroundColor = '#28a745';
+        backgroundColor = '#93c5fd';
         color = '#000000';
         break;
       case 'in_progress':
-        backgroundColor = '#007bff';
+        backgroundColor = '#d8b4fe';
+        color = '#000000';
         break;
       case 'completed':
-        backgroundColor = '#6c757d';
+        backgroundColor = '#86efac';
+        color = '#000000';
         break;
       case 'cancelled':
-        backgroundColor = '#dc3545';
+        backgroundColor = '#fca5a5';
+        color = '#000000';
         break;
       default:
-        backgroundColor = '#6c757d';
+        backgroundColor = '#d1d5db';
+        color = '#000000';
     }
     
     return { 
@@ -215,23 +219,23 @@ const BookingCalendar: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 lg:flex md:items-center gap-2 lg:space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-[#ffc107]" />
+                <div className="w-4 h-4 rounded-full bg-yellow-300" />
                 <span className="text-xs md:text-sm">Pending</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-[#28a745]" />
+                <div className="w-4 h-4 rounded-full bg-blue-300" />
                 <span className="text-xs md:text-sm">Confirmed</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-[#007bff]" />
+                <div className="w-4 h-4 rounded-full bg-purple-300" />
                 <span className="text-xs md:text-sm">In Progress</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-[#6c757d]" />
+                <div className="w-4 h-4 rounded-full bg-green-300" />
                 <span className="text-xs md:text-sm">Completed</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 rounded-full bg-[#dc3545]" />
+                <div className="w-4 h-4 rounded-full bg-red-300" />
                 <span className="text-xs md:text-sm">Cancelled</span>
               </div>
             </div>

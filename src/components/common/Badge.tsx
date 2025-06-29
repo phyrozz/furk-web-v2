@@ -7,19 +7,21 @@ interface BadgeProps {
 
 const Badge: React.FC<BadgeProps> = ({ status, className }) => {
   const statusColorMap: Record<string, string> = {
-    yellow: 'bg-yellow-500 text-black',
-    green: 'bg-green-500 text-black',
-    blue: 'bg-blue-500 text-white',
-    gray: 'bg-gray-500 text-white',
-    red: 'bg-red-500 text-white',
+    yellow: 'bg-yellow-600 text-white',
+    green: 'bg-green-600 text-white',
+    blue: 'bg-blue-600 text-white',
+    gray: 'bg-gray-600 text-white',
+    red: 'bg-red-600 text-white',
+    purple: 'bg-purple-600 text-white'
   };
 
   const statusGroups = {
     yellow: ['pending'],
-    green: ['confirmed'],
-    blue: ['in_progress'],
-    gray: ['completed'],
+    green: ['completed'],
+    blue: ['confirmed'],
+    gray: [''],
     red: ['cancelled'],
+    purple: ['in_progress']
   };
 
   const getStatusColor = (status: string) => {

@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, DollarSign, Package, Plus, List, Bell } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Package, Plus, List } from 'lucide-react';
 import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
 import { MerchantDashboardService } from '../../../services/merchant-dashboard/merchant-dashboard';
 import PawLoading from '../../common/PawLoading';
+import { RecentActivities } from './MerchantDashboard/RecentActivities';
+import { useLazyLoad } from '../../../hooks/useLazyLoad';
+
+const merchantDashboardService = new MerchantDashboardService();
 
 interface DashboardCard {
   title: string;
@@ -16,10 +20,12 @@ interface DashboardCard {
 }
 
 interface Activity {
-  id: string;
-  type: 'booking' | 'cancellation' | 'completion';
-  message: string;
-  timestamp: string;
+  id: number;
+  merchant_id?: number;
+  service_id?: number;
+  title: string;
+  description?: string;
+  modified_at: string;
 }
 
 interface Stats {
@@ -42,20 +48,47 @@ const MerchantDashboard = () => {
   });
   const [statsLoading, setStatsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const service = new MerchantDashboardService();
-        const data = await service.getDashboardStats();
-        setStats(data.data || []);
-      } catch (err) {
-        console.error('Error fetching appointments:', err);
-        setStatsLoading(false);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
+  const fetchStats = async () => {
+    try {
+      const data = await merchantDashboardService.getDashboardStats();
+      setStats(data.data || []);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setStatsLoading(false);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
+  const fetchRecentActivities = useCallback(async (limit: number, offset: number) => {
+    try {
+      const response = await merchantDashboardService.getRecentActivities(limit, offset);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch recent activities:', error);
+      return [];
+    }
+  }, []);
+
+  const { items: recentActivities, loadMore, loading, hasMore, reset } = useLazyLoad<Activity>({
+    fetchData: fetchRecentActivities,
+    limit: 10,
+    enabled: true,
+  });
+
+  const observer = useRef<IntersectionObserver>();
+  const lastActivityElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMore]);
+
+  useEffect(() => {
     fetchStats();
   }, []);
 
@@ -88,26 +121,6 @@ const MerchantDashboard = () => {
     },
   ];
 
-  const recentActivity: Activity[] = [
-    {
-      id: '1',
-      type: 'booking',
-      message: 'New booking request for Dog Grooming Service',
-      timestamp: '10 minutes ago',
-    },
-    {
-      id: '2',
-      type: 'completion',
-      message: 'Pet boarding service completed for Client #1234',
-      timestamp: '1 hour ago',
-    },
-    {
-      id: '3',
-      type: 'cancellation',
-      message: 'Booking #5678 was cancelled by the client',
-      timestamp: '2 hours ago',
-    },
-  ];
 
   const quickActions = [
     {
@@ -279,29 +292,12 @@ const MerchantDashboard = () => {
         </div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-cursive font-semibold text-gray-800">Recent Activity</h2>
-                <Bell size={20} className="text-gray-500" />
-              </div>
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex-grow">
-                      <p className="text-gray-800">{activity.message}</p>
-                      <p className="text-sm text-gray-500 mt-1">{activity.timestamp}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
+          <RecentActivities
+            recentActivity={recentActivities}
+            loading={loading}
+            hasMore={hasMore}
+            lastActivityElementRef={lastActivityElementRef}
+          />
           <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
         </div>
       </div>
