@@ -32,6 +32,12 @@ const statusConfig = {
     bgColor: 'bg-green-50',
     message: 'Pet service completed'
   },
+  CANCELLED: {
+    icon: X,
+    color: 'text-gray-500',
+    bgColor: 'bg-gray-50',
+    message: 'Booking cancelled'
+  },
   ERROR: {
     icon: AlertTriangle,
     color: 'text-red-500',
@@ -62,7 +68,7 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
     const token = localStorage.getItem('cognitoIdToken');
     if (!token) return;
 
-    const websocketUrl = 'wss://5ylewlt03g.execute-api.ap-southeast-1.amazonaws.com/dev/';
+    const websocketUrl = import.meta.env.VITE_WEBSOCKET_URL;
     
     if (wsRef.current) return;
 
