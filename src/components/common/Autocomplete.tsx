@@ -13,6 +13,7 @@ interface AutocompleteProps<T> {
   onLoadMore?: (query: string, offset: number) => Promise<void>;
   hasMore?: boolean;
   debounceMs?: number;
+  disabled?: boolean;
 }
 
 const Autocomplete = <T extends object>({
@@ -26,7 +27,8 @@ const Autocomplete = <T extends object>({
   onSearch,
   onLoadMore,
   hasMore = false,
-  debounceMs = 300
+  debounceMs = 300,
+  disabled = false
 }: AutocompleteProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +40,7 @@ const Autocomplete = <T extends object>({
 
   const debouncedSearch = useCallback(
     async (query: string, searchOffset: number = 0) => {
-      if (onSearch) {
+      if (onSearch && !disabled) {
         try {
           await onSearch(query, searchOffset);
         } catch (error) {
@@ -46,12 +48,12 @@ const Autocomplete = <T extends object>({
         }
       }
     },
-    [onSearch]
+    [onSearch, disabled]
   );
 
   useEffect(() => {
     const handleScroll = async () => {
-      if (!dropdownRef.current || !onLoadMore || !hasMore || isLoading) return;
+      if (!dropdownRef.current || !onLoadMore || !hasMore || isLoading || disabled) return;
 
       const { scrollTop, scrollHeight, clientHeight } = dropdownRef.current;
       const scrollThreshold = scrollHeight - scrollTop - clientHeight;
@@ -69,23 +71,19 @@ const Autocomplete = <T extends object>({
       dropdown.addEventListener('scroll', handleScroll);
       return () => dropdown.removeEventListener('scroll', handleScroll);
     }
-  }, [onLoadMore, hasMore, isLoading, options.length, offset, searchTerm]);
+  }, [onLoadMore, hasMore, isLoading, options.length, offset, searchTerm, disabled]);
 
-  // Add effect to restore scroll position after options update
   useEffect(() => {
     if (dropdownRef.current && lastScrollPosition.current > 0) {
       dropdownRef.current.scrollTop = lastScrollPosition.current;
-      // Reset the stored position after restoring
       lastScrollPosition.current = 0;
     }
   }, [options]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if the click target is a valid Element
       const target = event.target as Element;
       
-      // Check if the click is outside both the wrapper and dropdown
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(target) &&
@@ -96,7 +94,6 @@ const Autocomplete = <T extends object>({
       }
     };
 
-    // Add the event listener to the document
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -104,6 +101,8 @@ const Autocomplete = <T extends object>({
   }, []);
 
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+    
     const value = e.target.value;
     setSearchTerm(value);
     setIsOpen(true);
@@ -124,12 +123,12 @@ const Autocomplete = <T extends object>({
   };
 
   const handleFocus = () => {
+    if (disabled) return;
+    
     setIsOpen(true);
-    // Only trigger search if there's no value selected and we have a search term
     if (!value && searchTerm) {
       debouncedSearch(searchTerm, offset);
     } else if (!value && !searchTerm && onSearch) {
-      // If no value and no search term, fetch initial options
       debouncedSearch('', 0);
     }
   };
@@ -139,16 +138,19 @@ const Autocomplete = <T extends object>({
       <div className="relative">
         <input
           type="text"
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+            disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+          }`}
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleSearchChange}
           onFocus={handleFocus}
+          disabled={disabled}
         />
-        <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+        <Search className={`absolute left-3 top-2.5 ${disabled ? 'text-gray-300' : 'text-gray-400'}`} size={20} />
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div 
           ref={dropdownRef}
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto"
@@ -163,7 +165,7 @@ const Autocomplete = <T extends object>({
                     onChange(option);
                     setIsOpen(false);
                     setSearchTerm(getOptionLabel(option));
-                    setOffset(0); // Reset offset when option is selected
+                    setOffset(0);
                   }}
                 >
                   {getOptionLabel(option)}

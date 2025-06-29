@@ -8,6 +8,7 @@ interface DateInputProps {
   className?: string;
   min?: Date;
   max?: Date;
+  disabled?: boolean;
 }
 
 const DateInput = ({
@@ -16,7 +17,8 @@ const DateInput = ({
   placeholder = 'Select date...',
   className = '',
   min,
-  max
+  max,
+  disabled = false
 }: DateInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -107,9 +109,10 @@ const DateInput = ({
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
-        onClick={() => setIsOpen((prev) => !prev)}
-        tabIndex={0}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        tabIndex={disabled ? -1 : 0}
         onKeyDown={(e) => {
+          if (disabled) return;
           if (e.key === ' ' || e.key === 'Space' || e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
             e.preventDefault();
             setIsOpen(true);
@@ -118,18 +121,19 @@ const DateInput = ({
             setIsOpen(false);
           }
         }}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer flex justify-between items-center"
+        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent flex justify-between items-center
+          ${disabled ? 'cursor-not-allowed bg-gray-100 opacity-60' : 'cursor-pointer'}`}
       >
-        <span className={value ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={`${value ? 'text-gray-900' : 'text-gray-500'} ${disabled ? 'opacity-60' : ''}`}>
           {value ? formatDate(value) : placeholder}
         </span>
         <ChevronDown
-          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''} ${disabled ? 'opacity-60' : ''}`}
           size={20}
         />
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div 
           ref={dropdownRef}
           tabIndex={0}

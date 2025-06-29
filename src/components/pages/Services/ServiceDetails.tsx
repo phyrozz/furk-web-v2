@@ -24,6 +24,15 @@ interface ServiceDetail {
   phone_number: string;
   average_rating: number;
   attachments: string[];
+  business_hours: BusinessHour[];
+  hasBooked: boolean;
+}
+
+export interface BusinessHour {
+  id: number;
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
 }
 
 const ServiceDetails = () => {
@@ -36,6 +45,7 @@ const ServiceDetails = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isNotUser, setIsNotUser] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [hasBooked, setHasBooked] = useState<boolean>(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -61,6 +71,7 @@ const ServiceDetails = () => {
         const response = await petServicesService.getServiceDetails(Number(id));
         setService(response.data);
         setIsFavorite(response.data.is_favorite);
+        setHasBooked(response.data.has_booked);
         document.title = `${response.data.name} - FURK`;
       } catch (err) {
         setError('Failed to load service details');
@@ -137,6 +148,11 @@ const ServiceDetails = () => {
     }
 
     setIsFavoriteLoading(false);
+  }
+
+  const handleBookingDialogClose = () => {
+    setIsBookingDialogOpen(false);
+    setHasBooked(true);
   }
 
   return (
@@ -271,17 +287,21 @@ const ServiceDetails = () => {
                   <a href={`mailto:${service.email}`}>{service.email}</a>
                 </motion.div>
               </div>
-              {isAuthenticated ? (isNotUser ? (
-                <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
+              {isAuthenticated ? (
+                isNotUser ? (
+                  <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
+                ) : hasBooked ? (
+                  <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
+                ) : (
+                  <Button
+                    variant="primary"
+                    className="w-full mt-6"
+                    onClick={() => setIsBookingDialogOpen(true)}
+                  >
+                    Book Now
+                  </Button>
+                )
               ) : (
-                <Button
-                variant="primary"
-                className="w-full mt-6"
-                onClick={() => setIsBookingDialogOpen(true)}
-              >
-                Book Now
-              </Button>
-              )) : (
                 <motion.div whileHover={{ scale: 1.02 }}>
                   <Button
                     variant="primary"
@@ -315,8 +335,9 @@ const ServiceDetails = () => {
 
           <BookingDialog
             isOpen={isBookingDialogOpen}
-            onClose={() => setIsBookingDialogOpen(false)}
+            onClose={handleBookingDialogClose}
             serviceId={service.id}
+            businessHours={service.business_hours}
           />
         </div>
       </div>

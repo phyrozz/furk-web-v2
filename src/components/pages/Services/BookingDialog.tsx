@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import ResizableRightSidebar from '../../common/ResizableRightSidebar';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -8,11 +8,13 @@ import DateInput from '../../common/DateInput';
 import TimeInput from '../../common/TimeInput';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import Autocomplete from '../../common/Autocomplete';
+import { BusinessHour } from './ServiceDetails';
 
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
   serviceId: number;
+  businessHours: BusinessHour[];
 }
 
 interface PaymentMethod {
@@ -33,7 +35,7 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 4, code: 'maya', displayName: 'Maya' },
 ];
 
-const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceId }) => {
+const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceId, businessHours }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
@@ -43,6 +45,52 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
   const [searchQuery, setSearchQuery] = useState('');
 
   const petServicesService = new PetServicesService();
+
+  const getBusinessHoursForDate = useCallback((date: string) => {
+    const selectedDay = new Date(date).getDay();
+    // Convert Sunday (0) to 6, and other days subtract 1 to match 0=Monday format
+    const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
+    return businessHours.find(hour => hour.day_of_week === adjustedDay);
+  }, [businessHours]);
+
+  const getTimeConstraints = useMemo(() => {
+    if (!selectedDate) return { min: undefined, max: undefined };
+
+    const businessHour = getBusinessHoursForDate(selectedDate);
+    if (!businessHour) return { min: undefined, max: undefined };
+
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = selectedDate === today;
+    
+    let minTime = businessHour.open_time;
+    if (isToday) {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:00`;
+      minTime = currentTime > businessHour.open_time ? currentTime : businessHour.open_time;
+    }
+
+    // Parse business hours into hours and minutes
+    const [openHours, openMinutes] = businessHour.open_time.split(':').map(Number);
+    const [closeHours, closeMinutes] = businessHour.close_time.split(':').map(Number);
+
+    const min = new Date();
+    min.setHours(openHours, openMinutes, 0, 0);
+
+    const max = new Date();
+    max.setHours(closeHours, closeMinutes, 0, 0);
+
+    return {
+      min: min,
+      max: max
+    };
+  }, [selectedDate, getBusinessHoursForDate]);
+
+  const isFormValid = useMemo(() => {
+    return selectedDate !== '' && 
+           selectedTime !== '' && 
+           selectedPaymentMethod !== null && 
+           selectedPet !== null;
+  }, [selectedDate, selectedTime, selectedPaymentMethod, selectedPet]);
 
   const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
     try {
@@ -123,7 +171,10 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
               value={selectedDate ? new Date(selectedDate) : null}
               min={new Date()}
               max={new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)}
-              onChange={(date) => setSelectedDate(date ? date.toISOString().split('T')[0] : '')}
+              onChange={(date) => {
+                setSelectedDate(date ? date.toISOString().split('T')[0] : '');
+                setSelectedTime(''); // Reset time when date changes
+              }}
               className="mt-1"
             />
           </div>
@@ -135,7 +186,9 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
               onChange={(time) => setSelectedTime(time ? time.toTimeString().split(' ')[0] : '')}
               className="mt-1"
               minuteStep={30}
-              min={selectedDate === new Date().toISOString().split('T')[0] ? new Date() : undefined}
+              min={getTimeConstraints.min}
+              max={getTimeConstraints.max}
+              disabled={!selectedDate || !getBusinessHoursForDate(selectedDate)}
             />
           </div>
 
@@ -177,7 +230,12 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" loading={loading}>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              loading={loading}
+              disabled={!isFormValid || loading}
+            >
               Confirm Booking
             </Button>
           </div>

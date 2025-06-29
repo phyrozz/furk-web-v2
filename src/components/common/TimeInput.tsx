@@ -8,6 +8,8 @@ interface TimeInputProps {
   className?: string;
   minuteStep?: number;
   min?: Date;
+  max?: Date;
+  disabled?: boolean;
 }
 
 const TimeInput = ({
@@ -16,7 +18,9 @@ const TimeInput = ({
   placeholder = 'Select time...',
   className = '',
   minuteStep = 15,
-  min
+  min,
+  max,
+  disabled = false
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -62,9 +66,8 @@ const TimeInput = ({
       const mins = minutes % 60;
       const date = new Date();
       date.setHours(hours, mins, 0, 0);
-      if (min && date < min) {
-        continue;
-      }
+      if (min && date < min) continue;
+      if (max && date > max) continue;
       slots.push(date);
     }
     
@@ -91,10 +94,18 @@ const TimeInput = ({
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
-        tabIndex={0}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer flex justify-between items-center"
-        onClick={() => setIsOpen(!isOpen)}
+        tabIndex={disabled ? -1 : 0}
+        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent flex justify-between items-center ${
+          disabled ? 'cursor-not-allowed bg-gray-100 opacity-60' : 'cursor-pointer'
+        }`}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen(!isOpen);
+          }
+        }}
         onKeyDown={(e) => {
+          if (disabled) return;
+          
           if (!isOpen) {
             if (e.key === 'Enter' || e.key === ' ') {
               setIsOpen(true);
@@ -129,16 +140,16 @@ const TimeInput = ({
           }
         }}        
       >
-        <span className={value ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={`${value ? 'text-gray-900' : 'text-gray-500'} ${disabled ? 'opacity-60' : ''}`}>
           {value ? formatTime(value) : placeholder}
         </span>
         <ChevronDown
-          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''} ${disabled ? 'opacity-60' : ''}`}
           size={20}
         />
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div 
           ref={dropdownRef}
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
