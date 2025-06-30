@@ -4,7 +4,7 @@ import { ToastService } from '../../../../services/toast/toast-service';
 import { MerchantProfileService } from '../../../../services/profile/merchant-profile-service';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 import useScreenSize from '../../../../hooks/useScreenSize';
 import TimeInput from '../../../common/TimeInput';
 import PawLoading from '../../../common/PawLoading';
@@ -83,6 +83,18 @@ const SetBusinessHoursPage: React.FC = () => {
     });
   };
 
+  const handleClearTimes = (dayId: number) => {
+    setBusinessHours(prevHours => {
+      const newHours = [...prevHours];
+      const index = newHours.findIndex(hour => hour.day_of_week === dayId);
+      if (index > -1) {
+        newHours[index].open_time = null;
+        newHours[index].close_time = null;
+      }
+      return newHours;
+    });
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
     try {
@@ -137,18 +149,20 @@ const SetBusinessHoursPage: React.FC = () => {
                   onChange={(value: Date | null) => handleTimeChange(day.id, 'open', value?.toTimeString().split(' ')[0].slice(0, 5) || '')}
                   className="w-48 min-w-48"
                 />
-                {/* <input
-                  type="time"
-                  className="border rounded-md p-2 w-32"
-                  value={currentHours?.open_time?.replace(':00', '') || ''}
-                  onChange={(e) => handleTimeChange(day.id, 'open', e.target.value)}
-                /> */}
                 <span>-</span>
                 <TimeInput 
                   value={currentHours?.close_time ? new Date(`1970-01-01T${currentHours.close_time}`) : null}
                   onChange={(value: Date | null) => handleTimeChange(day.id, 'close', value?.toTimeString().split(' ')[0].slice(0, 5) || '')}
                   className="w-48 min-w-48"
                 />
+                <Button
+                  variant="ghost"
+                  onClick={() => handleClearTimes(day.id)}
+                  className="p-2"
+                  icon={<X size={16} />}
+                >
+                  Clear
+                </Button>
               </div>
             );
           })}

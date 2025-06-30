@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 interface TimeInputProps {
   value: Date | null;
@@ -24,6 +25,7 @@ const TimeInput = ({
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,17 @@ const TimeInput = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [isOpen]);
 
   const formatTime = (date: Date | null) => {
     if (!date) return '';
@@ -149,10 +162,16 @@ const TimeInput = ({
         />
       </div>
 
-      {isOpen && !disabled && (
+      {isOpen && !disabled && createPortal(
         <div 
           ref={dropdownRef}
-          className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          style={{
+            position: 'absolute',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+          }}
+          className="z-50 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           <div className="py-1">
           {timeSlots.map((timeSlot, index) => (
@@ -176,7 +195,8 @@ const TimeInput = ({
             </div>
           ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

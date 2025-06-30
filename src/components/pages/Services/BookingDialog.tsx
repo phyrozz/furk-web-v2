@@ -62,27 +62,36 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
     const today = new Date().toISOString().split('T')[0];
     const isToday = selectedDate === today;
     
-    let minTime = businessHour.open_time;
-    if (isToday) {
-      const now = new Date();
-      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:00`;
-      minTime = currentTime > businessHour.open_time ? currentTime : businessHour.open_time;
-    }
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
 
-    // Parse business hours into hours and minutes
+    // Parse business hours
     const [openHours, openMinutes] = businessHour.open_time.split(':').map(Number);
     const [closeHours, closeMinutes] = businessHour.close_time.split(':').map(Number);
 
-    const min = new Date();
-    min.setHours(openHours, openMinutes, 0, 0);
+    let min = new Date();
+    let max = new Date();
 
-    const max = new Date();
+    if (isToday) {
+      // If current time is after opening time, use current time as minimum
+      if (currentHours > openHours || (currentHours === openHours && currentMinutes >= openMinutes)) {
+        min.setHours(currentHours, currentMinutes, 0, 0);
+      } else {
+        min.setHours(openHours, openMinutes, 0, 0);
+      }
+    } else {
+      min.setHours(openHours, openMinutes, 0, 0);
+    }
+
     max.setHours(closeHours, closeMinutes, 0, 0);
 
-    return {
-      min: min,
-      max: max
-    };
+    // If current time is after closing time on the same day, disable all times
+    if (isToday && (currentHours > closeHours || (currentHours === closeHours && currentMinutes >= closeMinutes))) {
+      return { min: undefined, max: undefined };
+    }
+
+    return { min, max };
   }, [selectedDate, getBusinessHoursForDate]);
 
   const isFormValid = useMemo(() => {
