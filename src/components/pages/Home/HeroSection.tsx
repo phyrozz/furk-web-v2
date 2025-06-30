@@ -50,7 +50,7 @@ const HeroSection = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="font-cursive text-3xl md:text-5xl mb-6">
-            Your One-Stop Shop for All Pet Needs
+            Your All-in-One Pet Services Platform
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-gray-100">
             Find and book the best pet services in the Philippines, from grooming to healthcare, all in one place.

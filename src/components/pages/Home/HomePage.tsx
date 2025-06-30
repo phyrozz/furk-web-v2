@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import HeroSection from './HeroSection';
+import PopularServices from './PopularServices';
 import WhatsNewSection from './WhatsNewSection';
 import WhyFurkSection from './WhyFurkSection';
 import PartnerSection from './PartnerSection';
@@ -23,6 +24,7 @@ const HomePage = () => {
   return (
     <div className="pt-16 cursor-default">
       <HeroSection />
+      <PopularServices />
       <WhatsNewSection />
       <WhyFurkSection />
       { !loginService.isAuthenticated() && 

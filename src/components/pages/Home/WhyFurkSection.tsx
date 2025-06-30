@@ -45,7 +45,7 @@ const WhyFurkSection = () => {
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <motion.h2 
@@ -75,7 +75,7 @@ const WhyFurkSection = () => {
           {benefits.map((benefit, index) => (
             <motion.div 
               key={index}
-              className="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition-shadow"
               variants={itemVariants}
             >
               <div className="flex justify-center mb-4">
