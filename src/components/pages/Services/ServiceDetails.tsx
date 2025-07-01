@@ -152,6 +152,9 @@ const ServiceDetails = () => {
 
   const handleBookingDialogClose = () => {
     setIsBookingDialogOpen(false);
+  }
+
+  const handleBookingDialogSuccess = () => {
     setHasBooked(true);
   }
 
@@ -336,6 +339,7 @@ const ServiceDetails = () => {
           <BookingDialog
             isOpen={isBookingDialogOpen}
             onClose={handleBookingDialogClose}
+            onSuccess={handleBookingDialogSuccess}
             serviceId={service.id}
             businessHours={service.business_hours}
           />

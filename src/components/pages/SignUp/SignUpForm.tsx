@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, User, Phone, CheckCircle, EyeOff, Eye } from 'lucide-react';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
+import { Checkbox } from '../../common/Checkbox';
 
 interface SignUpFormProps {
   userType: 'user' | 'merchant';
@@ -25,9 +26,21 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // This is when the user tries to sign in and it's still unverified
-  // redirect to the verification with the given username and password for the verification code
+  const isFormValid = () => {
+    return (
+      firstName.trim() !== '' &&
+      lastName.trim() !== '' &&
+      email.trim() !== '' &&
+      phone.trim() !== '' &&
+      password.trim() !== '' &&
+      confirmPassword.trim() !== '' &&
+      password === confirmPassword &&
+      termsAccepted
+    );
+  };
+
   useEffect(() => {
     handleRedirectToVerification();
   }, [redirectToVerification]);
@@ -315,12 +328,34 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
           </div>
         </div>
 
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            checked={termsAccepted}
+            onChange={(checked) => setTermsAccepted(checked)}
+            label={
+              <span className="text-sm text-gray-600">
+                I agree to Furk's{' '}
+                <a
+                  href="/terms-of-service"
+                  className="text-primary-600 hover:text-primary-500 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Terms of Service
+                </a>
+              </span>
+            }
+            className="flex items-center space-x-2"
+          />
+        </div>
+
         <Button
           type="submit"
           variant="primary"
           size="lg"
           fullWidth
           loading={isLoading}
+          disabled={!isFormValid()}
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>

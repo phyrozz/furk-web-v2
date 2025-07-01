@@ -13,6 +13,7 @@ import { BusinessHour } from './ServiceDetails';
 interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   serviceId: number;
   businessHours: BusinessHour[];
 }
@@ -35,7 +36,7 @@ const PAYMENT_METHODS: PaymentMethod[] = [
   { id: 4, code: 'maya', displayName: 'Maya' },
 ];
 
-const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceId, businessHours }) => {
+const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, businessHours }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
@@ -157,6 +158,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, serviceI
       });
 
       ToastService.show('Booking created successfully');
+      onSuccess();
       onClose();
     } catch (err) {
       ToastService.show('Failed to create booking');
