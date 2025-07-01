@@ -27,6 +27,7 @@ import { eventEmitter } from './utils/event-emitter';
 import { loginService } from './services/auth/auth-service';
 import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
 import BookingProgressTracker from './components/common/BookingProgressTracker';
+import TermsOfService from './components/pages/TermsOfService/TermsOfService';
 
 function App() {
   const [isTokenExpired, setIsTokenExpired] = useState(false);
@@ -86,6 +87,11 @@ function App() {
               <Route path="/reset-password" element={
                 <PublicRoute>
                   <ResetPasswordPage />
+                </PublicRoute>
+              } />
+              <Route path="/terms-of-service" element={
+                <PublicRoute>
+                  <TermsOfService />
                 </PublicRoute>
               } />
 
