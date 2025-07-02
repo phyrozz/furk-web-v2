@@ -90,9 +90,7 @@ function App() {
                 </PublicRoute>
               } />
               <Route path="/terms-of-service" element={
-                <PublicRoute>
-                  <TermsOfService />
-                </PublicRoute>
+                <TermsOfService />
               } />
 
               {/* Main Routes */}

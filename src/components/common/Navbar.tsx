@@ -7,6 +7,7 @@ import { useLazyLoad } from '../../hooks/useLazyLoad';
 import { UserNotificationsService } from '../../services/user-notifications/user-notifications';
 import PawLoading from './PawLoading';
 import ResizableRightSidebar from './ResizableRightSidebar';
+import DateUtils from '../../utils/date-utils';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -130,13 +131,7 @@ const Navbar = () => {
             <h4 className="font-medium text-gray-900">{notification.title}</h4>
             <p className="text-sm text-gray-600">{notification.description}</p>
             <p className="text-right text-xs mt-2 text-gray-600">
-              {new Date(notification.modified_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
+              {DateUtils.formatRelativeTime(notification.modified_at)}
             </p>
           </button>
         ))
