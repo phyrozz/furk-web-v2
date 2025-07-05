@@ -16,9 +16,10 @@ interface Review {
 
 interface ReviewsListProps {
   serviceId: number;
+  onResetRef?: (resetFn: () => void) => void;
 }
 
-const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId }) => {
+const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId, onResetRef }) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<boolean>(false);
   const petServicesService = new PetServicesService();
@@ -48,11 +49,18 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId }) => {
     [petServicesService]
   );
 
-  const { items: reviews, loadMore, loading, hasMore } = useLazyLoad<Review>({
+  const { items: reviews, loadMore, loading, hasMore, reset } = useLazyLoad<Review>({
     fetchData: fetchReviews,
     limit: 10,
     keyword: ''
   });
+
+  useEffect(() => {
+    if (onResetRef) {
+      reset();
+      console.log('Reviews list has been reset');
+    }
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

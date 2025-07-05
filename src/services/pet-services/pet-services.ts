@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ReviewForm } from "../../components/pages/Services/ReviewDialog";
 
 export class PetServicesService {
     async listServices(
@@ -94,6 +95,15 @@ export class PetServicesService {
             limit: limit,
             offset: offset
         }, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
+
+    async submitReview(data: ReviewForm) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/review`, data, {
             headers: {
                 "Authorization": localStorage.getItem("cognitoIdToken")
             }

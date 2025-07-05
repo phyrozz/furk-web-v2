@@ -10,6 +10,7 @@ import BookingDialog from './BookingDialog';
 import { loginService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../../services/toast/toast-service';
 import WarningContainer from '../../common/WarningContainer';
+import ReviewDialog from './ReviewDialog';
 
 interface ServiceDetail {
   id: number;
@@ -26,6 +27,8 @@ interface ServiceDetail {
   attachments: string[];
   business_hours: BusinessHour[];
   hasBooked: boolean;
+  has_reviewed: boolean;
+  last_completed_timestamp: string | null;
 }
 
 export interface BusinessHour {
@@ -158,194 +161,210 @@ const ServiceDetails = () => {
     setHasBooked(true);
   }
 
+  const onReviewSubmit = () => {
+  };
+
+  const isReviewable = () => {
+    const lastCompletedTimestamp = service.last_completed_timestamp;
+    if (!lastCompletedTimestamp) return false;
+    const lastCompletedDate = new Date(lastCompletedTimestamp);
+    const currentDate = new Date();
+    const oneWeekAgo = new Date(currentDate);
+    oneWeekAgo.setDate(currentDate.getDate() - 7);
+    return lastCompletedDate >= oneWeekAgo;
+  }
+
   return (
-    <div className="pt-24 min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
-        >
-          {/* Left Column - Service Information */}
+    <>
+      {service.last_completed_timestamp && isReviewable() && !service.has_reviewed && <ReviewDialog serviceId={service.id} onReviewSubmit={onReviewSubmit} />}
+      <div className="pt-24 min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4">
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-sm p-8 flex flex-col justify-between"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
           >
-            <div className="space-y-4">
-              <h1 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-6">{service.name}</h1>
-              <motion.div 
-                whileHover={{ x: 5 }}
-                className="flex items-center"
-              >
-                <MapPin className="w-6 h-6 mr-3 text-primary-500" />
-                <Link to={`/merchants/${service.merchant_id}`} className="text-lg hover:underline">
-                  {service.business_name}
-                </Link>
-              </motion.div>
-              <motion.div 
-                whileHover={{ x: 5 }}
-                className="flex items-center"
-              >
-                <Star className="w-6 h-6 mr-3 text-accent-400" />
-                <span className="text-lg font-semibold">{service.average_rating.toFixed(1)} Rating</span>
-              </motion.div>
-              <motion.div 
-                whileHover={{ x: 5 }}
-                className="flex items-center"
-              >
-                <Tag className="w-6 h-6 mr-3 text-primary-500" />
-                <span className="text-lg">{service.service_category_name}</span>
-              </motion.div>
-            </div>
+            {/* Left Column - Service Information */}
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="mt-6 flex flex-row justify-between items-center"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-lg shadow-sm p-8 flex flex-col justify-between"
             >
-              <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">₱{service.price}</p>
-              <div>
-                <Button
-                  icon={<Heart fill={isFavorite ? "currentColor" : "none"} />}
-                  variant="ghost"
-                  onClick={async () => {
-                    if (!isAuthenticated) {
-                      navigate('/login');
-                    } else {
-                      await onFavorite();
-                    }
-                  }}
-                  loading={isFavoriteLoading}
-                />
-              </div>            
+              <div className="space-y-4">
+                <h1 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-6">{service.name}</h1>
+                <motion.div 
+                  whileHover={{ x: 5 }}
+                  className="flex items-center"
+                >
+                  <MapPin className="w-6 h-6 mr-3 text-primary-500" />
+                  <Link to={`/merchants/${service.merchant_id}`} className="text-lg hover:underline">
+                    {service.business_name}
+                  </Link>
+                </motion.div>
+                <motion.div 
+                  whileHover={{ x: 5 }}
+                  className="flex items-center"
+                >
+                  <Star className="w-6 h-6 mr-3 text-accent-400" />
+                  <span className="text-lg font-semibold">{service.average_rating.toFixed(1)} Rating</span>
+                </motion.div>
+                <motion.div 
+                  whileHover={{ x: 5 }}
+                  className="flex items-center"
+                >
+                  <Tag className="w-6 h-6 mr-3 text-primary-500" />
+                  <span className="text-lg">{service.service_category_name}</span>
+                </motion.div>
+              </div>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-6 flex flex-row justify-between items-center"
+              >
+                <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">₱{service.price}</p>
+                <div>
+                  <Button
+                    icon={<Heart fill={isFavorite ? "currentColor" : "none"} />}
+                    variant="ghost"
+                    onClick={async () => {
+                      if (!isAuthenticated) {
+                        navigate('/login');
+                      } else {
+                        await onFavorite();
+                      }
+                    }}
+                    loading={isFavoriteLoading}
+                  />
+                </div>            
+              </motion.div>
+            </motion.div>
+
+            {/* Right Column - Image Gallery */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="relative rounded-lg overflow-hidden shadow-lg"
+            >
+              {service.attachments.length > 0 && (
+                <>
+                  <motion.img
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    src={service.attachments[selectedImage]}
+                    alt={`${service.name} - Image ${selectedImage + 1}`}
+                    className="w-full h-[400px] object-cover"
+                  />
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="absolute bottom-4 left-4 right-4 bg-white/90 rounded-lg p-3"
+                  >
+                    <div className="flex gap-2 overflow-x-auto overflow-y-hidden">
+                      {service.attachments.map((attachment, index) => (
+                        <motion.img
+                          whileHover={{ scale: 1.1 }}
+                          key={index}
+                          src={attachment}
+                          alt={`${service.name} - Thumbnail ${index + 1}`}
+                          className={`w-16 h-16 object-cover rounded cursor-pointer transition-all flex-shrink-0 ${
+                            selectedImage === index ? 'ring-2 ring-primary-500' : 'opacity-70 hover:opacity-100'
+                          }`}
+                          onClick={() => setSelectedImage(index)}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                </>
+              )}
             </motion.div>
           </motion.div>
 
-          {/* Right Column - Image Gallery */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="relative rounded-lg overflow-hidden shadow-lg"
-          >
-            {service.attachments.length > 0 && (
-              <>
-                <motion.img
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  src={service.attachments[selectedImage]}
-                  alt={`${service.name} - Image ${selectedImage + 1}`}
-                  className="w-full h-[400px] object-cover"
-                />
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="absolute bottom-4 left-4 right-4 bg-white/90 rounded-lg p-3"
-                >
-                  <div className="flex gap-2 overflow-x-auto overflow-y-hidden">
-                    {service.attachments.map((attachment, index) => (
-                      <motion.img
-                        whileHover={{ scale: 1.1 }}
-                        key={index}
-                        src={attachment}
-                        alt={`${service.name} - Thumbnail ${index + 1}`}
-                        className={`w-16 h-16 object-cover rounded cursor-pointer transition-all flex-shrink-0 ${
-                          selectedImage === index ? 'ring-2 ring-primary-500' : 'opacity-70 hover:opacity-100'
-                        }`}
-                        onClick={() => setSelectedImage(index)}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </motion.div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 select-none">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="lg:col-span-1 h-full lg:pb-8 pb-0 order-1 lg:order-2"
-          >
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
-              <h2 className="text-2xl font-semibold mb-4">Contact</h2>
-              <div className="space-y-4">
-                <motion.div 
-                  whileHover={{ x: 5 }}
-                  className="flex items-center text-gray-600"
-                >
-                  <Phone className="w-5 h-5 mr-3" />
-                  <a href={`tel:${service.phone_number}`}>{service.phone_number}</a>
-                </motion.div>
-                <motion.div 
-                  whileHover={{ x: 5 }}
-                  className="flex items-center text-gray-600"
-                >
-                  <Mail className="w-5 h-5 mr-3" />
-                  <a href={`mailto:${service.email}`}>{service.email}</a>
-                </motion.div>
-              </div>
-              {isAuthenticated ? (
-                isNotUser ? (
-                  <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
-                ) : hasBooked ? (
-                  <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 select-none">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="lg:col-span-1 h-full lg:pb-8 pb-0 order-1 lg:order-2"
+            >
+              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
+                <h2 className="text-2xl font-semibold mb-4">Contact</h2>
+                <div className="space-y-4">
+                  <motion.div 
+                    whileHover={{ x: 5 }}
+                    className="flex items-center text-gray-600"
+                  >
+                    <Phone className="w-5 h-5 mr-3" />
+                    <a href={`tel:${service.phone_number}`}>{service.phone_number}</a>
+                  </motion.div>
+                  <motion.div 
+                    whileHover={{ x: 5 }}
+                    className="flex items-center text-gray-600"
+                  >
+                    <Mail className="w-5 h-5 mr-3" />
+                    <a href={`mailto:${service.email}`}>{service.email}</a>
+                  </motion.div>
+                </div>
+                {isAuthenticated ? (
+                  isNotUser ? (
+                    <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
+                  ) : hasBooked ? (
+                    <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
+                  ) : (
+                    <Button
+                      variant="primary"
+                      className="w-full mt-6"
+                      onClick={() => setIsBookingDialogOpen(true)}
+                    >
+                      Book Now
+                    </Button>
+                  )
                 ) : (
-                  <Button
-                    variant="primary"
-                    className="w-full mt-6"
-                    onClick={() => setIsBookingDialogOpen(true)}
-                  >
-                    Book Now
-                  </Button>
-                )
-              ) : (
-                <motion.div whileHover={{ scale: 1.02 }}>
-                  <Button
-                    variant="primary"
-                    className="w-full mt-6"
-                    onClick={() => navigate('/login')}
-                  >
-                    Sign in now to book
-                  </Button>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="lg:col-span-2 space-y-8 lg:pb-8 pb-0 order-2 lg:order-1"
-          >
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">About</h2>
-              <p className="text-gray-600">{service.description}</p>
-            </div>
-            
-            <div className="lg:pb-0 pb-8">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <ReviewsList serviceId={service.id} />
+                  <motion.div whileHover={{ scale: 1.02 }}>
+                    <Button
+                      variant="primary"
+                      className="w-full mt-6"
+                      onClick={() => navigate('/login')}
+                    >
+                      Sign in now to book
+                    </Button>
+                  </motion.div>
+                )}
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <BookingDialog
-            isOpen={isBookingDialogOpen}
-            onClose={handleBookingDialogClose}
-            onSuccess={handleBookingDialogSuccess}
-            serviceId={service.id}
-            businessHours={service.business_hours}
-          />
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="lg:col-span-2 space-y-8 lg:pb-8 pb-0 order-2 lg:order-1"
+            >
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-2xl font-semibold mb-4">About</h2>
+                <p className="text-gray-600">{service.description}</p>
+              </div>
+              
+              <div className="lg:pb-0 pb-8">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <ReviewsList serviceId={service.id} onResetRef={onReviewSubmit} />
+                </div>
+              </div>
+            </motion.div>
+
+            <BookingDialog
+              isOpen={isBookingDialogOpen}
+              onClose={handleBookingDialogClose}
+              onSuccess={handleBookingDialogSuccess}
+              serviceId={service.id}
+              businessHours={service.business_hours}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
