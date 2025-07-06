@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { PetServicesService } from "../../../services/pet-services/pet-services";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
 import { Star } from 'lucide-react';
@@ -16,10 +16,13 @@ interface Review {
 
 interface ReviewsListProps {
   serviceId: number;
-  onResetRef?: (resetFn: () => void) => void;
 }
 
-const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId, onResetRef }) => {
+export interface ReviewsListRef {
+  reset: () => void;
+}
+
+const ReviewsList = forwardRef<ReviewsListRef, ReviewsListProps>(({ serviceId }, ref) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<boolean>(false);
   const petServicesService = new PetServicesService();
@@ -55,12 +58,10 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId, onResetRef }) => {
     keyword: ''
   });
 
-  useEffect(() => {
-    if (onResetRef) {
-      reset();
-      console.log('Reviews list has been reset');
-    }
-  }, []);
+  // Expose `reset` to parent
+  useImperativeHandle(ref, () => ({
+    reset
+  }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -152,6 +153,6 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ serviceId, onResetRef }) => {
       </div>
     </div>
   );
-};
+});
 
 export default ReviewsList;

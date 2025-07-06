@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MapPin, Star, Phone, Mail, Tag, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import PawLoading from '../../common/PawLoading';
-import ReviewsList from './ReviewsList';
+import ReviewsList, { ReviewsListRef } from './ReviewsList';
 import BookingDialog from './BookingDialog';
 import { loginService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../../services/toast/toast-service';
@@ -51,6 +51,7 @@ const ServiceDetails = () => {
   const [hasBooked, setHasBooked] = useState<boolean>(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const reviewsRef = useRef<ReviewsListRef>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -162,6 +163,7 @@ const ServiceDetails = () => {
   }
 
   const onReviewSubmit = () => {
+    reviewsRef.current?.reset(); // Trigger refresh of reviews
   };
 
   const isReviewable = () => {
@@ -349,7 +351,7 @@ const ServiceDetails = () => {
               
               <div className="lg:pb-0 pb-8">
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <ReviewsList serviceId={service.id} onResetRef={onReviewSubmit} />
+                  <ReviewsList serviceId={service.id} ref={reviewsRef} />
                 </div>
               </div>
             </motion.div>

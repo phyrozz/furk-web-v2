@@ -61,7 +61,7 @@ const ReviewDialog: React.FC<ReviewDialogProps> = ({ serviceId, onReviewSubmit }
         </div>
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">
-            Rating *
+            Rating
           </label>
           <div className="flex w-full justify-start items-center">
             <Rating
