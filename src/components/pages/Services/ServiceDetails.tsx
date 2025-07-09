@@ -11,6 +11,7 @@ import { loginService } from '../../../services/auth/auth-service';
 import { ToastService } from '../../../services/toast/toast-service';
 import WarningContainer from '../../common/WarningContainer';
 import ReviewDialog from './ReviewDialog';
+import RecommendedServicesList from './RecommendedServicesList';
 
 interface ServiceDetail {
   id: number;
@@ -347,6 +348,13 @@ const ServiceDetails = () => {
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-2xl font-semibold mb-4">About</h2>
                 <p className="text-gray-600">{service.description}</p>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-2xl font-semibold mb-4">Similar Services</h2>
+                <RecommendedServicesList 
+                  serviceId={service.id}
+                />
               </div>
               
               <div className="lg:pb-0 pb-8">

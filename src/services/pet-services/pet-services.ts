@@ -110,4 +110,17 @@ export class PetServicesService {
         });
         return response.data;
     }
+
+    async listRecommendations(limit: number, offset: number, serviceId: number) {
+        const response = await axios.post(import.meta.env.VITE_API_URL + `/pet-services/list-recommendations`, {
+            limit: limit,
+            offset: offset,
+            service_id: serviceId
+        }, {
+            headers: {
+                "Authorization": localStorage.getItem("cognitoIdToken")
+            }
+        });
+        return response.data;
+    }
 }
