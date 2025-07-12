@@ -30,6 +30,7 @@ interface ServiceDetail {
   hasBooked: boolean;
   has_reviewed: boolean;
   last_completed_timestamp: string | null;
+  rating_count: number;
 }
 
 export interface BusinessHour {
@@ -210,7 +211,10 @@ const ServiceDetails = () => {
                   className="flex items-center"
                 >
                   <Star className="w-6 h-6 mr-3 text-accent-400" />
-                  <span className="text-lg font-semibold">{service.average_rating.toFixed(1)} Rating</span>
+                  <span className="text-lg font-semibold">
+                    {service.average_rating.toFixed(1)}
+                    {` (${service.rating_count} reviews)`}
+                  </span>
                 </motion.div>
                 <motion.div 
                   whileHover={{ x: 5 }}
