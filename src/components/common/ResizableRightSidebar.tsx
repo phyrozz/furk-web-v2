@@ -76,7 +76,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-30"
             onClick={onClose}
           />
           <motion.div
@@ -85,7 +85,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
             exit={{ x: '100%' }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             style={{ width: `${width}px` }}
-            className="fixed right-0 top-0 h-full bg-white shadow-lg flex flex-col z-50"
+            className="fixed right-0 top-0 h-full bg-white shadow-lg flex flex-col z-40"
           >
             <div
               className={`absolute left-0 top-0 h-full w-2 ${isMobile.current ? '' : 'cursor-ew-resize'}`}

@@ -9,6 +9,7 @@ import TimeInput from '../../common/TimeInput';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import Autocomplete from '../../common/Autocomplete';
 import { BusinessHour } from './ServiceDetails';
+import SuccessDialog from '../../common/SuccessDialog';
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState(0);
 
   const petServicesService = new PetServicesService();
 
@@ -150,30 +153,47 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     try {
       const bookingDateTime = new Date(`${selectedDate}T${selectedTime}`);
 
-      await petServicesService.createBooking({
+      const response = await petServicesService.createBooking({
         service_id: serviceId,
         booking_datetime: bookingDateTime.toISOString(),
         payment_method_id: selectedPaymentMethod,
         pet_ids: [selectedPet.id]
       });
 
-      ToastService.show('Booking created successfully');
+      // Get the added points from the response
+      const addedPoints = response.data.added_points || 0;
+      setEarnedPoints(addedPoints);
+      
+      // Show success dialog instead of closing immediately
+      setShowSuccessDialog(true);
+      
+      // Call onSuccess to update parent component
       onSuccess();
-      onClose();
     } catch (err) {
       ToastService.show('Failed to create booking');
       setError('Failed to create booking. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
 
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false);
+    onClose();
+    setLoading(false);
+  };
+
   return (
-    <ResizableRightSidebar
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Book Service"
-    >
+    <>
+      <SuccessDialog 
+        isOpen={showSuccessDialog} 
+        onClose={handleSuccessDialogClose} 
+        points={earnedPoints} 
+      />
+      <ResizableRightSidebar
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Book Service"
+      >
       <form onSubmit={handleSubmit} className="p-2 flex flex-col justify-between h-full">
         <div className="flex flex-col gap-4">
           <div>
@@ -253,6 +273,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
         </div>
       </form>
     </ResizableRightSidebar>
+    </>
   );
 };
 
