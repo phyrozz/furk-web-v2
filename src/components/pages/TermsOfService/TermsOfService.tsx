@@ -41,7 +41,10 @@ const TermsOfService = () => {
             <p className='ml-4'>By registering as a Merchant on Furk, you agree to a platform service fee of <strong>10%</strong> of the total booking amount. This fee will be automatically deducted from your payout for each confirmed booking. The remaining 90% will be disbursed to your registered Maya account after the service is marked as completed.</p>
             <p className='ml-4'>Merchants are solely responsible for the delivery and quality of their services. Any disputes, complaints, or chargebacks arising from your services may impact your eligibility to continue offering services on Furk.</p>
 
-            <h2 className="text-xl font-semibold mt-6">6. Modifications to Terms</h2>
+            <h2 className="text-xl font-semibold mt-6">6. Force Majeure and Weather Conditions</h2>
+            <p>Furk shall not be held liable for any failure to perform, delays, or disruptions to services booked through the App due to weather conditions, natural disasters, government actions, pandemics, power outages, or other force majeure events beyond our reasonable control. It is the responsibility of both Pet Owners and Merchants to communicate and resolve any service changes or cancellations arising from such events.</p>
+
+            <h2 className="text-xl font-semibold mt-6">7. Modifications to Terms</h2>
             <p>Furk reserves the right to modify these Terms at any time. Changes will be effective upon posting. Continued use of the App after such changes constitutes your acceptance of the revised Terms.</p>
 
             <h2 className="text-xl font-semibold mt-6">7. Contact Us</h2>
