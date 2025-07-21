@@ -87,7 +87,7 @@ const BookingHistory = () => {
   const navigate = useNavigate();
 
   const fetchBookings = async (limit: number, offset: number) => {
-    const res = await service.listBookingHistory(limit, offset);
+    const res: any = await service.listBookingHistory(limit, offset);
     // If the API returns { data: Booking[] }, adjust accordingly
     return res.data || [];
   };

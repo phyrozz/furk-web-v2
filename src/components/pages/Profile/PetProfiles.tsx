@@ -70,7 +70,7 @@ const PetProfiles = () => {
 
     const loadPets = async () => {
         try {
-            const response = await dataService.listPetProfiles(100, 0);
+            const response: any = await dataService.listPetProfiles(100, 0);
             setPets(response.data);
             setLoading(false);
         } catch (error) {
