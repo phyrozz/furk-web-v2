@@ -1,4 +1,4 @@
-import axios from "axios";
+import { http } from "../../utils/http";
 
 export class MerchantBookingsService {
   async listBookings(
@@ -6,7 +6,7 @@ export class MerchantBookingsService {
     startDate: Date = new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: Date = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
     keyword: string = ''
-  ) {
+  ): Promise<any> {
     const data = {
       status: status === 'All' ? null : status,
       start_date: startDate.toISOString().split('T')[0],
@@ -14,56 +14,26 @@ export class MerchantBookingsService {
       keyword: keyword,
     }
 
-    const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant/booking/list", data, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+    return http.post('/merchant/booking/list', data);
   }
 
-  async getBookingDetails(id: number) {
-    const response = await axios.get(import.meta.env.VITE_API_URL + `/merchant/booking/get/${id}`, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+  async getBookingDetails(id: number): Promise<any> {
+    return http.get(`/merchant/booking/get/${id}`);
   }
 
-  async confirmBooking(id: number) {
-    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/confirm/${id}`, {}, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+  async confirmBooking(id: number): Promise<any> {
+    return http.post(`/merchant/booking/confirm/${id}`);
   }
 
-  async cancelBooking(id: number) {
-    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/cancel/${id}`, {}, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+  async cancelBooking(id: number): Promise<any> {
+    return http.post(`/merchant/booking/cancel/${id}`, {});
   }
 
-  async startService(id: number) {
-    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/start/${id}`, {}, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+  async startService(id: number): Promise<any> {
+    return http.post(`/merchant/booking/start/${id}`, {});
   }
 
-  async completeService(id: number) {
-    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant/booking/complete/${id}`, {}, {
-      headers: {
-        "Authorization": localStorage.getItem("cognitoIdToken")
-      }
-    });
-    return response.data;
+  async completeService(id: number): Promise<any> {
+    return http.post(`/merchant/booking/complete/${id}`, {});
   }
 }

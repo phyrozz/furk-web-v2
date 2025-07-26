@@ -54,7 +54,7 @@ const Favorites = () => {
   const navigate = useNavigate();
 
   const fetchFavorites = async (limit: number, offset: number) => {
-    const res = await service.listFavorites(limit, offset);
+    const res: any = await service.listFavorites(limit, offset);
     return res.data || [];
   };
 

@@ -36,7 +36,7 @@ const ManageService = () => {
     reset
   } = useLazyLoad<Service>({
     fetchData: (limit, offset, keyword) =>
-      serviceApi.listServices(limit, offset, keyword).then((res) => res.data || []),
+      serviceApi.listServices(limit, offset, keyword).then((res: any) => res.data || []),
     keyword: debouncedKeyword,
   });
 

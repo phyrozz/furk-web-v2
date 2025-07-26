@@ -9,6 +9,7 @@ import { MerchantDashboardService } from '../../../services/merchant-dashboard/m
 import PawLoading from '../../common/PawLoading';
 import { RecentActivities } from './MerchantDashboard/RecentActivities';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
+import { useMerchantStatus } from '../../../hooks/useMerchantStatus';
 
 const merchantDashboardService = new MerchantDashboardService();
 
@@ -37,8 +38,6 @@ interface Stats {
 }
 
 const MerchantDashboard = () => {
-  const [merchantStatus, setMerchantStatus] = useState<'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended'>('pending');
-  const [hasBusinessHours, setHasBusinessHours] = useState<boolean>(false);
   const [stats, setStats] = useState<Stats>({
     total_bookings_count: 0,
     pending_only_count: 0,
@@ -50,7 +49,7 @@ const MerchantDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const data = await merchantDashboardService.getDashboardStats();
+      const data: any = await merchantDashboardService.getDashboardStats();
       setStats(data.data || []);
     } catch (err) {
       console.error('Error fetching appointments:', err);
@@ -62,7 +61,7 @@ const MerchantDashboard = () => {
 
   const fetchRecentActivities = useCallback(async (limit: number, offset: number) => {
     try {
-      const response = await merchantDashboardService.getRecentActivities(limit, offset);
+      const response: any = await merchantDashboardService.getRecentActivities(limit, offset);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch recent activities:', error);
@@ -140,18 +139,20 @@ const MerchantDashboard = () => {
     },
   ];
 
-  useEffect(() => {
-    const status = localStorage.getItem('merchantStatus')!;
-    const hasBusinessHours = localStorage.getItem('hasBusinessHours')!;
-    setHasBusinessHours(hasBusinessHours === 'true');
-    setMerchantStatus(status as 'verified' | 'unverified' | 'pending' | 'rejected' | 'suspended');
-  }, []);
+  const { status, hasBusinessHours } = useMerchantStatus();
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 cursor-default">
+      <div className="h-screen bg-gray-50 overflow-y-auto">
       <MerchantNavbar />
-      <div className="container mx-auto px-4 py-8">
-        {(merchantStatus === 'unverified' || !hasBusinessHours) && (
+
+      {(status === null || hasBusinessHours === null) && 
+        <div className="w-full h-full overflow-hidden flex flex-1 items-center justify-center">
+          <PawLoading />
+        </div>
+      }
+
+      {(status !== null && hasBusinessHours !== null) && <div className="container mx-auto px-4 py-8 pt-24">
+        {(status === 'unverified' || !hasBusinessHours) && (
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
             <h1 className="text-2xl font-bold text-primary-800 mb-3">
               Welcome to Furk! 🐾
@@ -177,7 +178,7 @@ const MerchantDashboard = () => {
           </div>
         )}
 
-        {merchantStatus === 'unverified' && (
+        {status === 'unverified' && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between md:flex-row flex-col gap-4">
               <div>
@@ -200,7 +201,7 @@ const MerchantDashboard = () => {
           </div>
         )}
 
-        {merchantStatus === 'pending' && (
+        {status === 'pending' && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between">
               <div>
@@ -223,18 +224,18 @@ const MerchantDashboard = () => {
                   Business Hours Required
                 </h2>
                 <p className="text-warning-600 mt-1">
-                  Please set your business hours before proceeding with merchant verification. This helps customers know when your services are available.
+                  Please set your business hours before setting up your services. This helps customers know when your services are available.
                 </p>
               </div>
               <div className="flex flex-col justify-center md:items-end items-center">
                 <Button
                   size="lg"
                   onClick={() => navigate('/merchant/business-hours')}
-                  disabled={merchantStatus === 'unverified'}
+                  disabled={status === 'unverified'}
                 >
                   Set Business Hours
                 </Button>
-                {merchantStatus === 'unverified' && (
+                {status === 'unverified' && (
                   <p className="text-sm text-warning-600 mt-2 text-right">
                     Please verify your business first before setting business hours
                   </p>
@@ -245,7 +246,7 @@ const MerchantDashboard = () => {
         )}
 
         {/* Quick Actions */}
-        {merchantStatus !== 'unverified' && 
+        {status !== 'unverified' && 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {quickActions.map((action, index) => (
               <Button
@@ -300,7 +301,7 @@ const MerchantDashboard = () => {
           />
           <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
         </div>
-      </div>
+      </div>}
     </div>
   );
 };

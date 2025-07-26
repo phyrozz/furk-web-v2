@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { Amplify } from 'aws-amplify';
-import { eventEmitter } from '../../utils/event-emitter';
 import { 
   signIn, 
   signOut, 
@@ -138,7 +137,7 @@ export class LoginService {
       localStorage.setItem('token', responseData.token!);
       localStorage.setItem('cognitoAccessToken', tokens.accessToken);
       localStorage.setItem('cognitoIdToken', tokens.idToken);
-      localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
+      // localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
       localStorage.setItem('roleName', responseData.role!);
       localStorage.setItem('merchantStatus', responseData.merchant_status!);
       localStorage.setItem('hasBusinessHours', responseData.has_business_hours!);
@@ -263,44 +262,45 @@ export class LoginService {
   }
 
   public async isAuthenticated(): Promise<boolean> {
-    const cognitoAccessToken = localStorage.getItem('cognitoAccessToken');
-    const cognitoIdToken = localStorage.getItem('cognitoIdToken');
-    const roleName = localStorage.getItem('roleName');
-
-    if (!cognitoAccessToken || !cognitoIdToken || !roleName) {
-      return false;
-    }
-
     try {
-      console.log('Checking session...');
+      const authSession = await fetchAuthSession();
+      const roleName = localStorage.getItem('roleName');
 
-      const tokenPayload = JSON.parse(atob(cognitoAccessToken.split('.')[1]));
-      const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
-      const currentTime = Date.now();
-      const oneWeek = 7 * 24 * 60 * 60 * 1000; // One week in milliseconds
-
-      // Check if token is expired but not more than a week old
-      if (currentTime >= expirationTime && currentTime - expirationTime < oneWeek) {
-        try {
-          eventEmitter.emit('tokenExpired');
-          console.log('Awaiting user response for refreshing session...');
-          await this.refreshSession();
-          return true;
-        } catch (error) {
-          console.error('Error refreshing session:', error);
-          return false;
-        }
+      if (!authSession || !roleName) {
+        return false;
       }
 
-      // Check if token is more than a week old
-      if (currentTime - expirationTime >= oneWeek) {
-        localStorage.clear();
+      console.log('Checking session...');
 
-        ToastService.show('Session expired. Please login again.');
-        this.logout().catch(error => {
-          console.error('Error during logout:', error);
-        });
+      // check if the auth session token is still valid
+      const tokens = authSession.tokens;
+      if (!tokens || !tokens.idToken) {
         return false;
+      }
+
+      const idToken = tokens.idToken;
+      const currentTime = Math.floor(Date.now() / 1000);
+
+      if (currentTime >= (idToken?.payload?.exp ?? 0)) {
+        try {
+          // Try to refresh the session
+          await this.refreshSession();
+          return true;
+        } catch (refreshError: any) {
+          console.error('Error refreshing session:', refreshError);
+          
+          // Check if the refresh token is expired or invalid
+          if (refreshError.name === 'TokenException' || 
+              refreshError.message?.includes('refresh token has expired') ||
+              refreshError.message?.includes('Invalid refresh token')) {
+            await this.logout();
+            ToastService.show('Your session has expired. Please login again.');
+          } else {
+            localStorage.clear();
+            ToastService.show('Session expired. Please login again.');
+          }
+          return false;
+        }
       }
 
       return true;

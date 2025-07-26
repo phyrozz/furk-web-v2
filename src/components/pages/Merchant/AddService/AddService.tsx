@@ -45,7 +45,7 @@ const AddService = () => {
   const handleSearch = async (keyword: string) => {
     setIsLoading(true);
     try {
-      const response = await dataService.listServiceCategories(limit, 0, keyword);
+      const response: any = await dataService.listServiceCategories(limit, 0, keyword);
       setCategories(response.data);
       setHasMore(response.data.length === limit);
       setKeyword(keyword);
@@ -62,7 +62,7 @@ const AddService = () => {
     
     setIsLoading(true);
     try {
-      const response = await dataService.listServiceCategories(limit, offset, keyword);
+      const response: any = await dataService.listServiceCategories(limit, offset, keyword);
       setCategories(prev => [...prev, ...response.data]);
       setHasMore(response.data.length === limit);
       setOffset(prev => prev + limit);
@@ -96,7 +96,7 @@ const AddService = () => {
     setIsSubmitting(true);
 
     try {
-      const insertResponse = await dataService.insertService(formData);
+      const insertResponse: any = await dataService.insertService(formData);
       const serviceId = insertResponse.data.service_id;
       await uploadImages(serviceId);
 

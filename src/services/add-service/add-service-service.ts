@@ -1,22 +1,17 @@
-import axios from "axios";
+import { http } from "../../utils/http";
 
 export class AddServiceService {
-    async listServiceCategories(limit: number, offset: number, keyword: string) {
+    async listServiceCategories(limit: number, offset: number, keyword: string): Promise<any> {
         const data = {
             limit: limit,
             offset: offset,
             keyword: keyword
         }
 
-        const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/list-service-categories", data, {
-            headers: {
-                'Authorization': localStorage.getItem('cognitoIdToken')
-            }
-        });
-        return response.data;
+        return http.post('/merchant-service/list-service-categories', data);
     }
 
-    async insertService(formData: any) {
+    async insertService(formData: any): Promise<any> {
         const data = {
             service_category_id: formData.category.id,
             name: formData.name,
@@ -24,12 +19,6 @@ export class AddServiceService {
             price: formData.price
         };
 
-        const response = await axios.post(import.meta.env.VITE_API_URL + "/merchant-service/insert", data, {
-            headers: {
-                'Authorization': localStorage.getItem('cognitoIdToken'),
-                'Content-Type': 'application/json'
-            }
-        });
-        return response.data;
+        return http.post('/merchant-service/insert', data);
     }
   }

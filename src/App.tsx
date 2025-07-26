@@ -30,31 +30,31 @@ import BookingProgressTracker from './components/common/BookingProgressTracker';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
 
 function App() {
-  const [isTokenExpired, setIsTokenExpired] = useState(false);
+  // const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const handleTokenExpired = () => {
-      setIsTokenExpired(true);
-    };
+  // useEffect(() => {
+  //   const handleTokenExpired = () => {
+  //     setIsTokenExpired(true);
+  //   };
 
-    eventEmitter.on('tokenExpired', handleTokenExpired);
+  //   eventEmitter.on('tokenExpired', handleTokenExpired);
 
-    // Periodically check token status
-    const intervalId = setInterval(async () => {
-      await loginService.isAuthenticated();
-    }, 60 * 1000); // Check every 1 minute
+  //   // Periodically check token status
+  //   const intervalId = setInterval(async () => {
+  //     await loginService.isAuthenticated();
+  //   }, 60 * 1000); // Check every 1 minute
 
-    return () => {
-      eventEmitter.off('tokenExpired', handleTokenExpired);
-      clearInterval(intervalId);
-    };
-  }, []);
+  //   return () => {
+  //     eventEmitter.off('tokenExpired', handleTokenExpired);
+  //     clearInterval(intervalId);
+  //   };
+  // }, []);
 
-  const handleConfirmRefresh = () => {
-    setIsTokenExpired(false);
-    window.location.reload();
-  };
+  // const handleConfirmRefresh = () => {
+  //   setIsTokenExpired(false);
+  //   window.location.reload();
+  // };
 
   return (
     <ToastProvider>
@@ -165,7 +165,7 @@ function App() {
         </AuthWrapper>
         
       </Router>
-      <TokenExpiredDialog isOpen={isTokenExpired} onConfirm={handleConfirmRefresh} />
+      {/* <TokenExpiredDialog isOpen={isTokenExpired} onConfirm={handleConfirmRefresh} /> */}
     </ToastProvider>
   );
 }
