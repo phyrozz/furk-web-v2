@@ -23,7 +23,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
     try {
       setLoading(true);
       setError(null);
-      const response = await adminDashboardService.listServices(10, 0, searchTerm, filter);
+      const response: any = await adminDashboardService.listServices(10, 0, searchTerm, filter);
       const filteredMerchants = response.data.filter(
         (merchant: MerchantApplication) => merchant.status === filter
       );

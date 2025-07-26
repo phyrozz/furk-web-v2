@@ -1,4 +1,4 @@
-import axios from "axios";
+import { http } from "../../utils/http";
 
 export interface PopularService {
   id: number;
@@ -14,7 +14,6 @@ export interface PopularService {
 
 export class HomeService {
   async listPopularServices(): Promise<{ data: PopularService[] }> {
-    const response = await axios.post(import.meta.env.VITE_API_URL + "/top-pet-services/list-by-popularity");
-    return response.data;
+    return http.publicPost('/top-pet-services/list-by-popularity');
   }
 }

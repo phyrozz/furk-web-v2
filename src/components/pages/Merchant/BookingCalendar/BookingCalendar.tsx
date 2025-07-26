@@ -53,7 +53,7 @@ const BookingCalendar: React.FC = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
+      const response: any = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
       const formattedEvents: BookingEvent[] = response.data.map((booking: any) => {
         const eventDate = booking.start_datetime || booking.booking_datetime;
         let startDateTime;

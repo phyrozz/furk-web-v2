@@ -50,7 +50,7 @@ const MerchantDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const data = await merchantDashboardService.getDashboardStats();
+      const data: any = await merchantDashboardService.getDashboardStats();
       setStats(data.data || []);
     } catch (err) {
       console.error('Error fetching appointments:', err);
@@ -62,7 +62,7 @@ const MerchantDashboard = () => {
 
   const fetchRecentActivities = useCallback(async (limit: number, offset: number) => {
     try {
-      const response = await merchantDashboardService.getRecentActivities(limit, offset);
+      const response: any = await merchantDashboardService.getRecentActivities(limit, offset);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch recent activities:', error);
@@ -223,7 +223,7 @@ const MerchantDashboard = () => {
                   Business Hours Required
                 </h2>
                 <p className="text-warning-600 mt-1">
-                  Please set your business hours before proceeding with merchant verification. This helps customers know when your services are available.
+                  Please set your business hours before setting up your services. This helps customers know when your services are available.
                 </p>
               </div>
               <div className="flex flex-col justify-center md:items-end items-center">

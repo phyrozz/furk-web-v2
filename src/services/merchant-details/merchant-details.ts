@@ -1,18 +1,17 @@
-import axios from "axios";
+import { http } from "../../utils/http";
 
 export class MerchantDetailsService {
-  async getMerchantDetails(id: string) {
-    const response = await axios.get(import.meta.env.VITE_API_URL + `/merchant-details/${id}`);
-    return response.data;
+  async getMerchantDetails(id: string): Promise<any> {
+    return http.publicGet(`/merchant-details/${id}`);
   }
 
-  async listServicesByMerchant(offset: number, limit: number, merchantId: string, keyword: string) {
+  async listServicesByMerchant(offset: number, limit: number, merchantId: string, keyword: string): Promise<any> {
     const data = {
       offset: offset,
       limit: limit,
       keyword: keyword,
     }
-    const response = await axios.post(import.meta.env.VITE_API_URL + `/merchant-details/${merchantId}/services`, data);
-    return response.data;
+
+    return http.publicPost(`/merchant-details/${merchantId}/services`, data);
   }
 }

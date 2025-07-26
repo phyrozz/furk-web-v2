@@ -70,7 +70,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
     setDataLoading(true);
     const fetchBookingDetails = async () => {
       if (bookingId) {
-        const data = await bookingsService.getBookingDetails(bookingId);
+        const data: any = await bookingsService.getBookingDetails(bookingId);
         setBookingDetails(data.data);
       }
       setDataLoading(false);

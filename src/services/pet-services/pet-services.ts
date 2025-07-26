@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ReviewForm } from "../../components/pages/Services/ReviewDialog";
+import { http } from "../../utils/http";
 
 export class PetServicesService {
     async listServices(
@@ -11,7 +12,7 @@ export class PetServicesService {
         serviceGroupId: number = 0,
         sortBy: string = "distance_meters",
         sortOrder: string = "DESC"
-    ) {
+    ): Promise<any> {
         const data = {
             limit: limit,
             offset: offset,
@@ -23,11 +24,10 @@ export class PetServicesService {
             service_group_id: serviceGroupId
         }
 
-        const response = await axios.post(import.meta.env.VITE_API_URL + "/pet-services/list", data);
-        return response.data;
+        return http.publicPost('/pet-services/list', data);
     }
 
-    async getServiceDetails(id: number) {
+    async getServiceDetails(id: number): Promise<any> {
         const cognitoIdToken = localStorage.getItem("cognitoIdToken");
         const config: any = {};
         if (cognitoIdToken) {
@@ -35,8 +35,8 @@ export class PetServicesService {
                 "Authorization": cognitoIdToken
             };
         }
-        const response = await axios.get(import.meta.env.VITE_API_URL + `/pet-services/get/${id}`, config);
-        return response.data;
+
+        return http.get(`/pet-services/get/${id}`, config);
     }
 
     async listReviews(
@@ -44,7 +44,7 @@ export class PetServicesService {
         offset: number,
         serviceId: number,
         sortOrder: "ASC" | "DESC" = "DESC"
-    ) {
+    ): Promise<any> {
         const data = {
             limit: limit,
             offset: offset,
@@ -52,8 +52,7 @@ export class PetServicesService {
             sort_order: sortOrder
         }
 
-        const response = await axios.post(import.meta.env.VITE_API_URL + "/pet-services/list-ratings", data);
-        return response.data;
+        return http.post('/pet-services/list-ratings', data);
     }
 
     async createBooking(data: {
@@ -61,66 +60,36 @@ export class PetServicesService {
         booking_datetime: string;
         payment_method_id: number;
         pet_ids: number[];
-    }) {
-        const response = await axios.post(import.meta.env.VITE_API_URL + "/booking", data, {
-            headers: {
-                Authorization: localStorage.getItem("cognitoIdToken")
-            }
-        });
-        return response.data;
+    }): Promise<any> {
+        return http.post('/booking', data);
     }
 
-    async addToFavorites(serviceId: number) {
-        const response = await axios.post(import.meta.env.VITE_API_URL + `/favorite/add`, {
+    async addToFavorites(serviceId: number): Promise<any> {
+        return http.post('/favorite/add', {
             service_id: serviceId
-        }, {
-            headers: {
-                "Authorization": localStorage.getItem("cognitoIdToken")
-            }
         });
-        return response.data;
     }
 
-    async removeToFavorites(serviceId: number) {
-        const response = await axios.delete(import.meta.env.VITE_API_URL + `/favorite/delete/${serviceId}`, {
-            headers: {
-                "Authorization": localStorage.getItem("cognitoIdToken")
-            }
-        });
-        return response.data;
+    async removeToFavorites(serviceId: number): Promise<any> {
+        return http.delete(`/favorite/delete/${serviceId}`);
     }
 
-    async listPets(limit: number, offset: number) {
-        const response = await axios.post(import.meta.env.VITE_API_URL + `/pets/list`, {
+    async listPets(limit: number, offset: number): Promise<any> {
+        return http.post('/pets/list', {
             limit: limit,
             offset: offset
-        }, {
-            headers: {
-                "Authorization": localStorage.getItem("cognitoIdToken")
-            }
         });
-        return response.data;
     }
 
-    async submitReview(data: ReviewForm) {
-        const response = await axios.post(import.meta.env.VITE_API_URL + `/review`, data, {
-            headers: {
-                "Authorization": localStorage.getItem("cognitoIdToken")
-            }
-        });
-        return response.data;
+    async submitReview(data: ReviewForm): Promise<any> {
+        return http.post('/review', data);
     }
 
-    async listRecommendations(limit: number, offset: number, serviceId: number) {
-        const response = await axios.post(import.meta.env.VITE_API_URL + `/pet-services/list-recommendations`, {
+    async listRecommendations(limit: number, offset: number, serviceId: number): Promise<any> {
+        return http.post('/pet-services/list-recommendations', {
             limit: limit,
             offset: offset,
             service_id: serviceId
-        }, {
-            headers: {
-                "Authorization": localStorage.getItem("cognitoIdToken")
-            }
         });
-        return response.data;
     }
 }

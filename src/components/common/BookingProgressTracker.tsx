@@ -141,7 +141,7 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
 
     const fetchAndConnect = async () => {
       try {
-        const inProgressServices = await userNotificationsService.listInProgressServices(1, 0);
+        const inProgressServices: any = await userNotificationsService.listInProgressServices(1, 0);
         if (inProgressServices.data && inProgressServices.data.length > 0) {
           const mostRecent = inProgressServices.data.sort((a: BookingProgress, b: BookingProgress) => new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime())[0];
           setProgress(mostRecent);

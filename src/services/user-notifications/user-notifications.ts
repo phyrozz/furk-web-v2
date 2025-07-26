@@ -1,7 +1,7 @@
 import { http } from '../../utils/http';
 
 export class UserNotificationsService {
-    async listUserNotifications(limit: number, offset: number) {
+    async listUserNotifications(limit: number, offset: number): Promise<any> {
         const data = {
             limit: limit,
             offset: offset
@@ -10,7 +10,7 @@ export class UserNotificationsService {
         return http.post('/user-notifications/list', data);
     }
 
-    async listInProgressServices(limit: number, offset: number) {
+    async listInProgressServices(limit: number, offset: number): Promise<any> {
         const data = {
             limit: limit,
             offset: offset

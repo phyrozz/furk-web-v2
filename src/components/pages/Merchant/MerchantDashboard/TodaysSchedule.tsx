@@ -26,7 +26,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ onViewCalendar }) => {
     const fetchAppointments = async () => {
       try {
         const service = new MerchantDashboardService();
-        const data = await service.listAppointmentsToday();
+        const data: any = await service.listAppointmentsToday();
         setAppointments(data.data || []);
       } catch (err) {
         setError('Failed to fetch appointments.');
