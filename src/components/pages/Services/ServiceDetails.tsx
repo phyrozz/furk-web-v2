@@ -181,7 +181,7 @@ const ServiceDetails = () => {
   return (
     <>
       {service.last_completed_timestamp && isReviewable() && !service.has_reviewed && <ReviewDialog serviceId={service.id} onReviewSubmit={onReviewSubmit} />}
-      <div className="pt-24 min-h-screen bg-gray-50">
+      <div className="pt-24 min-h-screen bg-gray-50 select-none">
         <div className="container mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
