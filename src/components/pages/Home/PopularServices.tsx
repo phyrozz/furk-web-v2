@@ -103,7 +103,7 @@ const PopularServices = () => {
           >
             {popularServices.length > 0 ? (
               popularServices.map((service) => (
-                <div className="py-2 px-1">
+                <div className="py-2 px-1" key={service.id}>
                   <motion.div 
                     key={service.id} 
                     className="flex-none w-80 bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"

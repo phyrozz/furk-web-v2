@@ -12,6 +12,7 @@ import {
   getCurrentUser
 } from 'aws-amplify/auth';
 import { ToastService } from '../toast/toast-service';
+import { roleMapping } from '../../utils/role-mapping';
 
 Amplify.configure({
   Auth: {
@@ -24,7 +25,7 @@ Amplify.configure({
 });
 
 interface LoginCredentials {
-  userType: 'user' |'merchant' | 'admin';
+  userType: 'user' |'merchant' | 'admin' | 'affiliate';
   email: string;
   password: string;
 }
@@ -35,7 +36,7 @@ interface SignUpCredentials {
   firstName: string;
   lastName: string;
   password: string;
-  userType: 'user' | 'merchant';
+  userType: 'user' | 'merchant' | 'affiliate';
 }
 
 interface SignUpResponse {
@@ -216,7 +217,7 @@ export class LoginService {
           phone_number: credentials.phone,
           first_name: credentials.firstName,
           last_name: credentials.lastName,
-          role_id: credentials.userType === 'user' ? 1 : 3
+          role_id: roleMapping[credentials.userType]
         }
       );
 
@@ -227,7 +228,8 @@ export class LoginService {
       }
   
       return {
-        message: 'Sign up successful'
+        message: 'Sign up successful',
+        data: responseData,
       }
     } catch (error) {
       throw this.handleCognitoError(error);

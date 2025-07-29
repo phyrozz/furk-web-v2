@@ -1,6 +1,8 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity';
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
+import axios from 'axios';
+import { http } from '../../utils/http';
 
 export class S3UploadService {
   private s3Client: S3Client;
@@ -8,9 +10,11 @@ export class S3UploadService {
   private bucketName = import.meta.env.VITE_S3_BUCKET_NAME || '';
 
   constructor() {
-    const idToken = localStorage.getItem('cognitoIdToken');
+    let idToken = localStorage.getItem('cognitoIdToken');
     if (!idToken) {
-      throw new Error('No authentication token found');
+      // throw new Error('No authentication token found');
+      localStorage.setItem('cognitoIdToken', '');
+      idToken = '';
     }
   
     this.s3Client = new S3Client({
@@ -74,6 +78,33 @@ export class S3UploadService {
     } catch (error) {
       console.error('Error uploading buffer:', error);
       throw new Error('Failed to upload buffer');
+    }
+  }
+
+  async generateUploadUrl(key: string, contentType: string): Promise<string> {
+    try {
+      const response: { data: { upload_url: string } } = await http.publicPost('/generate-upload-url', {
+        key: key,
+        content_type: contentType
+      });
+
+      return response.data.upload_url;
+    } catch (error) {
+      console.error('Error generating upload URL:', error);
+      throw new Error('Failed to generate upload URL');
+    }
+  }
+
+  async uploadToS3ByPresignedUrl(url: string, file: File): Promise<void> {
+    try {
+      await axios.put(url, file, {
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+    } catch (error) {
+      console.error('Error uploading file to S3:', error);
+      throw new Error('Failed to upload file to S3');
     }
   }
 }

@@ -1,4 +1,4 @@
-import { PawPrint as Paw, Facebook, Instagram, Twitter, Mail } from 'lucide-react';
+import { Facebook, Instagram, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -61,6 +61,11 @@ const Footer = () => {
               <li>
                 <Link to="/login" className="text-gray-300 hover:text-primary-400 transition-colors">
                   Login / Register
+                </Link>
+              </li>
+              <li>
+                <Link to="/affiliate/login" className="text-gray-300 hover:text-primary-400 transition-colors">
+                  Affiliate Program
                 </Link>
               </li>
             </ul>
