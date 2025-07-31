@@ -3,9 +3,20 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Users, DollarSign, BarChart2, Copy, CheckCircle, ExternalLink } from 'lucide-react';
 import Button from '../../common/Button';
+import AffiliateNavbar from '../../common/AffiliateNavbar';
+import { http } from '../../../utils/http';
+import PawLoading from '../../common/PawLoading';
+
+interface AffiliateData {
+  id: string;
+  role_name: string;
+  affiliate_code: string;
+  address: string;
+  application_status: 'pending' | 'verified' | 'suspended' | 'rejected';
+}
 
 const AffiliateDashboard = () => {
-  const [affiliateId, setAffiliateId] = useState('AFF-12345678'); // This would come from an API in a real implementation
+  const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null);
   const [stats, setStats] = useState({
     totalReferrals: 0,
     earnings: 0,
@@ -16,34 +27,32 @@ const AffiliateDashboard = () => {
   const [recentReferrals, setRecentReferrals] = useState([]);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // In a real implementation, this would fetch data from an API
   useEffect(() => {
-    // Simulate API call
-    // In the future, this would be replaced with actual API calls
-    const fetchData = async () => {
-      // Simulated data
-      setStats({
-        totalReferrals: 0,
-        earnings: 0,
-        conversionRate: 0,
-        pendingReferrals: 0,
-        completedReferrals: 0
-      });
-      setRecentReferrals([]);
+    const fetchAffiliateData = async () => {
+      try {
+        const response = await http.get<{data: AffiliateData}>('/affiliate/dashboard');
+        setAffiliateData(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching affiliate data:', error);
+      }
     };
 
-    fetchData();
+    fetchAffiliateData();
   }, []);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(affiliateId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (affiliateData?.affiliate_code) {
+      navigator.clipboard.writeText(affiliateData.affiliate_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const generateReferralLink = () => {
-    return `${window.location.origin}?ref=${affiliateId}`;
+    return `${window.location.origin}?ref=${affiliateData?.affiliate_code}`;
   };
 
   const copyReferralLink = () => {
@@ -52,8 +61,19 @@ const AffiliateDashboard = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const loading = (
+    <div className="flex items-center justify-center h-screen">
+      <PawLoading />
+    </div>
+  );
+
+  if (isLoading) {
+    return loading;
+  }
+
   return (
-    <div className="container mx-auto p-4 md:p-8">
+    <div className="container mx-auto p-4 md:p-8 mt-20 select-none">
+      <AffiliateNavbar />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -92,7 +112,7 @@ const AffiliateDashboard = () => {
           <div>
             <h2 className="text-xl font-semibold mb-2">Your Affiliate ID</h2>
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-primary-600">{affiliateId}</span>
+              <span className="text-2xl font-bold text-primary-600">{affiliateData?.affiliate_code}</span>
               <button 
                 onClick={copyToClipboard}
                 className="ml-2 text-gray-500 hover:text-primary-600 transition-colors"
@@ -119,7 +139,7 @@ const AffiliateDashboard = () => {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -150,22 +170,6 @@ const AffiliateDashboard = () => {
           </div>
           <p className="text-3xl font-bold text-green-600">${stats.earnings.toFixed(2)}</p>
           <p className="text-sm text-gray-500 mt-2">Commission rate: 10%</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-lg shadow-md p-6"
-        >
-          <div className="flex items-center mb-4">
-            <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
-              <BarChart2 size={24} />
-            </div>
-            <h3 className="text-lg font-semibold">Conversion Rate</h3>
-          </div>
-          <p className="text-3xl font-bold text-blue-600">{stats.conversionRate}%</p>
-          <p className="text-sm text-gray-500 mt-2">Industry avg: 2.5%</p>
         </motion.div>
       </div>
 
@@ -263,7 +267,7 @@ const AffiliateDashboard = () => {
       </div>
 
       {/* Marketing Materials */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -291,7 +295,7 @@ const AffiliateDashboard = () => {
             </a>
           </div>
         </div>
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 };

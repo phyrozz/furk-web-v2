@@ -174,7 +174,7 @@ function App() {
                 </ProtectedRoute>
               }></Route>
               <Route path="/affiliate/dashboard" element={
-                <ProtectedRoute requiredRoles={['user']}>
+                <ProtectedRoute requiredRoles={['affiliate']}>
                   <AffiliateDashboard />
                 </ProtectedRoute>
               } />

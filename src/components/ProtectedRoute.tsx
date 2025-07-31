@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRoles?: Array<'user' | 'merchant' | 'admin'>;
+  requiredRoles?: Array<'user' | 'merchant' | 'admin' | 'affiliate'>;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles }) => {
