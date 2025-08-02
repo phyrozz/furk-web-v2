@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Users, DollarSign, BarChart2, Copy, CheckCircle, ExternalLink } from 'lucide-react';
+import { Users, DollarSign, Copy, CheckCircle } from 'lucide-react';
 import Button from '../../common/Button';
 import AffiliateNavbar from '../../common/AffiliateNavbar';
 import { http } from '../../../utils/http';
 import PawLoading from '../../common/PawLoading';
+import MerchantList from './Dashboard/MerchantList';
 
 interface AffiliateData {
   id: string;
@@ -13,6 +14,9 @@ interface AffiliateData {
   affiliate_code: string;
   address: string;
   application_status: 'pending' | 'verified' | 'suspended' | 'rejected';
+  merchant_count: number;
+  verified_merchant_count: number;
+  pending_merchant_count: number;
 }
 
 const AffiliateDashboard = () => {
@@ -28,6 +32,7 @@ const AffiliateDashboard = () => {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchAffiliateData = async () => {
@@ -52,7 +57,7 @@ const AffiliateDashboard = () => {
   };
 
   const generateReferralLink = () => {
-    return `${window.location.origin}?ref=${affiliateData?.affiliate_code}`;
+    return `${window.location.origin}/sign-up/merchant?ref=${affiliateData?.affiliate_code}`;
   };
 
   const copyReferralLink = () => {
@@ -74,6 +79,36 @@ const AffiliateDashboard = () => {
   return (
     <div className="container mx-auto p-4 md:p-8 mt-20 select-none">
       <AffiliateNavbar />
+      {affiliateData?.application_status === 'pending' && (
+        <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-warning-800">
+                Verification Pending
+              </h2>
+              <p className="text-warning-600 mt-1">
+                Your account is currently pending verification. It may take 2 to 3 business working days. Take note that your affiliate ID will not work on merchants until your account is verified.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {affiliateData?.application_status === 'rejected' && (
+        <div className="bg-danger-50 border border-danger-200 rounded-lg p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-danger-800">
+                Verification Rejected
+              </h2>
+              <p className="text-danger-600 mt-1">
+                Your account has been rejected. Please contact support for more information.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -95,6 +130,7 @@ const AffiliateDashboard = () => {
             size="md"
             onClick={copyReferralLink}
           >
+
             {copied ? <CheckCircle size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
             {copied ? 'Copied!' : 'Copy Referral Link'}
           </Button>
@@ -152,8 +188,8 @@ const AffiliateDashboard = () => {
             </div>
             <h3 className="text-lg font-semibold">Total Referrals</h3>
           </div>
-          <p className="text-3xl font-bold text-primary-600">{stats.totalReferrals}</p>
-          <p className="text-sm text-gray-500 mt-2">{stats.pendingReferrals} pending, {stats.completedReferrals} completed</p>
+          <p className="text-3xl font-bold text-primary-600">{affiliateData?.merchant_count}</p>
+          <p className="text-sm text-gray-500 mt-2">{affiliateData?.pending_merchant_count} pending, {affiliateData?.verified_merchant_count} completed</p>
         </motion.div>
 
         <motion.div
@@ -184,7 +220,12 @@ const AffiliateDashboard = () => {
           </button>
           <button
             className={`px-6 py-3 font-medium ${activeTab === 'referrals' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
-            onClick={() => setActiveTab('referrals')}
+            onClick={() => {
+              setActiveTab('referrals');
+              if (activeTab === 'referrals') {
+                setRefreshTrigger(prev => prev + 1);
+              }
+            }}
           >
             Referrals
           </button>
@@ -201,17 +242,34 @@ const AffiliateDashboard = () => {
             <div>
               <h3 className="text-xl font-semibold mb-4">Program Overview</h3>
               <p className="text-gray-600 mb-4">
-                Welcome to the FURK Affiliate Program! As an affiliate, you earn commission for every customer you refer who signs up and books a service through our platform.
+                Welcome to the FURK Affiliate Program! As an affiliate, you earn commission for every merchant you refer who signs up and gets verified through our platform.
               </p>
               
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <h4 className="font-semibold mb-2">How it works:</h4>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700">
-                  <li>Share your unique referral link with potential customers</li>
+                  <li>Share your unique referral link with potential merchants</li>
                   <li>When they sign up using your link, they're tracked as your referral</li>
                   <li>You earn 10% commission on their first booking</li>
                   <li>Commissions are paid out monthly to your registered bank account</li>
                 </ol>
+              </div>
+              
+              <div className="bg-yellow-50 p-4 rounded-lg mb-4 border border-yellow-200">
+                <h4 className="font-semibold mb-2 text-yellow-700">Important Note:</h4>
+                <p className="text-gray-700 mb-2">
+                  Your referral link will direct merchants to our sign-up page. Make sure they complete the registration process to be counted as your referral.
+                </p>
+                <div className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between">
+                  <code className="text-sm text-gray-800">{generateReferralLink()}</code>
+                  <button 
+                    onClick={copyReferralLink}
+                    className="ml-2 text-gray-500 hover:text-primary-600 transition-colors"
+                    aria-label="Copy referral link"
+                  >
+                    {copied ? <CheckCircle size={16} /> : <Copy size={16} />}
+                  </button>
+                </div>
               </div>
               
               <div className="bg-primary-50 p-4 rounded-lg">
@@ -228,29 +286,7 @@ const AffiliateDashboard = () => {
 
           {activeTab === 'referrals' && (
             <div>
-              <h3 className="text-xl font-semibold mb-4">Your Referrals</h3>
-              {recentReferrals.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {/* This would be populated with actual referral data */}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">You don't have any referrals yet.</p>
-                  <p className="text-gray-600">Share your referral link to start earning!</p>
-                </div>
-              )}
+              <MerchantList refreshTrigger={refreshTrigger} />
             </div>
           )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { PawPrint as Paw, Menu, X, LogOut, User, Shield, Users, Settings } from 'lucide-react';
+import { Menu, X, LogOut, User, Users, Settings, Store } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -48,8 +48,8 @@ const AdminNavbar = () => {
   }, []);
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: Shield },
-    { name: 'Merchants', path: '/admin/merchants', icon: Users },
+    { name: 'Merchants', path: '/admin/merchants', icon: Store },
+    { name: 'Affiliates', path: '/admin/affiliates', icon: Users },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
@@ -64,7 +64,7 @@ const AdminNavbar = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link
-            to="/admin/dashboard"
+            to="/admin/merchants"
             className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
             onClick={closeMenu}
           >

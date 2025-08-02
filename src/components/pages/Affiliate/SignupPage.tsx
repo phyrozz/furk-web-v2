@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AffiliateSignUpForm from './AffiliateSignUpForm';
 
@@ -11,10 +11,12 @@ interface LocationState {
 const AffiliateSignUpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const state = location.state as LocationState;
   
   const [initialEmail, setInitialEmail] = useState(state?.email || '');
   const [initialPassword, setInitialPassword] = useState(state?.password || '');
+  const referralCode = searchParams.get('ref');
 
   const handleSuccess = () => {
     // Navigate to affiliate dashboard after successful signup
@@ -63,6 +65,7 @@ const AffiliateSignUpPage = () => {
             onSuccess={handleSuccess} 
             initialEmail={initialEmail} 
             initialPassword={initialPassword} 
+            referralCode={referralCode}
           />
           
           <motion.p 

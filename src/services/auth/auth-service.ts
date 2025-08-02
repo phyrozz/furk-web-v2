@@ -37,6 +37,7 @@ interface SignUpCredentials {
   lastName: string;
   password: string;
   userType: 'user' | 'merchant' | 'affiliate';
+  referralCode?: string | null;
 }
 
 interface SignUpResponse {
@@ -217,7 +218,8 @@ export class LoginService {
           phone_number: credentials.phone,
           first_name: credentials.firstName,
           last_name: credentials.lastName,
-          role_id: roleMapping[credentials.userType]
+          role_id: roleMapping[credentials.userType],
+          ...(credentials.referralCode && { referral_code: credentials.referralCode })
         }
       );
 

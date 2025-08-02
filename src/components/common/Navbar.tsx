@@ -223,7 +223,7 @@ const Navbar = () => {
                         )}
                         {loginService.getUserRole() === 'admin' && (
                           <Link
-                            to="/admin/dashboard"
+                            to="/admin/merchants"
                             className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                             onClick={() => setShowProfileMenu(false)}
                           >
@@ -319,7 +319,7 @@ const Navbar = () => {
                 )}
                 {loginService.getUserRole() === 'admin' && (
                   <Link
-                    to="/admin/dashboard"
+                    to="/admin/merchants"
                     className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
                     onClick={closeMenu}
                   >

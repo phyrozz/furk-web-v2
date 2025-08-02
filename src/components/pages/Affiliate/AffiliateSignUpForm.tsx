@@ -12,9 +12,10 @@ interface AffiliateSignUpFormProps {
   onSuccess: () => void;
   initialEmail?: string;
   initialPassword?: string;
+  referralCode?: string | null;
 }
 
-const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '' }: AffiliateSignUpFormProps) => {
+const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '', referralCode = null }: AffiliateSignUpFormProps) => {
   // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -189,6 +190,7 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
         email,
         phone: mobile,
         password,
+        referralCode: referralCode || undefined,
       });
 
       if (signUpResponse.message === 'Sign up successful') {

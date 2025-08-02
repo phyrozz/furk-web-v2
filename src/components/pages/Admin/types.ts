@@ -9,6 +9,20 @@ export interface MerchantApplication {
   updated_at: string;
 }
 
+export interface AffiliateApplication {
+  id: number;
+  code: string;
+  address: string;
+  first_name: string;
+  middle_name: string | null;
+  last_name: string;
+  username: string;
+  phone_number: string;
+  application_status: 'pending' | 'suspended' | 'rejected' | 'verified' | 'unverified';
+  created_at: string;
+  modified_at: string;
+}
+
 interface BusinessType {
   id: number;
   name: string;

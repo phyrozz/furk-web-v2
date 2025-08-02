@@ -11,9 +11,10 @@ interface SignUpFormProps {
     email: string;
     password: string;
   };
+  referralCode?: string | null;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, redirectToVerification = undefined }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, redirectToVerification = undefined, referralCode = null }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -71,7 +72,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
         phone: phone,
         firstName: firstName,
         lastName: lastName,
-        userType: userType
+        userType: userType,
+        referralCode: referralCode
       });
 
       if (!signUp) {
@@ -196,6 +198,25 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
       )}
 
       <div className="space-y-4">
+
+        {referralCode && <div>
+          <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-1">Referral Code</label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+              <User size={18} />
+            </div>
+            <input
+              id="referralCode"
+              type="text"
+              value={referralCode}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Referral Code"
+              disabled
+              required
+            />
+          </div>
+        </div>}
+
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
           <div className="relative">
