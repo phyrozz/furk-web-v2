@@ -1,28 +1,26 @@
 import { useState, useCallback } from 'react';
-import MerchantList from './Merchants/MerchantList';
-import MerchantDetails from './Merchants/MerchantDetails';
 import { motion } from 'framer-motion';
 import AdminNavbar from '../../common/AdminNavbar';
-import { MerchantApplication } from './types';
+import { AffiliateApplication } from './types';
 import { ToastService } from '../../../services/toast/toast-service';
+import AffiliateList from './Affiliates/AffiliateList';
+import AffiliateDetails from './Affiliates/AffiliateDetails';
 
-const AdminPage = () => {
-  const [selectedMerchant, setSelectedMerchant] = useState<MerchantApplication | null>(null);
+const AffiliatePage = () => {
+  const [selectedAffiliate, setSelectedAffiliate] = useState<AffiliateApplication | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const handleMerchantStatusChange = useCallback(() => {
-    // Increment refresh trigger to cause the merchant list to refresh
     setRefreshTrigger(prev => prev + 1);
     
     // Show a toast notification
-    if (selectedMerchant) {
-      const statusText = selectedMerchant.status === 'verified' ? 'approved' : 'rejected';
-      ToastService.show(`Merchant ${statusText} successfully`);
+    if (selectedAffiliate) {
+      const statusText = selectedAffiliate.application_status === 'verified' ? 'approved' : 'rejected';
+      ToastService.show(`Affiliate ${statusText} successfully`);
     }
     
-    // Clear the selected merchant after status change
-    setSelectedMerchant(null);
-  }, [selectedMerchant]);
+    setSelectedAffiliate(null);
+  }, [selectedAffiliate]);
 
   return (
     <>
@@ -35,26 +33,26 @@ const AdminPage = () => {
             transition={{ duration: 0.5 }}
           >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Merchant List */}
+              {/* Affiliate List */}
               <div className="lg:col-span-4">
-                <MerchantList
-                  selectedMerchant={selectedMerchant}
-                  onSelectMerchant={setSelectedMerchant}
-                  onMerchantStatusChange={handleMerchantStatusChange}
+                <AffiliateList
+                  selectedAffiliate={selectedAffiliate}
+                  onSelectAffiliate={setSelectedAffiliate}
+                  onAffiliateStatusChange={handleMerchantStatusChange}
                   key={refreshTrigger} // Force re-render when refreshTrigger changes
                 />
               </div>
 
-              {/* Merchant Details */}
+              {/* Affiliate Details */}
               <div className="lg:col-span-8">
-                {selectedMerchant ? (
-                  <MerchantDetails 
-                    merchant={selectedMerchant} 
+                {selectedAffiliate ? (
+                  <AffiliateDetails 
+                    affiliate={selectedAffiliate} 
                     onStatusChange={handleMerchantStatusChange}
                   />
                 ) : (
                   <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-                    Select a merchant to view details
+                    Select an affiliate to view details
                   </div>
                 )}
               </div>
@@ -66,4 +64,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AffiliatePage;

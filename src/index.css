@@ -43,18 +43,18 @@ p {
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #9C7A54;
-  border-radius: 4px;
+  border-radius: 5px;
   transition: background-color 0.2s ease;
 }
 

@@ -38,16 +38,34 @@ const TermsOfService = () => {
             <p className='ml-4'>Pet owners will be charged the full service amount upon booking confirmation. Any applicable platform fees will be disclosed during checkout. Refunds, cancellations, and disputes must be coordinated directly with the Merchant, subject to their policies.</p>
 
             <h3 className="text-lg font-semibold mt-4 ml-4">For Merchants</h3>
-            <p className='ml-4'>By registering as a Merchant on Furk, you agree to a platform service fee of <strong>10%</strong> of the total booking amount. This fee will be automatically deducted from your payout for each confirmed booking. The remaining 90% will be disbursed to your registered Maya account after the service is marked as completed.</p>
+            <p className='ml-4'>By registering as a Merchant on Furk, you agree to a platform service fee of <strong>10%</strong> of the total booking amount. This fee will be automatically deducted from your payout for each confirmed booking. The remaining 90% will be disbursed to your registered bank account after the service is marked as completed.</p>
             <p className='ml-4'>Merchants are solely responsible for the delivery and quality of their services. Any disputes, complaints, or chargebacks arising from your services may impact your eligibility to continue offering services on Furk.</p>
 
             <h2 className="text-xl font-semibold mt-6">6. Force Majeure and Weather Conditions</h2>
             <p>Furk shall not be held liable for any failure to perform, delays, or disruptions to services booked through the App due to weather conditions, natural disasters, government actions, pandemics, power outages, or other force majeure events beyond our reasonable control. It is the responsibility of both Pet Owners and Merchants to communicate and resolve any service changes or cancellations arising from such events.</p>
 
-            <h2 className="text-xl font-semibold mt-6">7. Modifications to Terms</h2>
+            <h2 className="text-xl font-semibold mt-6">7. Affiliate Program</h2>
+            <p>The Furk Affiliate Program allows users to earn commissions by referring new customers to our platform. By participating in the Affiliate Program, you agree to the following terms:</p>
+            
+            <h3 className="text-lg font-semibold mt-4 ml-4">Eligibility</h3>
+            <p className='ml-4'>To participate in the Affiliate Program, you must be at least 18 years old, have a valid bank account, and a valid ID. Furk reserves the right to approve or reject any affiliate application at its sole discretion.</p>
+            
+            {/* <h3 className="text-lg font-semibold mt-4 ml-4">Commission Structure</h3>
+            <p className='ml-4'>Affiliates earn a <strong>5%</strong> commission on the service fee collected by Furk from each qualifying transaction made by a referred user. Commissions are calculated based on the net revenue received by Furk after any refunds, chargebacks, or adjustments.</p>
+            
+            <h3 className="text-lg font-semibold mt-4 ml-4">Referral Tracking</h3>
+            <p className='ml-4'>Referrals are tracked through unique affiliate links or codes provided to each affiliate. To qualify for a commission, a referred user must click on your affiliate link or use your affiliate code during registration and complete a qualifying transaction within 30 days.</p> */}
+            
+            <h3 className="text-lg font-semibold mt-4 ml-4">Payment Terms</h3>
+            <p className='ml-4'>Commissions are paid monthly for all qualifying transactions from the previous month. A minimum payout threshold of ₱500 applies. Payments will be made to the bank account provided in your affiliate profile.</p>
+            
+            <h3 className="text-lg font-semibold mt-4 ml-4">Prohibited Activities</h3>
+            <p className='ml-4'>Affiliates are prohibited from engaging in spamming, false advertising, or any deceptive practices. Violation of these terms may result in termination from the program and forfeiture of unpaid commissions.</p>
+
+            <h2 className="text-xl font-semibold mt-6">8. Modifications to Terms</h2>
             <p>Furk reserves the right to modify these Terms at any time. Changes will be effective upon posting. Continued use of the App after such changes constitutes your acceptance of the revised Terms.</p>
 
-            <h2 className="text-xl font-semibold mt-6">7. Contact Us</h2>
+            <h2 className="text-xl font-semibold mt-6">9. Contact Us</h2>
             <p>If you have any questions or concerns about these Terms, please contact us at:</p>
             <ul className="list-none">
               <li>Email: support@furk.app</li>

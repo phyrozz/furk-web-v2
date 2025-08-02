@@ -28,6 +28,10 @@ import { loginService } from './services/auth/auth-service';
 import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
 import BookingProgressTracker from './components/common/BookingProgressTracker';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
+import AffiliateLoginPage from './components/pages/Affiliate/LoginPage';
+import AffiliateSignUpPage from './components/pages/Affiliate/SignupPage';
+import AffiliateDashboard from './components/pages/Affiliate/AffiliateDashboard';
+import AffiliatePage from './components/pages/Admin/AffiliatePage';
 
 function App() {
   // const [isTokenExpired, setIsTokenExpired] = useState(false);
@@ -89,6 +93,16 @@ function App() {
                   <ResetPasswordPage />
                 </PublicRoute>
               } />
+              <Route path="/affiliate/login" element={
+                <PublicRoute>
+                  <AffiliateLoginPage />
+                </PublicRoute>
+              } />
+              <Route path="/affiliate/sign-up" element={
+                <PublicRoute>
+                  <AffiliateSignUpPage />
+                </PublicRoute>
+              } />
               <Route path="/terms-of-service" element={
                 <TermsOfService />
               } />
@@ -110,9 +124,14 @@ function App() {
               } />
 
               {/* Protected Routes */}
-              <Route path='/admin/dashboard' element={
+              <Route path='/admin/merchants' element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <AdminPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/affiliates" element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <AffiliatePage />
                 </ProtectedRoute>
               } />
               {/* <Route path='/admin/profile' element={
@@ -160,6 +179,11 @@ function App() {
                   <ProfilePage />
                 </ProtectedRoute>
               }></Route>
+              <Route path="/affiliate/dashboard" element={
+                <ProtectedRoute requiredRoles={['affiliate']}>
+                  <AffiliateDashboard />
+                </ProtectedRoute>
+              } />
             </Routes>
           </div>
         </AuthWrapper>
