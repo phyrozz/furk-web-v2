@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { Users, DollarSign, Copy, CheckCircle } from 'lucide-react';
 import Button from '../../common/Button';
 import AffiliateNavbar from '../../common/AffiliateNavbar';
 import { http } from '../../../utils/http';
 import PawLoading from '../../common/PawLoading';
 import MerchantList from './Dashboard/MerchantList';
+import BookingHistoryList from './Dashboard/BookingHistoryList';
 
 interface AffiliateData {
   id: string;
@@ -21,14 +21,6 @@ interface AffiliateData {
 
 const AffiliateDashboard = () => {
   const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null);
-  const [stats, setStats] = useState({
-    totalReferrals: 0,
-    earnings: 0,
-    conversionRate: 0,
-    pendingReferrals: 0,
-    completedReferrals: 0
-  });
-  const [recentReferrals, setRecentReferrals] = useState([]);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
@@ -186,10 +178,10 @@ const AffiliateDashboard = () => {
             <div className="p-3 rounded-full bg-primary-100 text-primary-600 mr-4">
               <Users size={24} />
             </div>
-            <h3 className="text-lg font-semibold">Total Referrals</h3>
+            <h3 className="text-lg font-semibold">Total Merchants</h3>
           </div>
           <p className="text-3xl font-bold text-primary-600">{affiliateData?.merchant_count}</p>
-          <p className="text-sm text-gray-500 mt-2">{affiliateData?.pending_merchant_count} pending, {affiliateData?.verified_merchant_count} completed</p>
+          <p className="text-sm text-gray-500 mt-2">{affiliateData?.pending_merchant_count} pending/unverified, {affiliateData?.verified_merchant_count} verified</p>
         </motion.div>
 
         <motion.div
@@ -204,8 +196,8 @@ const AffiliateDashboard = () => {
             </div>
             <h3 className="text-lg font-semibold">Total Earnings</h3>
           </div>
-          <p className="text-3xl font-bold text-green-600">${stats.earnings.toFixed(2)}</p>
-          <p className="text-sm text-gray-500 mt-2">Commission rate: 10%</p>
+          <p className="text-3xl font-bold text-green-600">0 Points</p>
+          <p className="text-sm text-gray-500 mt-2">Commission rate: 5%</p>
         </motion.div>
       </div>
 
@@ -227,13 +219,13 @@ const AffiliateDashboard = () => {
               }
             }}
           >
-            Referrals
+            Merchants
           </button>
           <button
-            className={`px-6 py-3 font-medium ${activeTab === 'payouts' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
-            onClick={() => setActiveTab('payouts')}
+            className={`px-6 py-3 font-medium ${activeTab === 'bookings' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
+            onClick={() => setActiveTab('bookings')}
           >
-            Payouts
+            Bookings
           </button>
         </div>
 
@@ -290,13 +282,9 @@ const AffiliateDashboard = () => {
             </div>
           )}
 
-          {activeTab === 'payouts' && (
+          {activeTab === 'bookings' && (
             <div>
-              <h3 className="text-xl font-semibold mb-4">Payout History</h3>
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No payouts yet.</p>
-                <p className="text-gray-600">Commissions are paid out monthly once you reach the minimum threshold of $50.</p>
-              </div>
+              <BookingHistoryList refreshTrigger={refreshTrigger} />
             </div>
           )}
         </div>
