@@ -214,16 +214,6 @@ const onApprove = async () => {
           </button>
           <button
             className={`px-6 py-3 font-medium ${
-              activeTab === 'photos'
-                ? 'border-b-2 border-primary-500 text-primary-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('photos')}
-          >
-            Photos
-          </button>
-          <button
-            className={`px-6 py-3 font-medium ${
               activeTab === 'notes'
                 ? 'border-b-2 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
@@ -262,171 +252,26 @@ const onApprove = async () => {
           </div>
         )}
 
-        {/* {activeTab === 'documents' && (
+        {activeTab === 'documents' && (
           <div className="space-y-4">
-            {affiliate.affiliate_type === 'FREELANCE' ? (
-              <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Freelancer Documents</h3>
-                  <span className="text-sm text-gray-500">
-                    {affiliate.attachments?.length > 0 ? 
-                      `${affiliate.attachments.filter((a: any) => a[Object.keys(a)[0]]).length} documents uploaded` : 
-                      'No documents uploaded'}
-                  </span>
-                </div>
-                <DocumentItem
-                  name="CV/Resume"
-                  url={getAttachmentValue(affiliate.attachments, 'cv')}
-                />
-                <DocumentItem
-                  name="Current Address Proof"
-                  url={getAttachmentValue(affiliate.attachments, 'current_address_proof')}
-                />
-                <DocumentItem
-                  name="Permanent Address Proof"
-                  url={getAttachmentValue(affiliate.attachments, 'permanent_address_proof')}
-                />
-                <DocumentItem
-                  name="SSS/UMID"
-                  url={getAttachmentValue(affiliate.attachments, 'sss_umid')}
-                />
-                <DocumentItem
-                  name="BIR TIN"
-                  url={getAttachmentValue(affiliate.attachments, 'bir_tin')}
-                />
-                <DocumentItem
-                  name="Other Valid ID"
-                  url={getAttachmentValue(affiliate.attachments, 'other_valid_id')}
-                />
-                <DocumentItem
-                  name="NBI Clearance"
-                  url={getAttachmentValue(affiliate.attachments, 'nbi_clearance')}
-                />
-              </>
-            )
-
-             : affiliate.affiliate_type === 'BUSINESS' ? (
-              <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Business Documents</h3>
-                  <span className="text-sm text-gray-500">
-                    {affiliate.attachments?.length > 0 ? 
-                      `${affiliate.attachments.filter((a: any) => a[Object.keys(a)[0]]).length} documents uploaded` : 
-                      'No documents uploaded'}
-                  </span>
-                </div>
-                <DocumentItem
-                  name="Company Profile"
-                  url={getAttachmentValue(affiliate.attachments, 'company_profile')}
-                />
-                <DocumentItem
-                  name="DTI/SEC Registration"
-                  url={getAttachmentValue(affiliate.attachments, 'dti_sec')}
-                />
-                <DocumentItem
-                  name="BIR 2303/COR"
-                  url={getAttachmentValue(affiliate.attachments, 'bir_2303')}
-                />
-                <DocumentItem
-                  name="Mayor's Permit"
-                  url={getAttachmentValue(affiliate.attachments, 'mayors_permit')}
-                />
-                <DocumentItem
-                  name="Valid ID 1"
-                  url={getAttachmentValue(affiliate.attachments, 'valid_id_1')}
-                />
-                <DocumentItem
-                  name="Valid ID 2"
-                  url={getAttachmentValue(affiliate.attachments, 'valid_id_2')}
-                />
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-gray-500">
-                <AlertTriangle size={48} className="mb-4 text-yellow-500" />
-                <p className="text-lg font-medium">Unknown affiliate Type</p>
-                <p className="mt-2">The affiliate type '{affiliate.affiliate_type}' is not recognized.</p>
-              </div>
-            )}
-          </div>
-        )} */}
-
-        {/* {activeTab === 'photos' && (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">
-                {affiliate.affiliate_type === 'FREELANCE' ? 'Freelancer Photos & Videos' : 
-                 affiliate.affiliate_type === 'BUSINESS' ? 'Business Photos & Videos' : 
-                 'Photos & Videos'}
-              </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Affiliate Documents</h3>
               <span className="text-sm text-gray-500">
-                {affiliate.attachments?.filter((a: any) => {
-                  const key = Object.keys(a)[0];
-                  return (key.includes('photo') || key.includes('video')) && a[key];
-                }).length || 0} media items uploaded
+                {affiliate.attachments?.length > 0 ? 
+                  `${affiliate.attachments.filter((a: any) => a[Object.keys(a)[0]]).length} documents uploaded` : 
+                  'No documents uploaded'}
               </span>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {affiliate.affiliate_type === 'FREELANCE' ? (
-                <>
-                  <PhotoItem
-                    name="Service Photo 1"
-                    url={getAttachmentValue(affiliate.attachments, 'service_photo_1')}
-                  />
-                  <PhotoItem
-                    name="Service Photo 2"
-                    url={getAttachmentValue(affiliate.attachments, 'service_photo_2')}
-                  />
-                  <PhotoItem
-                    name="Service Photo 3"
-                    url={getAttachmentValue(affiliate.attachments, 'service_photo_3')}
-                  />
-                  <PhotoItem
-                    name="Service Video 1"
-                    url={getAttachmentValue(affiliate.attachments, 'service_video_1')}
-                    isVideo
-                  />
-                  <PhotoItem
-                    name="Service Video 2"
-                    url={getAttachmentValue(affiliate.attachments, 'service_video_2')}
-                    isVideo
-                  />
-              </>
-            ) : affiliate.affiliate_type === 'BUSINESS' ? (
-              <>
-                <PhotoItem
-                  name="Exterior Photo"
-                  url={getAttachmentValue(affiliate.attachments, 'exterior_photo')}
-                />
-                <PhotoItem
-                  name="Interior Photo 1"
-                  url={getAttachmentValue(affiliate.attachments, 'interior_photo_1')}
-                />
-                <PhotoItem
-                  name="Interior Photo 2"
-                  url={getAttachmentValue(affiliate.attachments, 'interior_photo_2')}
-                />
-                <PhotoItem
-                  name="Service Video 1"
-                  url={getAttachmentValue(affiliate.attachments, 'service_video_1')}
-                  isVideo
-                />
-                <PhotoItem
-                  name="Service Video 2"
-                  url={getAttachmentValue(affiliate.attachments, 'service_video_2')}
-                  isVideo
-                />
-              </>
-            ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-10 text-gray-500">
-                <AlertTriangle size={48} className="mb-4 text-yellow-500" />
-                <p className="text-lg font-medium">Unknown affiliate Type</p>
-                <p className="mt-2">The affiliate type '{affiliate.affiliate_type}' is not recognized.</p>
-              </div>
-            )}
+            <DocumentItem
+              name="Bank Account Details"
+              url={getAttachmentValue(affiliate.attachments, 'bank-account')}
+            />
+            <DocumentItem
+              name="Valid ID"
+              url={getAttachmentValue(affiliate.attachments, 'id')}
+            />
           </div>
-        </>
-        )} */}
+        )}
 
         {activeTab === 'notes' && (
           <div className="space-y-6">
@@ -512,8 +357,6 @@ const onApprove = async () => {
           </div>
         )}
       </div>
-
-
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">

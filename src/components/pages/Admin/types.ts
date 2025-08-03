@@ -21,6 +21,7 @@ export interface AffiliateApplication {
   application_status: 'pending' | 'suspended' | 'rejected' | 'verified' | 'unverified';
   created_at: string;
   modified_at: string;
+  attachments: any;
 }
 
 interface BusinessType {
