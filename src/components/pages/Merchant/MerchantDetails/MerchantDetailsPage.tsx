@@ -158,7 +158,7 @@ const MerchantDetailsPage = () => {
       >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Location</h2>
         <div className="h-96 rounded-lg overflow-hidden bg-gray-100">
-          {merchant.latitude && merchant.longitude && <LocationPicker initialLat={merchant.latitude} initialLng={merchant.longitude} onChange={() => {}}/>}
+          {merchant.latitude && merchant.longitude && <LocationPicker initialLat={merchant.latitude} initialLng={merchant.longitude} onChange={() => {}} readonly />}
         </div>
       </motion.div>
     </motion.div>

@@ -8,26 +8,31 @@ interface LocationPickerProps {
   onChange: (lat: number, lng: number) => void;
   initialLat?: number;
   initialLng?: number;
+  readonly?: boolean;
 }
 
 const MapEvents: React.FC<{
   onMapClick: (e: LeafletMouseEvent) => void;
-}> = ({ onMapClick }) => {
+  readonly: boolean;
+}> = ({ onMapClick, readonly }) => {
   const map = useMap();
 
   useEffect(() => {
-    map.on('click', onMapClick);
-    return () => {
-      map.off('click', onMapClick);
-    };
-  }, [map, onMapClick]);
+    if (!readonly) {
+      map.on('click', onMapClick);
+      return () => {
+        map.off('click', onMapClick);
+      };
+    }
+  }, [map, onMapClick, readonly]);
 
   return null;
 };
 
 const LocationControl: React.FC<{
   onLocationFound: (lat: number, lng: number) => void;
-}> = ({ onLocationFound }) => {
+  readonly: boolean;
+}> = ({ onLocationFound, readonly }) => {
   const map = useMap();
   const controlRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +72,8 @@ const LocationControl: React.FC<{
     });
   };
 
+  if (readonly) return null;
+
   return (
     <div
       ref={controlRef}
@@ -89,21 +96,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   onChange,
   initialLat = 14.5995,  // default to Metro Manila
   initialLng = 120.9842,
+  readonly = false,
 }) => {
   const [position, setPosition] = useState<LatLng>(new LatLng(initialLat, initialLng));
 
   const handleMapClick = (e: LeafletMouseEvent) => {
+    if (readonly) return;
     setPosition(e.latlng);
     onChange(e.latlng.lat, e.latlng.lng);
   };
 
   const handleMarkerDrag = (e: any) => {
+    if (readonly) return;
     const newPos = e.target.getLatLng();
     setPosition(newPos);
     onChange(newPos.lat, newPos.lng);
   };
 
   const handleLocationFound = (lat: number, lng: number) => {
+    if (readonly) return;
     const newPos = new LatLng(lat, lng);
     setPosition(newPos);
     onChange(lat, lng);
@@ -122,13 +133,13 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         />
         <Marker
           position={position}
-          draggable={true}
+          draggable={!readonly}
           eventHandlers={{
             dragend: handleMarkerDrag,
           }}
         />
-        <MapEvents onMapClick={handleMapClick} />
-        <LocationControl onLocationFound={handleLocationFound} />
+        <MapEvents onMapClick={handleMapClick} readonly={readonly} />
+        <LocationControl onLocationFound={handleLocationFound} readonly={readonly} />
       </MapContainer>
     </div>
   );
