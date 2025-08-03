@@ -314,7 +314,7 @@ const MerchantVerificationForm = () => {
         <LocationPicker 
           initialLng={formData.long}
           initialLat={formData.lat}
-          onChange={(long, lat) => {
+          onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,
               latitude: lat,

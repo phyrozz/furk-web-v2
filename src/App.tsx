@@ -32,6 +32,20 @@ import AffiliateLoginPage from './components/pages/Affiliate/LoginPage';
 import AffiliateSignUpPage from './components/pages/Affiliate/SignupPage';
 import AffiliateDashboard from './components/pages/Affiliate/AffiliateDashboard';
 import AffiliatePage from './components/pages/Admin/AffiliatePage';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconUrl,
+  iconRetinaUrl: iconUrl,
+  shadowUrl: iconShadow,
+});
+
 
 function App() {
   // const [isTokenExpired, setIsTokenExpired] = useState(false);

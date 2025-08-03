@@ -1,7 +1,8 @@
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import { LatLng, LeafletMouseEvent } from 'leaflet';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LocateIcon } from 'lucide-react';
+import L from 'leaflet';
 
 interface LocationPickerProps {
   onChange: (lat: number, lng: number) => void;
@@ -28,31 +29,55 @@ const LocationControl: React.FC<{
   onLocationFound: (lat: number, lng: number) => void;
 }> = ({ onLocationFound }) => {
   const map = useMap();
+  const controlRef = useRef<HTMLDivElement>(null);
 
   const handleLocationFound = (e: any) => {
     onLocationFound(e.latlng.lat, e.latlng.lng);
     map.setView(e.latlng, map.getZoom());
   };
 
-  const getCurrentLocation = () => {
-    map.locate({ setView: false });
-    map.on('locationfound', handleLocationFound);
-  };
-
   useEffect(() => {
+    const handleLocationError = (e: L.ErrorEvent) => {
+      console.error('Geolocation error:', e.message);
+    };
+
+    map.on('locationfound', handleLocationFound);
+    map.on('locationerror', handleLocationError);
+
     return () => {
       map.off('locationfound', handleLocationFound);
+      map.off('locationerror', handleLocationError);
     };
   }, [map]);
 
+  useEffect(() => {
+    if (controlRef.current) {
+      // Prevent Leaflet map clicks from bubbling from this div
+      L.DomEvent.disableClickPropagation(controlRef.current);
+      L.DomEvent.disableScrollPropagation(controlRef.current);
+    }
+  }, []);
+
+  const getCurrentLocation = () => {
+    console.log('Requesting location...');
+    map.locate({ setView: false });
+  };
+
   return (
-    <button
-      onClick={getCurrentLocation}
+    <div
+      ref={controlRef}
       className="absolute z-[1000] top-3 right-3 bg-white p-2 rounded-lg shadow-md hover:bg-gray-100"
-      type="button"
     >
-      <LocateIcon />
-    </button>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          getCurrentLocation();
+        }}
+        type="button"
+      >
+        <LocateIcon />
+      </button>
+    </div>
   );
 };
 
