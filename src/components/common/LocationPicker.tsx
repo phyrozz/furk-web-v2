@@ -59,14 +59,18 @@ const LocationControl: React.FC<{
   }, []);
 
   const getCurrentLocation = () => {
-    console.log('Requesting location...');
-    map.locate({ setView: false });
+    map.locate({
+      setView: false,
+      enableHighAccuracy: true,
+      timeout: 10000, // wait up to 10 seconds
+      maximumAge: 0,
+    });
   };
 
   return (
     <div
       ref={controlRef}
-      className="absolute z-[1000] top-3 right-3 bg-white p-2 rounded-lg shadow-md hover:bg-gray-100"
+      className="absolute z-[1000] top-3 right-3 bg-white p-2 rounded-lg shadow-md hover:bg-gray-100 cursor-pointer"
     >
       <button
         onClick={(e) => {
