@@ -13,6 +13,7 @@ import {
 } from 'aws-amplify/auth';
 import { ToastService } from '../toast/toast-service';
 import { roleMapping } from '../../utils/role-mapping';
+import { http } from '../../utils/http';
 
 Amplify.configure({
   Auth: {
@@ -196,6 +197,17 @@ export class LoginService {
       }
   
       // console.log('Signing up with credentials:', credentials);
+
+      // if sign up includes an affiliate id (referral code), validate first before creating a cognito user
+      if (credentials.referralCode) {
+        const response: { success: boolean, data: any, message: string } = await http.publicPost('/login/validate-merchant', {
+          referral_code: credentials.referralCode
+        })
+
+        if (!response.success || !response.data.is_affiliate_valid) {
+          throw new Error('Invalid affiliate code');
+        }
+      }
   
       const cognitoUser = await signUp({
         username: credentials.email,
