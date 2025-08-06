@@ -5,6 +5,9 @@ import { MerchantDetailsService } from '../../../../services/merchant-details/me
 import ServicesList from './ServicesList';
 import LocationPicker from '../../../common/LocationPicker';
 import PawLoading from '../../../common/PawLoading';
+import ShareDialog from '../../../common/ShareDialog';
+import { Share2 } from 'lucide-react';
+import Button from '../../../common/Button';
 
 interface MerchantDetails {
   id: string;
@@ -27,6 +30,7 @@ const MerchantDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const [merchant, setMerchant] = useState<MerchantDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const merchantService = new MerchantDetailsService();
 
@@ -65,77 +69,91 @@ const MerchantDetailsPage = () => {
   }
 
   return (
-    <motion.div 
+    <>
+      <ShareDialog 
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        shareUrl={window.location.href}
+        socials={[
+          { name: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}` },
+          { name: 'Twitter', url: `https://www.twitter.com/intent/tweet?url=${window.location.href}` },
+          { name: 'WhatsApp', url: `https://api.whatsapp.com/send?text=${window.location.href}` },
+          { name: 'Email', url: `mailto:?subject=Check%20out%20this%20pet%20merchant&body=${window.location.href}` }
+        ]}
+      />
+
+      <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="max-w-7xl mx-auto mt-14 px-4 sm:px-6 lg:px-8 py-8 space-y-8 cursor-default"
     >
-      {/* Hero Section with Business Photo */}
+      {/* Hero Section with Business Info and Photo */}
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="relative h-96 rounded-xl overflow-hidden shadow-lg"
+        className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white rounded-xl shadow-lg p-6"
       >
-        <img
-          src={merchant.exterior_photo}
-          alt={merchant.business_name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
-          <div className="absolute bottom-0 left-0 p-8">
+        <div className="flex flex-col justify-center space-y-6">
+          <div className="flex justify-between items-start">
             <motion.h1 
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-4xl font-bold text-white mb-2"
+              className="text-4xl font-bold text-gray-900"
             >
               {merchant.business_name}
             </motion.h1>
-            <motion.div 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center space-x-2"
+            <Button
+              onClick={() => setShowShareDialog(true)}
+              variant='ghost'
             >
-              <span className="text-accent-400 text-xl">★</span>
-              <span className="text-white font-semibold">{merchant.overall_rating.toFixed(1)}</span>
-            </motion.div>
+              <Share2 />
+            </Button>
           </div>
+          <motion.div 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center space-x-2"
+          >
+            <span className="text-accent-400 text-2xl">★</span>
+            <span className="text-gray-900 font-semibold text-xl">{merchant.overall_rating.toFixed(1)}</span>
+          </motion.div>
+          <div className="space-y-3">
+            <p className="text-gray-600">
+              <span className="font-medium text-gray-900">Type:</span> {merchant.merchant_type}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-medium text-gray-900">Location:</span> {merchant.address}, {merchant.barangay}, {merchant.city}, {merchant.province}
+            </p>
+          </div>
+        </div>
+        <div className="h-[400px] rounded-xl overflow-hidden">
+          <img
+            src={merchant.exterior_photo}
+            alt={merchant.business_name}
+            className="w-full h-full object-cover"
+          />
         </div>
       </motion.div>
 
-      {/* Business Information */}
+      {/* Contact Information */}
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="bg-white rounded-xl shadow-md p-6"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Business Details</h2>
-            <div className="space-y-2">
-              <p className="text-gray-600">
-                <span className="font-medium text-gray-900">Type:</span> {merchant.merchant_type}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-medium text-gray-900">Location:</span> {merchant.address}, {merchant.barangay}, {merchant.city}, {merchant.province}
-              </p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
-            <div className="space-y-2">
-              <p className="text-gray-600">
-                <span className="font-medium text-gray-900">Email:</span> {merchant.email}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-medium text-gray-900">Phone:</span> {merchant.phone_number}
-              </p>
-            </div>
-          </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+        <div className="space-y-2">
+          <p className="text-gray-600">
+            <span className="font-medium text-gray-900">Email:</span> {merchant.email}
+          </p>
+          <p className="text-gray-600">
+            <span className="font-medium text-gray-900">Phone:</span> {merchant.phone_number}
+          </p>
         </div>
       </motion.div>
 
@@ -162,6 +180,7 @@ const MerchantDetailsPage = () => {
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 };
 

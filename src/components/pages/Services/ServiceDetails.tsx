@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Star, Phone, Mail, Tag, Heart } from 'lucide-react';
+import { MapPin, Star, Phone, Mail, Tag, Heart, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -12,6 +12,7 @@ import { ToastService } from '../../../services/toast/toast-service';
 import WarningContainer from '../../common/WarningContainer';
 import ReviewDialog from './ReviewDialog';
 import RecommendedServicesList from './RecommendedServicesList';
+import ShareDialog from '../../common/ShareDialog';
 
 interface ServiceDetail {
   id: number;
@@ -52,6 +53,7 @@ const ServiceDetails = () => {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [hasBooked, setHasBooked] = useState<boolean>(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
+  const [showShareDialog, setShowShareDialog] = useState<boolean>(false);
   const navigate = useNavigate();
   const reviewsRef = useRef<ReviewsListRef>(null);
 
@@ -180,6 +182,18 @@ const ServiceDetails = () => {
 
   return (
     <>
+      <ShareDialog 
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        shareUrl={window.location.href}
+        socials={[
+          { name: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}` },
+          { name: 'Twitter', url: `https://www.twitter.com/intent/tweet?url=${window.location.href}` },
+          { name: 'WhatsApp', url: `https://api.whatsapp.com/send?text=${window.location.href}` },
+          { name: 'Email', url: `mailto:?subject=Check%20out%20this%20pet%20service&body=${window.location.href}` }
+        ]}
+      />
+
       {service.last_completed_timestamp && isReviewable() && !service.has_reviewed && <ReviewDialog serviceId={service.id} onReviewSubmit={onReviewSubmit} />}
       <div className="pt-24 min-h-screen bg-gray-50 select-none">
         <div className="container mx-auto px-4">
@@ -231,7 +245,10 @@ const ServiceDetails = () => {
                 className="mt-6 flex flex-row justify-between items-center"
               >
                 <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">₱{service.price}</p>
-                <div>
+                <div className='flex items-center'>
+                  <Button onClick={() => setShowShareDialog(true)} variant='ghost'>
+                    <Share2 />
+                  </Button>
                   <Button
                     icon={<Heart fill={isFavorite ? "currentColor" : "none"} />}
                     variant="ghost"

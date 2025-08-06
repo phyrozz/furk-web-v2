@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { useLazyLoad } from '../../../../hooks/useLazyLoad';
+import { useEffect, useRef, useState } from 'react';
 import { MerchantDetailsService } from '../../../../services/merchant-details/merchant-details';
 import { Link } from 'react-router-dom';
 import PawLoading from '../../../common/PawLoading';
+import Button from '../../../common/Button';
 
 interface Service {
   id: string;
@@ -21,33 +21,38 @@ interface ServicesListProps {
 }
 
 const ServicesList = ({ merchantId }: ServicesListProps) => {
-  const observerTarget = useRef(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const limit = 9;
+
   const merchantService = new MerchantDetailsService();
 
-  const { items: services, loading, hasMore } = useLazyLoad<Service>({
-    fetchData: (limit, offset, keyword) => 
-      merchantService.listServicesByMerchant(offset, limit, merchantId, keyword)
-        .then(response => response.data),
-    limit: 9,
-    dependencies: [merchantId]
-  });
+  const loadMore = async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const response = await merchantService.listServicesByMerchant(offset, limit, merchantId, '');
+      const newServices = response.data;
+      
+      if (newServices.length < limit) {
+        setHasMore(false);
+      }
+      
+      setServices(offset === 0 ? newServices : prev => [...prev, ...newServices]);
+      setOffset(offset === 0 ? limit : prev => prev + limit);
+    } catch (error) {
+      console.error('Error loading services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 1.0 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, loading]);
+    loadMore();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -90,13 +95,13 @@ const ServicesList = ({ merchantId }: ServicesListProps) => {
           <PawLoading />
         </div>
       )}
-      <div ref={observerTarget} className="h-4" />
+      {hasMore && !loading && (
+        <div className="flex justify-center">
+          <Button onClick={loadMore} variant="ghost">See More</Button>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ServicesList;
-
-function loadMore() {
-  throw new Error('Function not implemented.');
-}
