@@ -8,6 +8,9 @@ import { UserNotificationsService } from '../../services/user-notifications/user
 import PawLoading from './PawLoading';
 import ResizableRightSidebar from './ResizableRightSidebar';
 import DateUtils from '../../utils/date-utils';
+import { http } from '../../utils/http';
+import { UserWallet } from '../../models/user-wallet';
+import Button from './Button';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -25,6 +28,8 @@ const Navbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+  const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchNotifications = useCallback(async (limit: number, offset: number) => {
     try {
@@ -33,6 +38,19 @@ const Navbar = () => {
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
       return [];
+    }
+  }, []);
+
+  const fetchUserWallet = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await http.get<{ data: UserWallet }>('/pet-owner-profile/get-user-wallet');
+      setUserWallet(response.data);
+    } catch (error) {
+      console.error('Failed to fetch user wallet:', error);
+      setUserWallet(null);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -118,6 +136,12 @@ const Navbar = () => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (isAuth) {
+      fetchUserWallet();
+    }
+  }, [isAuth, fetchUserWallet]);
+
   const renderNotifications = () => (
     <div className="space-y-2">
       {notifications.length > 0 ? (
@@ -186,7 +210,7 @@ const Navbar = () => {
                   <Bell size={20} />
                 </motion.button>
 
-                <div className="relative">
+                <div className="relative flex flex-row gap-1">
                   <motion.button
                     onClick={toggleProfileMenu}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
@@ -251,6 +275,23 @@ const Navbar = () => {
                         </button>
                       </motion.div>
                     </>
+                  )}
+
+                  {isLoading && (
+                    <div className="flex items-center justify-center w-10 h-10 overflow-clip">
+                      <PawLoading size={32} bounce={false} />
+                    </div>
+                  )}
+                  {!isLoading && (
+                    <Button
+                      onClick={() => navigate('/profile')}
+                      variant="ghost"
+                      aria-label="Furkredits balance"
+                    >
+                      <span className="font-bold">
+                        {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
+                      </span>
+                    </Button>
                   )}
                 </div>
               </>
@@ -345,6 +386,15 @@ const Navbar = () => {
                   <LogOut size={16} className="mr-2" />
                   Logout
                 </button>
+                <Link
+                  to="/profile"
+                  className="flex items-center px-3 py-2 bg-primary-50 rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-100 hover:text-primary-800 transition-colors"
+                  onClick={closeMenu}
+                >
+                  <span className="font-bold">
+                    {userWallet?.furkredits ?? 0} Furkredits
+                  </span>
+                </Link>
               </>
             ) : (
               <Link

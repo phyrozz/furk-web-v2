@@ -114,7 +114,7 @@ const RecommendedServicesList = forwardRef<RecommendedServicesListRef, Recommend
               
               <div className="space-y-2 mt-4">
                 <h3 className="font-medium text-gray-900 truncate">{service.name}</h3>
-                <p className="font-semibold text-primary-600">₱{service.price.toFixed(2)}</p>
+                <p className="font-semibold text-primary-600">{service.price.toFixed(2)} <span className="text-xs">Furkredits</span></p>
                 <div className="flex items-center">
                   <span className="text-sm text-gray-600">Rating: {service.average_rating.toFixed(1)}</span>
                 </div>

@@ -185,10 +185,11 @@ const ManageService = () => {
                         </motion.div>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">{service.description}</p>
-                      <div className="mt-2 flex items-center gap-4">
-                        <span className="text-sm font-medium text-gray-900">
-                          ₱{service.price.toLocaleString()}
+                      <div className="mt-2 flex items-center gap-1">
+                        <span className="text-sm text-gray-900 font-bold">
+                          {service.price.toLocaleString()}
                         </span>
+                        <span className="text-sm text-gray-900">Furkredits</span>
                         <span className="text-sm text-gray-500">{service.category}</span>
                       </div>
                     </div>

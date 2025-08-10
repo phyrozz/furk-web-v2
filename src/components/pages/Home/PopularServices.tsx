@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { HomeService, PopularService } from '../../../services/home/home-service';
 import PawLoading from '../../common/PawLoading';
 import { useNavigate } from 'react-router-dom';
+import { Rating } from 'react-simple-star-rating';
 
 const homeService = new HomeService();
 
@@ -117,8 +118,18 @@ const PopularServices = () => {
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-1 truncate">{service.name}</h3>
                       <p className="text-sm text-gray-600 mb-2 truncate">{service.business_name}</p>
-                      <div className="flex items-center text-sm text-gray-700">
-                        <span className="text-yellow-500 mr-1">★</span> {service.avg_rating.toFixed(1)} ({service.total_reviews} reviews)
+                      <div className="flex items-center justify-between text-sm text-gray-700">
+                        <span className="text-primary-600 font-semibold">{service.price} <span className="text-xs">Furkredits</span></span>
+                        <div className="flex items-center gap-2">
+                          <Rating
+                            initialValue={service.avg_rating}
+                            size={12}
+                            allowFraction={true}
+                            SVGstyle={{ "display": "inline" }}
+                            transition
+                          />
+                          <span className="text-xs">{service.total_reviews} reviews</span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>

@@ -114,7 +114,7 @@ const MerchantDashboard = () => {
     },
     {
       title: 'Total Earnings',
-      value: '₱45,680',
+      value: '0',
       icon: <DollarSign size={24} />,
       color: 'bg-secondary-500',
     },

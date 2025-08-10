@@ -244,7 +244,9 @@ const ServiceDetails = () => {
                 transition={{ delay: 0.4 }}
                 className="mt-6 flex flex-row justify-between items-center"
               >
-                <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">₱{service.price}</p>
+                <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">
+                  {service.price} <span className="text-base">Furkredits</span>
+                </p>
                 <div className='flex items-center'>
                   <Button onClick={() => setShowShareDialog(true)} variant='ghost'>
                     <Share2 />

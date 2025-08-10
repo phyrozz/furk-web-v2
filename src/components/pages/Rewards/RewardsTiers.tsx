@@ -54,7 +54,7 @@ const RewardsTiers = () => {
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
       benefits: [
-        'Basic earning rate: 1 point per ₱100',
+        'Basic earning rate: 1 point per 100 Furkredits',
         'Access to standard rewards',
         'Birthday bonus: 100 points',
         'Monthly newsletter with exclusive offers'

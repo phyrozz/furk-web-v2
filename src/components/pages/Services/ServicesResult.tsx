@@ -5,6 +5,7 @@ import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import { Link } from 'react-router-dom';
 import PawLoading from '../../common/PawLoading';
+import { Rating } from 'react-simple-star-rating';
 
 interface Service {
   id: number;
@@ -179,11 +180,19 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                   </>}
                 </div>
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-gray-700">{service.average_rating.toFixed(1)}</span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-primary-800 font-semibold">
+                      {service.price}
+                    </span>
+                    <Rating
+                      initialValue={service.average_rating}
+                      size={14}
+                      allowFraction={true}
+                      SVGstyle={{ "display": "inline" }}
+                      allowHover={false}
+                    />
                   </div>
-                  <span className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full mt-3">
+                  <span className="inline-block bg-primary-100 text-primary-800 text-xs mx-2 px-2 py-1 rounded-full text-center">
                     {service.service_category_name}
                   </span>
                 </div>

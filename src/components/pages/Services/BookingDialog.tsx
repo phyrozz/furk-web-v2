@@ -169,9 +169,15 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       
       // Call onSuccess to update parent component
       onSuccess();
-    } catch (err) {
-      ToastService.show('Failed to create booking');
-      setError('Failed to create booking. Please try again.');
+    } catch (err: any) {
+      console.log(err.response.data.error);
+      if (err.response && err.response.data && err.response.data.error) {
+        ToastService.show(err.response.data.error);
+        setError(err.response.data.error);
+      } else {
+        ToastService.show('Failed to create booking. Please try again.');
+        setError('An unexpected error occurred. Please try again.');
+      }
       setLoading(false);
     }
   };

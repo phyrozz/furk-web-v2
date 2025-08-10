@@ -99,12 +99,16 @@ const Footer = () => {
 
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-            <p className="text-gray-300 mb-2">
-              Email: support@furk.app
-            </p>
-            <p className="text-gray-300 mb-4">
-              Phone: +63 917 821 0408
-            </p>
+            <a href="mailto:support@furk.app" target="_blank" rel="noopener noreferrer">
+              <p className="text-gray-300 mb-2">
+                Email: support@furk.app
+              </p>
+            </a>
+            <a href="tel:+639178210408" target="_blank" rel="noopener noreferrer">
+              <p className="text-gray-300 mb-4">
+                Phone: +63 917 821 0408
+              </p>
+            </a>
             {/* <button className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg transition-colors text-sm">
               Contact Support
             </button> */}

@@ -10,7 +10,7 @@ const RewardsExplanation = () => {
     },
     {
       title: 'Earn Points',
-      description: 'Earn 1 point for every ₱100 spent on services. Get bonus points for bookings, reviews, and referrals.',
+      description: 'Earn 1 point for every 100 Furkredits spent on services. Get bonus points for bookings, reviews, and referrals.',
       icon: <Repeat size={32} className="text-primary-500" />,
     },
     {
@@ -89,7 +89,7 @@ const RewardsExplanation = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <h4 className="font-semibold text-primary-600 mb-2">Service Bookings</h4>
-              <p className="text-gray-700">1 point for every ₱100 spent on services</p>
+              <p className="text-gray-700">1 point for every 100 Furkredits spent on services</p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <h4 className="font-semibold text-primary-600 mb-2">Service Reviews</h4>

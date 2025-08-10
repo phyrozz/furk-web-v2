@@ -10,6 +10,7 @@ export interface PopularService {
   avg_rating: number;
   total_reviews: number;
   total_bookings: number;
+  price: number;
 }
 
 export class HomeService {
