@@ -36,6 +36,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import { GuideTooltipProvider } from './providers/GuideTooltip';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -75,136 +76,138 @@ function App() {
   // };
 
   return (
-    <ToastProvider>
-      <BookingProgressTracker isAuthenticated={isAuthenticated} />
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}
-      >
-        <AuthWrapper onAuthStatusChange={setIsAuthenticated}>
-          <div className="min-h-screen flex flex-col bg-gray-50">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              } />
-              <Route path="/sign-up/merchant" element={
-                <PublicRoute>
-                  <SignUpPage userType='merchant' />
-                </PublicRoute>
-              } />
-              <Route path="/sign-up/user" element={
-                <PublicRoute>
-                  <SignUpPage userType='user' />
-                </PublicRoute>
-              } />
-              <Route path="/reset-password" element={
-                <PublicRoute>
-                  <ResetPasswordPage />
-                </PublicRoute>
-              } />
-              <Route path="/affiliate/login" element={
-                <PublicRoute>
-                  <AffiliateLoginPage />
-                </PublicRoute>
-              } />
-              <Route path="/affiliate/sign-up" element={
-                <PublicRoute>
-                  <AffiliateSignUpPage />
-                </PublicRoute>
-              } />
-              <Route path="/terms-of-service" element={
-                <TermsOfService />
-              } />
+    <GuideTooltipProvider>
+      <ToastProvider>
+        <BookingProgressTracker isAuthenticated={isAuthenticated} />
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <AuthWrapper onAuthStatusChange={setIsAuthenticated}>
+            <div className="min-h-screen flex flex-col bg-gray-50">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/login" element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                } />
+                <Route path="/sign-up/merchant" element={
+                  <PublicRoute>
+                    <SignUpPage userType='merchant' />
+                  </PublicRoute>
+                } />
+                <Route path="/sign-up/user" element={
+                  <PublicRoute>
+                    <SignUpPage userType='user' />
+                  </PublicRoute>
+                } />
+                <Route path="/reset-password" element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
+                  </PublicRoute>
+                } />
+                <Route path="/affiliate/login" element={
+                  <PublicRoute>
+                    <AffiliateLoginPage />
+                  </PublicRoute>
+                } />
+                <Route path="/affiliate/sign-up" element={
+                  <PublicRoute>
+                    <AffiliateSignUpPage />
+                  </PublicRoute>
+                } />
+                <Route path="/terms-of-service" element={
+                  <TermsOfService />
+                } />
 
-              {/* Main Routes */}
-              <Route path="/*" element={
-                <>
-                  <Navbar />
-                  <main className="flex-grow">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/services" element={<ServicesPage />} />
-                      <Route path="/rewards" element={<RewardsPage />} />
-                      <Route path="/services/:id" element={<ServiceDetails />} />
-                      <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
-                    </Routes>
-                  </main>
-                </>
-              } />
+                {/* Main Routes */}
+                <Route path="/*" element={
+                  <>
+                    <Navbar />
+                    <main className="flex-grow">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/services" element={<ServicesPage />} />
+                        <Route path="/rewards" element={<RewardsPage />} />
+                        <Route path="/services/:id" element={<ServiceDetails />} />
+                        <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
+                      </Routes>
+                    </main>
+                  </>
+                } />
 
-              {/* Protected Routes */}
-              <Route path='/admin/merchants' element={
-                <ProtectedRoute requiredRoles={['admin']}>
-                  <AdminPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/affiliates" element={
-                <ProtectedRoute requiredRoles={['admin']}>
-                  <AffiliatePage />
-                </ProtectedRoute>
-              } />
-              {/* <Route path='/admin/profile' element={
-                <ProtectedRoute requiredRoles={['admin']}>
-                  <AdminProfilePage />
-                </ProtectedRoute>
-              } /> */}
-              <Route path="/merchant/dashboard" element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <MerchantDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/merchant/verify" element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <MerchantVerificationForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/merchant/add-service" element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <AddService />
-                </ProtectedRoute>
-              } />
-              <Route path="/merchant/manage-services" element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <ManageService />
-                </ProtectedRoute>
-              } />
-              <Route path="/merchant/bookings" element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <BookingCalendar />
-                </ProtectedRoute>
-              } />
-              <Route path='/merchant/profile' element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <MerchantProfilePage />
-                </ProtectedRoute>
-              } />
-              <Route path='/merchant/business-hours' element={
-                <ProtectedRoute requiredRoles={['merchant']}>
-                  <SetBusinessHoursPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute requiredRoles={['user']}>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }></Route>
-              <Route path="/affiliate/dashboard" element={
-                <ProtectedRoute requiredRoles={['affiliate']}>
-                  <AffiliateDashboard />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </div>
-        </AuthWrapper>
-        
-      </Router>
-      {/* <TokenExpiredDialog isOpen={isTokenExpired} onConfirm={handleConfirmRefresh} /> */}
-    </ToastProvider>
+                {/* Protected Routes */}
+                <Route path='/admin/merchants' element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AdminPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/affiliates" element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AffiliatePage />
+                  </ProtectedRoute>
+                } />
+                {/* <Route path='/admin/profile' element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AdminProfilePage />
+                  </ProtectedRoute>
+                } /> */}
+                <Route path="/merchant/dashboard" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <MerchantDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/verify" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <MerchantVerificationForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/add-service" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <AddService />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/manage-services" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <ManageService />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/bookings" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <BookingCalendar />
+                  </ProtectedRoute>
+                } />
+                <Route path='/merchant/profile' element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <MerchantProfilePage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/merchant/business-hours' element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <SetBusinessHoursPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedRoute requiredRoles={['user']}>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }></Route>
+                <Route path="/affiliate/dashboard" element={
+                  <ProtectedRoute requiredRoles={['affiliate']}>
+                    <AffiliateDashboard />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </div>
+          </AuthWrapper>
+          
+        </Router>
+        {/* <TokenExpiredDialog isOpen={isTokenExpired} onConfirm={handleConfirmRefresh} /> */}
+      </ToastProvider>
+    </GuideTooltipProvider>
   );
 }
 

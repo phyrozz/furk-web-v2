@@ -11,6 +11,9 @@ import DateUtils from '../../utils/date-utils';
 import { http } from '../../utils/http';
 import { UserWallet } from '../../models/user-wallet';
 import Button from './Button';
+import { Tooltip } from './Tooltip';
+import { useGuideTooltip } from '../../providers/GuideTooltip';
+import GuideTip from './GuideTooltip';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -30,6 +33,7 @@ const Navbar = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { tooltipState, setTooltipState } = useGuideTooltip();
 
   const fetchNotifications = useCallback(async (limit: number, offset: number) => {
     try {
@@ -200,16 +204,17 @@ const Navbar = () => {
             ))}
             {isAuth ? (
               <>
-                <motion.button
-                  onClick={toggleNotifications}
-                  className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
-                  aria-label="Notifications"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Bell size={20} />
-                </motion.button>
-
+                <Tooltip content="Notifications" position='bottom'>
+                  <motion.button
+                    onClick={toggleNotifications}
+                    className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
+                    aria-label="Notifications"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Bell size={20} />
+                  </motion.button>
+                </Tooltip>
                 <div className="relative flex flex-row gap-1">
                   <motion.button
                     onClick={toggleProfileMenu}
@@ -283,15 +288,29 @@ const Navbar = () => {
                     </div>
                   )}
                   {!isLoading && (
-                    <Button
-                      onClick={() => navigate('/profile')}
-                      variant="ghost"
-                      aria-label="Furkredits balance"
-                    >
-                      <span className="font-bold">
-                        {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
-                      </span>
-                    </Button>
+                    <GuideTip 
+                      content="Welcome to Furk! Let's get started by topping up your balance to access our services"
+                      position='bottom' 
+                      show={tooltipState.isNewUser}
+                      onClose={() => setTooltipState({ ...tooltipState, isNewUser: false })}
+                    >  
+                      <Tooltip content="Furkredits balance" position="bottom">
+                        <Button
+                          onClick={
+                            () => {
+                              setTooltipState({ ...tooltipState, isNewUser: false });
+                              navigate('/profile');
+                            }
+                          }
+                          variant="ghost"
+                          aria-label="Furkredits balance"
+                        >
+                          <span className="font-bold">
+                            {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
+                          </span>
+                        </Button>
+                      </Tooltip>
+                    </GuideTip>
                   )}
                 </div>
               </>
