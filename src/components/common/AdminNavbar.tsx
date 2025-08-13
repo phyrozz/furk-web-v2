@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Users, Settings, Store } from 'lucide-react';
+import { Menu, X, LogOut, User, Users, Settings, Store, TicketPercent } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -50,7 +50,8 @@ const AdminNavbar = () => {
   const navItems = [
     { name: 'Merchants', path: '/admin/merchants', icon: Store },
     { name: 'Affiliates', path: '/admin/affiliates', icon: Users },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    // { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Promos', path: '/admin/promos', icon: TicketPercent }
   ];
 
   return (

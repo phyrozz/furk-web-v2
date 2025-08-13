@@ -260,14 +260,15 @@ const Navbar = () => {
                             Dashboard
                           </Link>
                         )}
-                        <Link
-                          to="/profile"
+                        {/* Condition here looks messy at the moment. Will implement role matrix handling */}
+                        {['user', 'merchant'].includes(loginService.getUserRole() || '') && <Link
+                          to={loginService.getUserRole() === 'user' ? "/profile" : "/merchant/profile"}
                           className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                           onClick={() => setShowProfileMenu(false)}
                         >
                           <User size={16} className="mr-2" />
                           Profile
-                        </Link>
+                        </Link>}
                         <button
                           onClick={() => {
                             handleLogout();
@@ -282,12 +283,12 @@ const Navbar = () => {
                     </>
                   )}
 
-                  {isLoading && (
+                  {isLoading && loginService.getUserRole() === 'user' && (
                     <div className="flex items-center justify-center w-10 h-10 overflow-clip">
                       <PawLoading size={32} bounce={false} />
                     </div>
                   )}
-                  {!isLoading && (
+                  {!isLoading && loginService.getUserRole() === 'user' && (
                     <GuideTip 
                       content="Welcome to Furk! Let's get started by topping up your balance to access our services"
                       position='bottom' 
