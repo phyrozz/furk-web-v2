@@ -5,11 +5,17 @@ import Button from '../../common/Button';
 import Select from '../../common/Select';
 import { http } from '../../../utils/http';
 import { UserWallet } from '../../../models/user-wallet';
+import { useNavigate } from 'react-router';
 
 interface TopUpSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface TopUpResponseData {
+  checkoutId: string;
+  redirectUrl: string;
 }
 
 const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess }) => {
@@ -18,15 +24,17 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const navigate = useNavigate();
+
   const handleSubmit = async () => {
     setLoading(true);
-    if (!selectedPaymentMethod || !amount) {
+    if (!amount) {
       setLoading(false);
       return;
     }
 
     try {
-      const response = await http.post<{ success: boolean, message: string, data: UserWallet }>('/pet-owner-profile/top-up', {
+      const response = await http.post<{ success: boolean, message: string, data: TopUpResponseData }>('/pet-owner-profile/top-up', {
         amount
       });
 
@@ -36,6 +44,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
         setAmount(null);
         setError(null);
         setLoading(false);
+        window.location.href = response.data.redirectUrl;
       }
     } catch (error: any) {
       setError(error?.response?.data?.error || error.message);
@@ -73,7 +82,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
               />
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <label className="font-medium">Payment Method</label>
               <Select
                 options={[
@@ -89,7 +98,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
                 placeholder="Select payment method"
                 className="w-full"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -105,6 +114,9 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
 
           <div className="text-sm text-gray-500">
             Note: Minimum top up amount is PHP 10. Funds will be available in your account immediately after successful payment.
+          </div>
+          <div className="text-sm text-gray-500">
+            You will be redirected to our secure payment gateway.
           </div>
         </div>
       </div>
