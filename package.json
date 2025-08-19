@@ -17,6 +17,7 @@
     "@googlemaps/js-api-loader": "^1.16.8",
     "@headlessui/react": "^2.2.4",
     "@types/node": "^22.15.18",
+    "@types/react-toastify": "^4.0.2",
     "aws-amplify": "^6.14.4",
     "axios": "^1.9.0",
     "framer-motion": "^11.0.22",
@@ -30,6 +31,7 @@
     "react-router-dom": "^6.22.3",
     "react-simple-star-rating": "^5.1.7",
     "react-social-icons": "^6.24.0",
+    "react-toastify": "^11.0.5",
     "react-tooltip": "^5.29.1",
     "use-debounce": "^10.0.5",
     "vite-plugin-pwa": "^1.0.0"

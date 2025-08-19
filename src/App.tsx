@@ -37,6 +37,11 @@ import 'leaflet/dist/leaflet.css';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import { GuideTooltipProvider } from './providers/GuideTooltip';
+import PromosPage from './components/pages/Admin/PromosPage';
+import PaymentPage from './components/pages/Payment/PaymentPage';
+import PaymentSuccessPage from './components/pages/Payment/PaymentSuccessPage';
+import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPage';
+import PaymentFailedPage from './components/pages/Payment/PaymentFailedPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -150,6 +155,11 @@ function App() {
                     <AffiliatePage />
                   </ProtectedRoute>
                 } />
+                <Route path="/admin/promos" element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <PromosPage />
+                  </ProtectedRoute>
+                } />
                 {/* <Route path='/admin/profile' element={
                   <ProtectedRoute requiredRoles={['admin']}>
                     <AdminProfilePage />
@@ -198,6 +208,26 @@ function App() {
                 <Route path="/affiliate/dashboard" element={
                   <ProtectedRoute requiredRoles={['affiliate']}>
                     <AffiliateDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payment" element={
+                  <ProtectedRoute requiredRoles={['user', 'merchant']}>
+                    <PaymentPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payment/success" element={
+                  <ProtectedRoute requiredRoles={['user', 'merchant']}>
+                    <PaymentSuccessPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payment/cancelled" element={
+                  <ProtectedRoute requiredRoles={['user', 'merchant']}>
+                    <PaymentCancelledPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payment/failed" element={
+                  <ProtectedRoute requiredRoles={['user', 'merchant']}>
+                    <PaymentFailedPage />
                   </ProtectedRoute>
                 } />
               </Routes>
