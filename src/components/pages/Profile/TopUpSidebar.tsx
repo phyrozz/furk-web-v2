@@ -53,6 +53,14 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
     }
   };
 
+  const onAmountInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Only allow integers
+    if (/^\d*$/.test(value) || value === '') {
+      setAmount(value === '' ? null : parseInt(value));
+    }
+  }
+
   return (
     <ResizableRightSidebar
       isOpen={isOpen}
@@ -78,7 +86,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
                 min={10}
                 max={1000000}
                 step={10}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => onAmountInputChange(e)}
               />
             </div>
 

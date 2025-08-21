@@ -75,6 +75,7 @@ const ProfilePage = () => {
 
   const getUserDetails = async () => {
     try {
+      setLoading(true);
       const response: any = await dataService.getUserDetails();
       setProfile(response.data);
       setLoading(false);

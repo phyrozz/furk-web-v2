@@ -2,8 +2,7 @@ import { useRef, useCallback } from "react";
 import { UserProfileService } from "../../../services/profile/user-profile-service";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
 import PawLoading from "../../common/PawLoading";
-import { Tooltip } from "../../common/Tooltip";
-import { DollarSign, ArrowDown, ArrowUp, Info } from "lucide-react";
+import { DollarSign, ArrowDown, ArrowUp } from "lucide-react";
 import { User } from "../../../models/user";
 import DateUtils from "../../../utils/date-utils";
 
@@ -14,6 +13,7 @@ interface Transaction {
   currency_type: string;
   amount: number;
   transaction_type: string;
+  code: string;
   maya_reference_number: string | null;
   reference_number: string | null;
   created_at: string;
@@ -21,15 +21,6 @@ interface Transaction {
   modified_at: string;
   modified_by: string;
 }
-
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 const formatAmount = (amount: number, currencyType: string) => {
   return currencyType === "furkredits"
@@ -118,19 +109,18 @@ const TransactionHistory = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-800">
-                      {isCredit ? "Top Up" : "Spent"}{" "}
+                      {isCredit 
+                        ? (isFurkredits ? "Top Up" : "Added")
+                        : "Spent"}{" "}
                       <span className={isCredit ? "text-green-600" : "text-red-600"}>
                         {formatAmount(transaction.amount, transaction.currency_type)}
                       </span>{" "}
                       {isFurkredits ? "Furkredits" : "Furkoins"}
                     </h3>
                   </div>
-                  {transaction.reference_number && transaction.maya_reference_number && <><div className="text-xs text-gray-400 mt-1">
-                    Transaction ID: {transaction.reference_number}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Reference Number: {transaction.maya_reference_number}
-                  </div></>}
+                  {transaction.code && <div className="text-xs text-gray-400 mt-1">
+                    Transaction Number: {transaction.code}
+                  </div>}
                   {/* {transaction.booking_id && (
                     <div className="text-xs text-gray-400">
                       Booking ID: {transaction.booking_id}
