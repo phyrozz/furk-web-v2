@@ -3,7 +3,7 @@ import ResizableRightSidebar from '../../common/ResizableRightSidebar';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import { ToastService } from '../../../services/toast/toast-service';
-import Select from '../../common/Select';
+// import Select from '../../common/Select';
 import DateInput from '../../common/DateInput';
 import TimeInput from '../../common/TimeInput';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
@@ -19,28 +19,28 @@ interface BookingDialogProps {
   businessHours: BusinessHour[];
 }
 
-interface PaymentMethod {
-  id: number;
-  code: string;
-  displayName: string;
-}
+// interface PaymentMethod {
+//   id: number;
+//   code: string;
+//   displayName: string;
+// }
 
 interface Pet {
   id: number;
   name: string;
 }
 
-const PAYMENT_METHODS: PaymentMethod[] = [
-  { id: 1, code: 'card', displayName: 'Card (Debit/Credit)' },
-  { id: 2, code: 'gcash', displayName: 'GCash' },
-  { id: 3, code: 'cash_on_site', displayName: 'Cash on Site' },
-  { id: 4, code: 'maya', displayName: 'Maya' },
-];
+// const PAYMENT_METHODS: PaymentMethod[] = [
+//   { id: 1, code: 'card', displayName: 'Card (Debit/Credit)' },
+//   { id: 2, code: 'gcash', displayName: 'GCash' },
+//   { id: 3, code: 'cash_on_site', displayName: 'Cash on Site' },
+//   { id: 4, code: 'maya', displayName: 'Maya' },
+// ];
 
 const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, businessHours }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
+  // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,9 +101,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const isFormValid = useMemo(() => {
     return selectedDate !== '' && 
            selectedTime !== '' && 
-           selectedPaymentMethod !== null && 
            selectedPet !== null;
-  }, [selectedDate, selectedTime, selectedPaymentMethod, selectedPet]);
+  }, [selectedDate, selectedTime, selectedPet]);
 
   const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
     try {
@@ -128,7 +127,6 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     if (!isOpen) {
       setSelectedDate('');
       setSelectedTime('');
-      setSelectedPaymentMethod(3);
       setSelectedPet(null);
       setError(null);
       setSearchQuery('');
@@ -156,7 +154,6 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       const response = await petServicesService.createBooking({
         service_id: serviceId,
         booking_datetime: bookingDateTime.toISOString(),
-        payment_method_id: selectedPaymentMethod,
         pet_ids: [selectedPet.id]
       });
 
@@ -247,7 +244,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
             </div>
           )}
 
-          <div className="relative">
+          {/* <div className="relative">
             <label className="block text-sm font-medium text-gray-700">Payment Method</label>
             <Select
               options={PAYMENT_METHODS}
@@ -257,7 +254,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
               placeholder="Select payment method"
               className="mt-1"
             />
-          </div>  
+          </div>   */}
         </div>
         
         <div className="">

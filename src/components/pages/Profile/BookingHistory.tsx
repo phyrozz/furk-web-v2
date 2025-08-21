@@ -11,7 +11,7 @@ interface Booking {
   end_datetime: string;
   status: string;
   payment_status: string;
-  payment_method_id: string;
+  payment_method_id: string | null;
   cancelled_at: string | null;
   cancelled_by: string | null;
   remarks: string | null;
@@ -22,7 +22,7 @@ interface Booking {
   service_description: string;
   service_category_name: string;
   service_category_description: string;
-  payment_method_name: string;
+  payment_method_name: string | null;
   attachment: string | null;
 }
 
@@ -186,10 +186,10 @@ const BookingHistory = () => {
                     <span className="italic text-gray-400">Not yet scheduled by merchant</span>
                   )}
                 </div>
-                <div className="text-sm text-gray-500 mb-1">
+                {/* <div className="text-sm text-gray-500 mb-1">
                   <span className="font-medium">Payment:</span> {booking.payment_method_name}{" "}
                   <span className="ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs">{booking.payment_status}</span>
-                </div>
+                </div> */}
               </div>
               <div>
                 {booking.cancelled_at && (

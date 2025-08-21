@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User, Settings, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -16,6 +16,7 @@ import TransactionHistory from './TransactionHistory';
 import { UserWallet } from '../../../models/user-wallet';
 import { http } from '../../../utils/http';
 import TopUpSidebar from './TopUpSidebar';
+import { formatAmount } from '../../../utils/currency-utils';
 
 export interface UserProfile {
   id: number;
@@ -260,9 +261,9 @@ const ProfilePage = () => {
                   {/* <span className="mx-2">•</span>
                   <span>{profile?.location}</span> */}
                 </div>
-                <div className="flex flex-row gap-5 items-center mt-3">
+                {userWallet && <div className="flex flex-row gap-5 items-center mt-3">
                   <div className="">
-                    <span className="text-primary-600 font-bold text-2xl">{userWallet?.furkredits.toFixed(2)}</span>
+                    <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
                     <span className="text-gray-500 text-sm"> Furkredits</span>
                   </div>
                   <div className="">
@@ -270,7 +271,7 @@ const ProfilePage = () => {
                     <span className="text-gray-500 text-sm"> Furkoins</span>
                   </div>
                   <Button variant="ghost" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
-                </div>
+                </div>}
               </div>
               <Button
                 variant="outline"

@@ -23,9 +23,12 @@ interface Transaction {
 }
 
 const formatAmount = (amount: number, currencyType: string) => {
-  return currencyType === "furkredits"
-    ? Math.abs(amount).toFixed(2)
-    : Math.abs(Math.round(amount)).toString();
+  const absAmount = Math.abs(amount);
+  if (currencyType === "furkredits") {
+    // Remove decimal if it's .00
+    return absAmount % 1 === 0 ? absAmount.toString() : absAmount.toFixed(2);
+  }
+  return Math.abs(Math.round(absAmount)).toString();
 };
 
 const TransactionHistory = () => {

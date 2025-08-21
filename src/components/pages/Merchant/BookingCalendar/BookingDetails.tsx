@@ -162,7 +162,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                         </>
                       )}
                       <p><strong>Status:</strong> {bookingDetails && <Badge status={bookingDetails?.status} />}</p>
-                      <p><strong>Payment Status:</strong> {bookingDetails?.payment_status || 'N/A'}</p>
+                      {/* <p><strong>Payment Status:</strong> {bookingDetails?.payment_status || 'N/A'}</p> */}
                       {bookingDetails?.remarks && <p><strong>Remarks:</strong> {bookingDetails.remarks}</p>}
                     </div>
                     
@@ -222,7 +222,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                   )}
                   
                   {bookingDetails.status === 'confirmed' && (
-                    <>
+                    <div className="flex gap-2 justify-end items-center">
+                      <span className="text-right text-xs items-center justify-center text-red-600">Cancelling this service will refund the furkredits to the pet owner.</span>
                       <Button
                         loading={cancelLoading}
                         variant="outline"
@@ -239,7 +240,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                       >
                         Start Service
                       </Button>
-                    </>
+                    </div>
                   )}
                   
                   {bookingDetails.status === 'in_progress' && (
