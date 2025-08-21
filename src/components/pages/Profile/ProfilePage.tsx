@@ -12,6 +12,7 @@ import BookingHistory from './BookingHistory';
 import useScreenSize from '../../../hooks/useScreenSize';
 import Favorites from './Favorites';
 import PetProfiles from './PetProfiles';
+import TransactionHistory from './TransactionHistory';
 import { UserWallet } from '../../../models/user-wallet';
 import { http } from '../../../utils/http';
 import TopUpSidebar from './TopUpSidebar';
@@ -128,6 +129,7 @@ const ProfilePage = () => {
     { id: 'pets', label: 'My Pets', icon: PawPrint },
     // { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'history', label: 'Booking History', icon: History },
+    { id: 'transactions', label: 'Transaction History', icon: Wallet },
     { id: 'favorites', label: 'Favorites', icon: Heart }
   ];
 
@@ -437,6 +439,13 @@ const ProfilePage = () => {
             {activeTab === 'pets' && (
               <div className="overflow-y-hidden h-full">
                 <PetProfiles />
+              </div>
+            )}
+
+            {activeTab === 'transactions' && (
+              <div className="overflow-y-hidden h-full">
+                <h2 className="text-xl font-cursive font-semibold text-gray-800 py-6 px-6">Transaction History</h2>
+                <TransactionHistory />
               </div>
             )}
           </div>

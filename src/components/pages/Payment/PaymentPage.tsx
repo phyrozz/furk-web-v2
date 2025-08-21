@@ -103,6 +103,11 @@ const PaymentPage: React.FC = () => {
           <p className={`mt-2 text-center text-sm ${getStatusColor()}`}>
             {message}
           </p>
+          {paymentStatus === 'pending' && (
+            <p className="mt-2 text-center text-sm text-red-600 font-medium">
+              Please do not close this page while your payment is being processed
+            </p>
+          )}
         </div>
         {paymentStatus === 'pending' && (
           <div className="flex justify-center">

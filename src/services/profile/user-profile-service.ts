@@ -48,4 +48,11 @@ export class UserProfileService {
     async deletePetProfile(petProfileId: string): Promise<any> {
         return http.delete(`/pets/delete/${petProfileId}`);
     }
+
+    async listTransactionHistory(limit: number, offset: number): Promise<any> {
+        return http.post('/pet-owner-profile/list-transactions', {
+            limit: limit,
+            offset: offset
+        });
+    }
 }
