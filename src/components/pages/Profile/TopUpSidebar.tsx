@@ -72,7 +72,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
       <div className="flex flex-col h-full">
         <div className="flex-grow space-y-6">
           <div className="text-gray-600">
-            Add funds to your account balance
+            Add funds to your FURK wallet
           </div>
           
           <div className="space-y-4">

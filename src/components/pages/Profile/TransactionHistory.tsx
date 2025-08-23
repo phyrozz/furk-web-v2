@@ -5,6 +5,7 @@ import PawLoading from "../../common/PawLoading";
 import { DollarSign, ArrowDown, ArrowUp } from "lucide-react";
 import { User } from "../../../models/user";
 import DateUtils from "../../../utils/date-utils";
+import { capitalizeWords } from "../../../utils/string-utils";
 
 interface Transaction {
   id: string;
@@ -16,6 +17,7 @@ interface Transaction {
   code: string;
   maya_reference_number: string | null;
   reference_number: string | null;
+  fund_source_type: string | null;
   created_at: string;
   created_by: string;
   modified_at: string;
@@ -113,7 +115,7 @@ const TransactionHistory = () => {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-800">
                       {isCredit 
-                        ? (isFurkredits ? "Top Up" : "Added")
+                        ? (isFurkredits ? "Top Up" : "Received")
                         : "Spent"}{" "}
                       <span className={isCredit ? "text-green-600" : "text-red-600"}>
                         {formatAmount(transaction.amount, transaction.currency_type)}
@@ -121,6 +123,8 @@ const TransactionHistory = () => {
                       {isFurkredits ? "Furkredits" : "Furkoins"}
                     </h3>
                   </div>
+                  {transaction.fund_source_type && <div className="text-xs text-gray-400 mt-1">Paid via {capitalizeWords(transaction.fund_source_type)}</div>}
+                  {transaction.created_at && <div className="text-xs text-gray-400 mt-1">{DateUtils.formatTimestampString(transaction.created_at)}</div>}
                   {transaction.code && <div className="text-xs text-gray-400 mt-1">
                     Transaction Number: {transaction.code}
                   </div>}
