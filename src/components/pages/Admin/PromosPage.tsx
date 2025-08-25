@@ -9,6 +9,7 @@ import AddPromoForm from './Promos/AddPromo';
 const PromosPage = () => {
   const [selectedPromo, setSelectedPromo] = useState<Promo | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAddPromo = () => {
     setSelectedPromo(null);
@@ -32,6 +33,7 @@ const PromosPage = () => {
                   selectedPromo={selectedPromo}
                   onSelectPromo={setSelectedPromo}
                   onAddPromo={handleAddPromo}
+                  refreshTrigger={refreshTrigger}
                 />
               </div>
 
@@ -41,7 +43,7 @@ const PromosPage = () => {
                   <AddPromoForm
                     onSuccess={() => {
                       setIsCreating(false);
-                      // refresh list automatically
+                      setRefreshTrigger(prev => prev + 1);
                     }}
                     onCancel={() => setIsCreating(false)}
                   />

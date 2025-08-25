@@ -182,6 +182,14 @@ const ServiceDetails = () => {
 
   return (
     <>
+      <BookingDialog
+        isOpen={isBookingDialogOpen}
+        onClose={handleBookingDialogClose}
+        onSuccess={handleBookingDialogSuccess}
+        serviceId={service.id}
+        businessHours={service.business_hours}
+        bookingAmount={service.price}
+      />
       <ShareDialog 
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
@@ -245,7 +253,7 @@ const ServiceDetails = () => {
                 className="mt-6 flex flex-row justify-between items-center"
               >
                 <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">
-                  {service.price} <span className="text-base">Furkredits</span>
+                  {Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span className="text-base">Furkredits</span>
                 </p>
                 <div className='flex items-center'>
                   <Button onClick={() => setShowShareDialog(true)} variant='ghost'>
@@ -386,14 +394,6 @@ const ServiceDetails = () => {
                 </div>
               </div>
             </motion.div>
-
-            <BookingDialog
-              isOpen={isBookingDialogOpen}
-              onClose={handleBookingDialogClose}
-              onSuccess={handleBookingDialogSuccess}
-              serviceId={service.id}
-              businessHours={service.business_hours}
-            />
           </div>
         </div>
       </div>

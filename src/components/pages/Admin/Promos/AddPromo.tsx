@@ -16,7 +16,7 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
     code: "",
     description: "",
     discount_type: "percent",
-    discount_value: "",
+    discount_value: "0",
     usage_limit: "0",
     per_user_limit: "0",
     start_date: "",
@@ -38,14 +38,31 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
     setLoading(true);
     setError(null);
     try {
-      await http.post("/coupon/create", formData);
+      // Convert number fields to number type before submitting
+      const submissionData = {
+        ...formData,
+        discount_value: Number(formData.discount_value),
+        usage_limit: Number(formData.usage_limit),
+        per_user_limit: Number(formData.per_user_limit)
+      };
+      
+      await http.post("/coupon/add", submissionData);
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create promo");
+      setError(err.response?.data?.error || "Failed to create promo");
     } finally {
       setLoading(false);
     }
   };
+
+  const discountTypeOptions = [
+    { value: 'percent', label: 'Percent (%)' },
+    { value: 'fixed', label: 'Fixed' },
+    { value: 'furkredit_cashback', label: 'Furkredit Cashback' },
+    { value: 'discount_furkoin', label: 'Furkoin Discount' },
+    { value: 'earn_furkredit', label: 'Furkredit Cashback (%)' },
+    { value: 'ean_furkoin', label: 'Earn Furkoins' }
+  ];
 
   return (
     <motion.div
@@ -71,6 +88,7 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
           <Input
             id="code"
             name="code"
+            maxLength={50}
             value={formData.code}
             onChange={handleChange}
             required
@@ -86,6 +104,7 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
           <Input
             id="description"
             name="description"
+            maxLength={100}
             value={formData.description}
             onChange={handleChange}
             required
@@ -100,16 +119,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
               <span className="text-red-500">*</span>
             </label>
             <Select
-              options={[
-                { value: 'percent', label: 'Percent' },
-                { value: 'fixed', label: 'Fixed' },
-                { value: 'credits', label: 'Furkredits' },
-                { value: 'points', label: 'Furkoins' }
-              ]}
-              value={{ value: formData.discount_type, label: formData.discount_type.charAt(0).toUpperCase() + formData.discount_type.slice(1) }}
-              onChange={(option) => 
-                option && setFormData((prev) => ({ ...prev, discount_type: option.value }))
-              }
+              options={discountTypeOptions}
+              value={discountTypeOptions.find(opt => opt.value === formData.discount_type) || null}
+              onChange={(option) => setFormData(prev => ({ ...prev, discount_type: option?.value || 'percent' }))}
               getOptionLabel={(option) => option.label}
               placeholder="Select type"
               className="w-full"
@@ -177,6 +189,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
             id="usage_limit"
             name="usage_limit"
             type="number"
+            max={999999999}
+            min={0}
+            step={1}
             value={formData.usage_limit}
             onChange={handleChange}
             required
@@ -192,6 +207,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
             id="per_user_limit"
             name="per_user_limit"
             type="number"
+            max={999999999}
+            min={0}
+            step={1}
             value={formData.per_user_limit}
             onChange={handleChange}
             required

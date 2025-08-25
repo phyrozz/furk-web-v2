@@ -9,11 +9,12 @@ interface PromoListProps {
   onSelectPromo: (promo: Promo | null) => void;
   onPromoStatusChange?: () => void;
   onAddPromo: () => void;
+  refreshTrigger: number;
 }
 
 const PAGE_SIZE = 10;
 
-const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onAddPromo }) => {
+const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onAddPromo, refreshTrigger }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [promos, setPromos] = useState<Promo[]>([]);
@@ -42,7 +43,6 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
       const newPromos = response.data;
 
       setPromos(prev => (pageNum === 1 ? newPromos : [...prev, ...newPromos]));
-      // Consider there is more only if we got a full page
       setHasMore(newPromos.length === PAGE_SIZE);
     } catch (err: any) {
       setError('Failed to fetch promos: ' + (err.message || 'Unknown error'));
@@ -59,33 +59,28 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
     fetchPromos(1);
   };
 
-  // Fetch when page changes
   useEffect(() => {
-    if (!hasMore && page > 1) return; // prevent looping if no more data
+    if (!hasMore && page > 1) return;
     fetchPromos(page);
-  }, [page, debouncedSearchTerm]);
+  }, [page, debouncedSearchTerm, refreshTrigger]);
 
-  // Reset when search term changes (new query = new list)
   useEffect(() => {
     setPromos([]);
     setPage(1);
     setHasMore(true);
   }, [debouncedSearchTerm]);
 
-  // Keep selected promo in sync with the latest list data
   useEffect(() => {
     if (!selectedPromoId) return;
     const updated = promos.find(p => p.id === selectedPromoId);
     if (updated) {
-      // Only update if the object actually differs (prevents unnecessary parent state churn)
       const changed =
         selectedPromo == null ||
-        updated !== selectedPromo; // shallow identity check is enough here
+        updated !== selectedPromo;
       if (changed) onSelectPromo(updated);
     }
   }, [promos, selectedPromoId, onSelectPromo, selectedPromo]);
 
-  // Setup observer once
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
 
@@ -97,7 +92,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
         }
       },
       {
-        root: listContainerRef.current ?? null, // observe within the scroll container
+        root: listContainerRef.current ?? null,
         threshold: 0.5
       }
     );
@@ -107,7 +102,6 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
     };
   }, [hasMore, loading]);
 
-  // Observe the current last item whenever the list changes
   useEffect(() => {
     const node = lastPromoRef.current;
     const obs = observerRef.current;
@@ -115,7 +109,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
       obs.observe(node);
       return () => obs.unobserve(node);
     }
-  }, [promos]); // re-attach when items change
+  }, [promos]);
 
   const getDiscountLabel = (discountValue: number, type: string) => {
     switch (type) {
@@ -123,9 +117,13 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
         return `${discountValue}%`;
       case 'fixed':
         return `${discountValue} Furkredits`;
-      case 'credits':
-        return `+${discountValue} Furkredits`;
-      case 'points':
+      case 'furkredit_cashback':
+        return `${discountValue} Furkredits Cashback`;
+      case 'discount_furkoin':
+        return `${discountValue} Furkoins Discount`;
+      case 'earn_furkredit':
+        return `${discountValue}% Furkredit Cashback`;
+      case 'earn_furkoin':
         return `${discountValue} Furkoins`;
       default:
         return discountValue;
@@ -144,7 +142,6 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                // restart pagination when searching
                 setPromos([]);
                 setHasMore(true);
                 setPage(1);
@@ -164,7 +161,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
             onClick={onAddPromo}
             className="p-2 text-gray-500 hover:text-gray-700 border rounded-lg hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-primary-500"
             disabled={loading}
-            title="Refresh list"
+            title="Add new promo"
           >
             <Plus size={20} />
           </button>
@@ -199,19 +196,19 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
               }`}
               onClick={() => onSelectPromo(promo)}
             >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-gray-900 text-lg group-hover:text-primary-600 transition-colors">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                <h3 className="font-semibold text-gray-900 text-lg group-hover:text-primary-600 transition-colors break-words max-w-[600px] truncate">
                   {promo.description}
                 </h3>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 truncate max-w-[200px]">
                   {promo.code}
                 </span>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <span className="font-medium mr-2">Discount:</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium truncate">
                     {getDiscountLabel(promo.discount_value, promo.discount_type)}
                   </span>
                 </div>
@@ -220,8 +217,8 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
                   <span>{promo.used_count}/{promo.usage_limit}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
-                  <span className="font-medium mr-2">Created:</span>
-                  <span>{new Date(promo.created_at).toLocaleDateString()}</span>
+                  <span className="font-medium mr-2">Promo starts:</span>
+                  <span>{new Date(promo.start_date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <span className="font-medium mr-2">Expires:</span>

@@ -91,7 +91,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
               className={`absolute left-0 top-0 h-full w-2 ${isMobile.current ? '' : 'cursor-ew-resize'}`}
               onMouseDown={handleMouseDown}
             />
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex justify-between items-center p-4 border-b select-none">
               <div className="flex gap-3 justify-center items-center">
                 {icon && <div>{icon}</div>}
                 <h2 className="text-xl font-bold">{title}</h2>
