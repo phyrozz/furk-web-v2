@@ -114,9 +114,11 @@ const TransactionHistory = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-800">
-                      {isCredit 
-                        ? (isFurkredits ? "Top Up" : "Received")
-                        : "Spent"}{" "}
+                      {transaction.transaction_type === "refund" 
+                        ? "Refunded"
+                        : isCredit 
+                          ? (isFurkredits ? "Top Up" : "Received")
+                          : "Spent"}{" "}
                       <span className={isCredit ? "text-green-600" : "text-red-600"}>
                         {formatAmount(transaction.amount, transaction.currency_type)}
                       </span>{" "}

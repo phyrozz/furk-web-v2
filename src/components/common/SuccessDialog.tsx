@@ -18,7 +18,7 @@ const SuccessDialog: React.FC<SuccessDialogProps> = ({ isOpen, onClose, points }
       onConfirm={onClose}
       showCancel={false}
     >
-      <div className="flex flex-col items-center justify-center py-6">
+      <div className="flex flex-col items-center justify-center py-6 z-50">
         <motion.div
           initial={{ scale: 0, rotate: -10 }}
           animate={{ scale: 1, rotate: 0 }}

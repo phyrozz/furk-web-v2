@@ -191,8 +191,23 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const handleSuccessDialogClose = () => {
     setShowSuccessDialog(false);
     onClose();
+    onBookingDialogClose();
+    window.location.reload();
     setLoading(false);
   };
+
+  const onBookingDialogClose = () => {
+    setSelectedDate('');
+    setSelectedTime('');
+    setSelectedPet(null);
+    setError(null);
+    setSearchQuery('');
+    setCouponCode('');
+    setEarnedPoints(0);
+    setSubtotal([]);
+    setAmount(0);
+    onClose();
+  }
 
   const handleApplyClick = async () => {
     setCouponApplyLoading(true);
@@ -260,7 +275,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       />
       <ResizableRightSidebar
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={onBookingDialogClose}
         title="Book Service"
       >
         <form onSubmit={handleSubmit} className="p-2 flex flex-col justify-between h-full select-none">
