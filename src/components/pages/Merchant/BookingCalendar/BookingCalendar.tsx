@@ -27,8 +27,19 @@ interface BookingEvent {
   isPending?: boolean;
 }
 
+interface MerchantClosure {
+  id: number;
+  merchant_id: number;
+  start_datetime: string;
+  end_datetime: string;
+  reason: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const BookingCalendar: React.FC = () => {
   const [events, setEvents] = useState<BookingEvent[]>([]);
+  const [merchantClosures, setMerchantClosures] = useState<MerchantClosure[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), -9));
   const [endDate, setEndDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10));
@@ -54,7 +65,7 @@ const BookingCalendar: React.FC = () => {
     try {
       setLoading(true);
       const response: any = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
-      const formattedEvents: BookingEvent[] = response.data.map((booking: any) => {
+      const formattedEvents: BookingEvent[] = response.data.bookings.map((booking: any) => {
         const eventDate = booking.start_datetime || booking.booking_datetime;
         let startDateTime;
         let endDateTime;
@@ -82,7 +93,9 @@ const BookingCalendar: React.FC = () => {
           isPending: !booking.start_datetime && !booking.end_datetime
         };
       });
+      
       setEvents(formattedEvents);
+      setMerchantClosures(response.data.merchant_closures || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -111,8 +124,8 @@ const BookingCalendar: React.FC = () => {
       firstDay = moment(newDate).subtract(10, 'days').toDate();
       lastDay = moment(newDate).add(1, 'month').add(10, 'days').toDate();
     } else {
-      firstDay = new Date(newDate.getFullYear(), newDate.getMonth(), -9); // Start 10 days before first of month
-      lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 10); // End 10 days after last of month
+      firstDay = new Date(newDate.getFullYear(), newDate.getMonth(), -9);
+      lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 10);
     }
     
     setStartDate(firstDay);
@@ -169,6 +182,25 @@ const BookingCalendar: React.FC = () => {
         color
       } 
     };
+  };
+
+  const dayPropGetter = (date: Date) => {
+    const isDateInClosure = merchantClosures.some(closure => {
+      const closureStart = moment(closure.start_datetime).startOf('day');
+      const closureEnd = moment(closure.end_datetime).endOf('day');
+      return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
+    });
+
+    if (isDateInClosure) {
+      return {
+        style: {
+          backgroundColor: '#a1a1a1',
+          cursor: 'not-allowed',
+          opacity: 0.7
+        }
+      };
+    }
+    return {};
   };
 
   const formats = {
@@ -238,6 +270,10 @@ const BookingCalendar: React.FC = () => {
                 <div className="w-4 h-4 rounded-full bg-red-300" />
                 <span className="text-xs md:text-sm">Cancelled</span>
               </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-[#a1a1a1]" />
+                <span className="text-xs md:text-sm">Closed</span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -257,6 +293,7 @@ const BookingCalendar: React.FC = () => {
             onNavigate={handleNavigate}
             onView={handleViewChange}
             eventPropGetter={eventPropGetter}
+            dayPropGetter={dayPropGetter}
             onSelectEvent={handleSelectEvent}
             defaultView="month"
             views={['month', 'week', 'day', 'agenda']}
