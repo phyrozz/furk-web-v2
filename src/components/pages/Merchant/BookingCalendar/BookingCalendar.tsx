@@ -13,6 +13,11 @@ import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
 import BookingDetails from './BookingDetails';
 
+moment.updateLocale('en', {
+  week: {
+    dow: 1, // monday
+  }
+})
 const localizer = momentLocalizer(moment);
 
 interface BookingEvent {
@@ -37,9 +42,17 @@ interface MerchantClosure {
   updated_at: string;
 }
 
+interface MerchantHours {
+  id: number;
+  open_time: string;
+  close_time: string;
+  day_of_week: number;
+}
+
 const BookingCalendar: React.FC = () => {
   const [events, setEvents] = useState<BookingEvent[]>([]);
   const [merchantClosures, setMerchantClosures] = useState<MerchantClosure[]>([]);
+  const [merchantHours, setMerchantHours] = useState<MerchantHours[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), -9));
   const [endDate, setEndDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10));
@@ -96,6 +109,7 @@ const BookingCalendar: React.FC = () => {
       
       setEvents(formattedEvents);
       setMerchantClosures(response.data.merchant_closures || []);
+      setMerchantHours(response.data.merchant_hours || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -190,17 +204,64 @@ const BookingCalendar: React.FC = () => {
       const closureEnd = moment(closure.end_datetime).endOf('day');
       return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
     });
+    
+    const momentDow = moment(date).day();
+    const merchantDow = momentDow === 0 ? 6 : momentDow - 1; // Convert Sunday=0 to 6, Mon-Sat to 0-5
+    const isDateInBusinessHours = merchantHours.some(merchantHour => {
+      return merchantDow === merchantHour.day_of_week;
+    });
 
     if (isDateInClosure) {
       return {
         style: {
           backgroundColor: '#a1a1a1',
           cursor: 'not-allowed',
-          opacity: 0.7
+          opacity: 1
         }
       };
     }
-    return {};
+
+    if (isDateInBusinessHours) {
+      return {
+        style: {
+          backgroundColor: '#ffffff',
+          cursor: 'allowed',
+          opacity: 1,
+        }
+      }
+    }
+    return {
+      style: {
+        backgroundColor: '#eeeeee',
+        cursor: 'not-allowed',
+        opacity: 1,
+      }
+    };
+  };
+
+  const slotPropGetter = (date: Date) => {
+    const momentDow = moment(date).day();
+    const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
+    
+    const dayHours = merchantHours.find(h => h.day_of_week === merchantDow);
+    
+    if (!dayHours) {
+      return {
+        style: {
+          backgroundColor: '#eeeeee',
+          cursor: 'not-allowed'
+        }
+      };
+    }
+    
+    const currentHour = moment(date).format('HH:mm:ss');
+    const isWithinBusinessHours = currentHour >= dayHours.open_time && currentHour <= dayHours.close_time;
+    
+    return {
+      style: {
+        backgroundColor: isWithinBusinessHours ? '#ffffff' : '#eeeeee'
+      }
+    };
   };
 
   const formats = {
@@ -294,6 +355,7 @@ const BookingCalendar: React.FC = () => {
             onView={handleViewChange}
             eventPropGetter={eventPropGetter}
             dayPropGetter={dayPropGetter}
+            slotPropGetter={slotPropGetter}
             onSelectEvent={handleSelectEvent}
             defaultView="month"
             views={['month', 'week', 'day', 'agenda']}
