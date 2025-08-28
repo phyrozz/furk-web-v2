@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer, View } from 'react-big-calendar';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
@@ -7,11 +7,12 @@ import Select from '../../../common/Select';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { motion } from 'framer-motion';
 import Button from '../../../common/Button';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, DownloadIcon, PrinterIcon, SettingsIcon } from 'lucide-react';
 import PawLoading from '../../../common/PawLoading';
 import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
 import BookingDetails from './BookingDetails';
+import { ContextMenu } from '../../../common/ContextMenu';
 
 moment.updateLocale('en', {
   week: {
@@ -65,6 +66,8 @@ const BookingCalendar: React.FC = () => {
   const [debouncedKeyword] = useDebounce(keyword, 500);
   const bookingsService = new MerchantBookingsService();
 
+  const contextMenuContainerRef = useRef<HTMLDivElement>(null);
+
   const statusOptions = [
     { value: 'All', label: 'All Statuses' },
     { value: 'pending', label: 'Pending' },
@@ -72,6 +75,23 @@ const BookingCalendar: React.FC = () => {
     { value: 'in_progress', label: 'In Progress' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },
+  ];
+
+  const contextMenuItems = [
+    {
+      label: 'Export Calendar',
+      onClick: () => console.log('Export calendar clicked'),
+    },
+    {
+      label: 'Print Schedule',
+      onClick: () => console.log('Print schedule clicked'),
+      icon: <PrinterIcon />,
+    },
+    {
+      label: 'Settings',
+      onClick: () => console.log('Settings clicked'),
+      icon: <SettingsIcon />,
+    }
   ];
 
   const fetchBookings = async () => {
@@ -232,7 +252,7 @@ const BookingCalendar: React.FC = () => {
     }
     return {
       style: {
-        backgroundColor: '#eeeeee',
+        backgroundColor: '#a1a1a1',
         cursor: 'not-allowed',
         opacity: 1,
       }
@@ -248,7 +268,7 @@ const BookingCalendar: React.FC = () => {
     if (!dayHours) {
       return {
         style: {
-          backgroundColor: '#eeeeee',
+          backgroundColor: '#a1a1a1',
           cursor: 'not-allowed'
         }
       };
@@ -259,10 +279,14 @@ const BookingCalendar: React.FC = () => {
     
     return {
       style: {
-        backgroundColor: isWithinBusinessHours ? '#ffffff' : '#eeeeee'
+        backgroundColor: isWithinBusinessHours ? '#ffffff' : '#a1a1a1'
       }
     };
   };
+
+  const handleSelectSlot = (slotInfo: SlotInfo) => {
+    console.log("Slot info: ", slotInfo);
+  }
 
   const formats = {
     agendaDateFormat: 'MMM D',
@@ -275,7 +299,7 @@ const BookingCalendar: React.FC = () => {
   return (
     <>
       <MerchantNavbar />
-      <div className="p-6 pt-24 h-screen overflow-y-hidden flex flex-col cursor-default container mx-auto">
+      <div className="p-6 pt-24 min-h-screen flex flex-col cursor-default container mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
           <Button icon={isControlsCollapsed ? <ChevronDownIcon /> : <ChevronUpIcon />} onClick={() => setIsControlsCollapsed(!isControlsCollapsed)} variant='ghost'>
@@ -339,24 +363,27 @@ const BookingCalendar: React.FC = () => {
           </div>
         </motion.div>
 
-        <div className="h-full flex-1 relative">
+        <div ref={contextMenuContainerRef} className="flex-1 relative min-h-[500px]">
           {loading && (
             <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
               <PawLoading />
             </div>
           )}
+          <ContextMenu items={contextMenuItems} triggerOn='right' containerRef={contextMenuContainerRef} />
           <Calendar
             localizer={localizer}
             events={events}
+            selectable
             startAccessor="start"
             endAccessor="end"
-            style={{ height: '100%' }}
+            style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}
             onNavigate={handleNavigate}
             onView={handleViewChange}
             eventPropGetter={eventPropGetter}
             dayPropGetter={dayPropGetter}
             slotPropGetter={slotPropGetter}
             onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
             defaultView="month"
             views={['month', 'week', 'day', 'agenda']}
             formats={formats}
