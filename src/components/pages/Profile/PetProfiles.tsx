@@ -304,7 +304,12 @@ const PetProfiles = () => {
                             helperText="Upload an image (PNG, JPG, JPEG)"
                         />
                     </div>}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div 
+                        className="grid gap-6"
+                        style={{
+                            gridTemplateColumns: `repeat(auto-fit, minmax(${Math.min(window.innerWidth * 0.4, 300)}px, 1fr))`
+                        }}
+                    >
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Name
@@ -399,7 +404,7 @@ const PetProfiles = () => {
                                 <span>Neutered</span>
                             </label>
                         </div>
-                        <div className="col-span-2">
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Notes
                             </label>
