@@ -101,15 +101,19 @@ const PetProfiles = () => {
                     return;
                 }
 
-                // Do not insert anything on the db until the compressed image is finally ready
-                const imageReady = await checkImage(s3_key);
-                if (!imageReady) {
-                    ToastService.show('Error uploading pet image');
-                    return;
-                }
+                // console.log("S3 KEY: ", s3_key);
+
+                // // Do not insert anything on the db until the compressed image is finally ready
+                // const imageReady = await checkImage(s3_key);
+                // if (!imageReady) {
+                //     ToastService.show('Error uploading pet image');
+                //     return;
+                // }
 
                 await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
                 ToastService.show('Pet profile added successfully');
+                // Refresh pets list
+                loadPets();
             }
             setIsSidebarOpen(false);
             setEditingPet(null);
@@ -304,7 +308,12 @@ const PetProfiles = () => {
                             helperText="Upload an image (PNG, JPG, JPEG)"
                         />
                     </div>}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div 
+                        className="grid gap-6"
+                        style={{
+                            gridTemplateColumns: `repeat(auto-fit, minmax(${Math.min(window.innerWidth * 0.4, 300)}px, 1fr))`
+                        }}
+                    >
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Name
@@ -399,7 +408,7 @@ const PetProfiles = () => {
                                 <span>Neutered</span>
                             </label>
                         </div>
-                        <div className="col-span-2">
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Notes
                             </label>
