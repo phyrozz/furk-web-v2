@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev": "vite --mode staging",
+    "production": "vite --mode production",
+    "build": "vite build --mode production"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.11.2",

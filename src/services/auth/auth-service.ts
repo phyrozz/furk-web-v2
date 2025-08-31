@@ -92,7 +92,10 @@ export class LoginService {
       // Login to Cognito
       const cognitoUser = await signIn({
         username: credentials.email,
-        password: credentials.password
+        password: credentials.password,
+        options: {
+          authFlowType: 'USER_PASSWORD_AUTH'
+        }
       });
       // console.log('Cognito user:', cognitoUser);
 
