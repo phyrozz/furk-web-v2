@@ -101,15 +101,19 @@ const PetProfiles = () => {
                     return;
                 }
 
-                // Do not insert anything on the db until the compressed image is finally ready
-                const imageReady = await checkImage(s3_key);
-                if (!imageReady) {
-                    ToastService.show('Error uploading pet image');
-                    return;
-                }
+                // console.log("S3 KEY: ", s3_key);
+
+                // // Do not insert anything on the db until the compressed image is finally ready
+                // const imageReady = await checkImage(s3_key);
+                // if (!imageReady) {
+                //     ToastService.show('Error uploading pet image');
+                //     return;
+                // }
 
                 await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
                 ToastService.show('Pet profile added successfully');
+                // Refresh pets list
+                loadPets();
             }
             setIsSidebarOpen(false);
             setEditingPet(null);
