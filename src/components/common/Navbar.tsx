@@ -216,6 +216,37 @@ const Navbar = () => {
                   </motion.button>
                 </Tooltip>
                 <div className="relative flex flex-row gap-1">
+                  {isLoading && loginService.getUserRole() === 'user' && (
+                    <div className="flex items-center justify-center w-10 h-10 overflow-clip">
+                      <PawLoading size={32} bounce={false} />
+                    </div>
+                  )}
+                  {!isLoading && loginService.getUserRole() === 'user' && (
+                    <GuideTip 
+                      content="Welcome to Furk! Let's get started by topping up your balance to access our services"
+                      position='bottom' 
+                      show={tooltipState.isNewUser}
+                      onClose={() => setTooltipState({ ...tooltipState, isNewUser: false })}
+                    >  
+                      <Tooltip content="Furkredits balance" position="bottom">
+                        <Button
+                          onClick={
+                            () => {
+                              setTooltipState({ ...tooltipState, isNewUser: false });
+                              navigate('/profile');
+                            }
+                          }
+                          variant="ghost"
+                          aria-label="Furkredits balance"
+                        >
+                          <span className="font-bold">
+                            {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
+                          </span>
+                        </Button>
+                      </Tooltip>
+                    </GuideTip>
+                  )}
+
                   <motion.button
                     onClick={toggleProfileMenu}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
@@ -281,37 +312,6 @@ const Navbar = () => {
                         </button>
                       </motion.div>
                     </>
-                  )}
-
-                  {isLoading && loginService.getUserRole() === 'user' && (
-                    <div className="flex items-center justify-center w-10 h-10 overflow-clip">
-                      <PawLoading size={32} bounce={false} />
-                    </div>
-                  )}
-                  {!isLoading && loginService.getUserRole() === 'user' && (
-                    <GuideTip 
-                      content="Welcome to Furk! Let's get started by topping up your balance to access our services"
-                      position='bottom' 
-                      show={tooltipState.isNewUser}
-                      onClose={() => setTooltipState({ ...tooltipState, isNewUser: false })}
-                    >  
-                      <Tooltip content="Furkredits balance" position="bottom">
-                        <Button
-                          onClick={
-                            () => {
-                              setTooltipState({ ...tooltipState, isNewUser: false });
-                              navigate('/profile');
-                            }
-                          }
-                          variant="ghost"
-                          aria-label="Furkredits balance"
-                        >
-                          <span className="font-bold">
-                            {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
-                          </span>
-                        </Button>
-                      </Tooltip>
-                    </GuideTip>
                   )}
                 </div>
               </>
