@@ -50,13 +50,13 @@ const ProfilePage = () => {
   const { isMobile } = useScreenSize();
 
   const fetchUserWallet = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await http.get<{ data: UserWallet }>('/pet-owner-profile/get-user-wallet');
       setUserWallet(response.data);
     } catch (error) {
       console.error('Failed to fetch user wallet:', error);
       setUserWallet(null);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -80,10 +80,8 @@ const ProfilePage = () => {
       setLoading(true);
       const response: any = await dataService.getUserDetails();
       setProfile(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching user details:', error);
-      setLoading(false);
     }
   };
 

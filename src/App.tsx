@@ -42,6 +42,7 @@ import PaymentPage from './components/pages/Payment/PaymentPage';
 import PaymentSuccessPage from './components/pages/Payment/PaymentSuccessPage';
 import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPage';
 import PaymentFailedPage from './components/pages/Payment/PaymentFailedPage';
+import { ScrollToHashElement } from './utils/scroll-to-hash-element';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -90,6 +91,7 @@ function App() {
             v7_relativeSplatPath: true
           }}
         >
+          <ScrollToHashElement />
           <AuthWrapper onAuthStatusChange={setIsAuthenticated}>
             <div className="min-h-screen flex flex-col bg-gray-50">
               <Routes>

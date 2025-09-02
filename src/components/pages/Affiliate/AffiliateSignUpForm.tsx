@@ -47,6 +47,7 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
   const [validIdPreview, setValidIdPreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [dataPrivacyAccepted, setDataPrivacyAccepted] = useState(false);
   
   const s3Service = new S3UploadService();
 
@@ -156,7 +157,8 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
       password === confirmPassword &&
       validBankAccountFile !== null &&
       validIdFile !== null &&
-      acceptTerms
+      acceptTerms &&
+      dataPrivacyAccepted
     );
   };
 
@@ -703,7 +705,7 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
               </div>
 
               {/* Terms of Service */}
-              <div className="flex items-start">
+              <div className="flex flex-col items-start gap-4">
                 <div className="flex items-center h-5">
                   <Checkbox
                     checked={acceptTerms}
@@ -718,6 +720,26 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
                           rel="noopener noreferrer"
                         >
                           Terms of Service
+                        </a>
+                      </span>
+                    }
+                    className="flex items-center space-x-2"
+                  />
+                </div>
+                <div>
+                  <Checkbox
+                    checked={dataPrivacyAccepted}
+                    onChange={(checked) => setDataPrivacyAccepted(checked)}
+                    label={
+                      <span className="text-sm text-gray-600">
+                        I agree to Furk's{' '}
+                        <a
+                          href="/terms-of-service#data-privacy"
+                          className="text-primary-600 hover:text-primary-500 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Data Privacy
                         </a>
                       </span>
                     }
