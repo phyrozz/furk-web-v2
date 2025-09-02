@@ -28,6 +28,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [dataPrivacyAccepted, setDataPrivacyAccepted] = useState(false);
 
   const isFormValid = () => {
     return (
@@ -38,7 +39,8 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
       password.trim() !== '' &&
       confirmPassword.trim() !== '' &&
       password === confirmPassword &&
-      termsAccepted
+      termsAccepted &&
+      dataPrivacyAccepted
     );
   };
 
@@ -349,7 +351,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <Checkbox
             checked={termsAccepted}
             onChange={(checked) => setTermsAccepted(checked)}
@@ -363,6 +365,26 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
                   rel="noopener noreferrer"
                 >
                   Terms of Service
+                </a>
+              </span>
+            }
+            className="flex items-center space-x-2"
+          />
+        </div>
+        <div className="flex items-center">
+          <Checkbox
+            checked={dataPrivacyAccepted}
+            onChange={(checked) => setDataPrivacyAccepted(checked)}
+            label={
+              <span className="text-sm text-gray-600">
+                I agree to Furk's{' '}
+                <a
+                  href="/terms-of-service#data-privacy"
+                  className="text-primary-600 hover:text-primary-500 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Data Privacy
                 </a>
               </span>
             }
