@@ -151,7 +151,7 @@ const MerchantDashboard = () => {
         </div>
       }
 
-      {(status !== null && hasBusinessHours !== null) && <div className="container mx-auto px-4 py-8 pt-24">
+      {(status !== null && hasBusinessHours !== null) && <div className="container mx-auto px-4 py-8 pt-24 cursor-default">
         {(status === 'unverified' || !hasBusinessHours) && (
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
             <h1 className="text-2xl font-bold text-primary-800 mb-3">
@@ -163,17 +163,57 @@ const MerchantDashboard = () => {
             <p className="text-primary-600 mb-2 text-left">
               To get started, you'll need to:
             </p>
-            <div className="text-left">
-              <ul className="text-primary-700 mb-4 inline-block text-left">
-                <li className="flex items-center gap-2 mb-1 text-left">
-                  <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                  Complete the verification process
-                </li>
-                <li className="flex items-center gap-2 text-left">
-                  <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                  Set your business hours
-                </li>
-              </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              {/* Business Requirements */}
+              <div>
+                <h3 className="font-semibold text-primary-800 mb-3">For Businesses</h3>
+                <ul className="text-primary-700 mb-4">
+                  <li className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                    Complete the verification process:
+                  </li>
+                  <ul className="list-disc list-inside ml-4 mb-2">
+                    <li>Company Profile Document (PDF or DOC)</li>
+                    <li>DTI/SEC Registration (Image or Scan)</li>
+                    <li>BIR 2303/COR (Image or Scan)</li>
+                    <li>Mayor's Permit(Image or Scan)</li>
+                    <li>2 Valid IDs (Image or Scan)</li>
+                    <li>1 Exterior Photo of Business</li>
+                    <li>2 Interior Photos of Business</li>
+                    <li>2 Videos of Actual Pet Service</li>
+                  </ul>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                    Set your business hours
+                  </li>
+                </ul>
+              </div>
+
+              {/* Freelancer Requirements */}
+              <div>
+                <h3 className="font-semibold text-primary-800 mb-3">For Freelancers</h3>
+                <ul className="text-primary-700 mb-4">
+                  <li className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                    Complete the verification process:
+                  </li>
+                  <ul className="list-disc list-inside ml-4 mb-2">
+                    <li>CV/Professional Background (PDF or DOC)</li>
+                    <li>Current Address Proof (Image or Scan)</li>
+                    <li>Permanent Address Proof (Image or Scan)</li>
+                    <li>SSS ID/UMID (Image or Scan)</li>
+                    <li>BIR TIN Document (Image or Scan)</li>
+                    <li>1 Other Valid ID (Image or Scan)</li>
+                    <li>NBI Clearance (Image or Scan)</li>
+                    <li>3 Photos of Actual Pet Service</li>
+                    <li>2 Videos of Actual Pet Service</li>
+                  </ul>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
+                    Set your availability hours
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         )}

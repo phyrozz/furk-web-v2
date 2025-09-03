@@ -26,6 +26,7 @@ export interface UserProfile {
   middle_name: string;
   last_name: string;
   phone_number: string;
+  image_url?: string;
   created_by: string;
   created_at: string;
   modified_by: string;
@@ -49,13 +50,13 @@ const ProfilePage = () => {
   const { isMobile } = useScreenSize();
 
   const fetchUserWallet = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await http.get<{ data: UserWallet }>('/pet-owner-profile/get-user-wallet');
       setUserWallet(response.data);
     } catch (error) {
       console.error('Failed to fetch user wallet:', error);
       setUserWallet(null);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -63,8 +64,13 @@ const ProfilePage = () => {
 
   useEffect(() => {
     document.title = 'My Profile - FURK';
-    getUserDetails();
-    fetchUserWallet();  
+
+    const loadData = async () => {
+      await getUserDetails();
+      await fetchUserWallet();
+    };
+    // Dont run API fetchings concurrently. Wait all to finish before showing the page.
+    loadData();
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -79,10 +85,8 @@ const ProfilePage = () => {
       setLoading(true);
       const response: any = await dataService.getUserDetails();
       setProfile(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching user details:', error);
-      setLoading(false);
     }
   };
 
@@ -253,25 +257,38 @@ const ProfilePage = () => {
                 alt={profile?.username}
                 className="w-24 h-24 rounded-full border-4 border-primary-100"
               /> */}
-              <div className="ml-6">
-                <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
-                <p className="text-gray-600">{profile?.email}</p>
-                <div className="flex items-center mt-2 text-sm text-gray-500">
-                  <span>Member since {profile?.created_at && DateUtils.formatDateStringFromTimestamp(profile.created_at)}</span>
-                  {/* <span className="mx-2">•</span>
-                  <span>{profile?.location}</span> */}
+              <div className="flex items-center">
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-primary-100">
+                  {profile?.image_url ? (
+                    <img 
+                      src={profile.image_url} 
+                      alt={`${profile.first_name}'s avatar`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={40} className="text-gray-400" />
+                  )}
                 </div>
-                {userWallet && <div className="flex flex-row gap-5 items-center mt-3">
-                  <div className="">
-                    <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
-                    <span className="text-gray-500 text-sm"> Furkredits</span>
+                <div className="ml-6">
+                  <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
+                  <p className="text-gray-600">{profile?.email}</p>
+                  <div className="flex items-center mt-2 text-sm text-gray-500">
+                    <span>Member since {profile?.created_at && DateUtils.formatDateStringFromTimestamp(profile.created_at)}</span>
+                    {/* <span className="mx-2">•</span>
+                    <span>{profile?.location}</span> */}
                   </div>
-                  <div className="">
-                    <span className="text-primary-600 font-bold text-2xl">{userWallet?.furkoins}</span>
-                    <span className="text-gray-500 text-sm"> Furkoins</span>
-                  </div>
-                  <Button variant="ghost" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
-                </div>}
+                  {userWallet && <div className="flex flex-row gap-5 items-center mt-3">
+                    <div className="">
+                      <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
+                      <span className="text-gray-500 text-sm"> Furkredits</span>
+                    </div>
+                    <div className="">
+                      <span className="text-primary-600 font-bold text-2xl">{userWallet?.furkoins}</span>
+                      <span className="text-gray-500 text-sm"> Furkoins</span>
+                    </div>
+                    <Button variant="ghost" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
+                  </div>}
+                </div>
               </div>
               <Button
                 variant="outline"
