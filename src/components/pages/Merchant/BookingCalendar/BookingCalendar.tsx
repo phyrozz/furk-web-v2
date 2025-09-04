@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Calendar, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -7,12 +7,13 @@ import Select from '../../../common/Select';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { motion } from 'framer-motion';
 import Button from '../../../common/Button';
-import { ChevronDownIcon, ChevronUpIcon, DownloadIcon, PrinterIcon, SettingsIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, Unlock } from 'lucide-react';
 import PawLoading from '../../../common/PawLoading';
 import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
 import BookingDetails from './BookingDetails';
-import { ContextMenu } from '../../../common/ContextMenu';
+import SelectionBox from '../../../common/SelectionBox';
+import { ToastService } from '../../../../services/toast/toast-service';
 
 moment.updateLocale('en', {
   week: {
@@ -50,6 +51,15 @@ interface MerchantHours {
   day_of_week: number;
 }
 
+interface MerchantBreaks {
+  id: number;
+  merchant_id: number;
+  day_of_week: number;
+  break_start: string;
+  break_end: string;
+  label?: string;
+}
+
 const BookingCalendar: React.FC = () => {
   const [events, setEvents] = useState<BookingEvent[]>([]);
   const [merchantClosures, setMerchantClosures] = useState<MerchantClosure[]>([]);
@@ -64,6 +74,12 @@ const BookingCalendar: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [keyword, setKeyword] = useState('');
   const [debouncedKeyword] = useDebounce(keyword, 500);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragEnd, setDragEnd] = useState<{ x: number; y: number } | null>(null);
+  const [selectionEvents, setSelectionEvents] = useState<BookingEvent[]>([]);
+  const [merchantBreaks, setMerchantBreaks] = useState<MerchantBreaks[]>([]);
+  const [loadingToggleClosure, setLoadingToggleClosure] = useState<boolean>(false);
   const bookingsService = new MerchantBookingsService();
 
   const contextMenuContainerRef = useRef<HTMLDivElement>(null);
@@ -77,22 +93,30 @@ const BookingCalendar: React.FC = () => {
     { value: 'cancelled', label: 'Cancelled' },
   ];
 
-  const contextMenuItems = [
-    {
-      label: 'Export Calendar',
-      onClick: () => console.log('Export calendar clicked'),
-    },
-    {
-      label: 'Print Schedule',
-      onClick: () => console.log('Print schedule clicked'),
-      icon: <PrinterIcon />,
-    },
-    {
-      label: 'Settings',
-      onClick: () => console.log('Settings clicked'),
-      icon: <SettingsIcon />,
+  // For drag selection on Calendar component
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // only left click
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDragStart({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setDragEnd(null);
+  };
+
+  // For drag selection on Calendar component
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragStart) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDragEnd({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  // For drag selection on Calendar component
+  const handleMouseUp = () => {
+    if (dragStart && dragEnd) {
+      console.log("Drag selection box:", { dragStart, dragEnd });
+      // here you could translate pixel coords into calendar dates if needed
     }
-  ];
+    setDragStart(null);
+    setDragEnd(null);
+  };
 
   const fetchBookings = async () => {
     try {
@@ -130,6 +154,7 @@ const BookingCalendar: React.FC = () => {
       setEvents(formattedEvents);
       setMerchantClosures(response.data.merchant_closures || []);
       setMerchantHours(response.data.merchant_hours || []);
+      setMerchantBreaks(response.data.break_hours || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -181,6 +206,16 @@ const BookingCalendar: React.FC = () => {
   };
 
   const eventPropGetter = (event: BookingEvent) => {
+    if (event.status === 'selected') {
+      return {
+        style: {
+          backgroundColor: '#e0f2fe',
+          border: '2px dashed #0284c7',
+          color: '#000',
+        }
+      };
+    }
+
     let backgroundColor = '';
     let color = '#ffffff';
     
@@ -231,61 +266,197 @@ const BookingCalendar: React.FC = () => {
       return merchantDow === merchantHour.day_of_week;
     });
 
-    if (isDateInClosure) {
-      return {
-        style: {
-          backgroundColor: '#a1a1a1',
-          cursor: 'not-allowed',
-          opacity: 1
-        }
+    let style: React.CSSProperties = {
+      backgroundColor: '#a1a1a1',
+      opacity: 1
+    };
+
+    if (isDateInBusinessHours) {
+      style = {
+        backgroundColor: '#ffffff',
+        opacity: 1,
       };
     }
 
-    if (isDateInBusinessHours) {
-      return {
-        style: {
-          backgroundColor: '#ffffff',
-          cursor: 'allowed',
-          opacity: 1,
-        }
-      }
-    }
-    return {
-      style: {
+    if (isDateInClosure) {
+      style = {
         backgroundColor: '#a1a1a1',
-        cursor: 'not-allowed',
         opacity: 1,
-      }
-    };
+      };
+    }
+
+    // Highlight selection in month view
+    const isSelected = selectedDates.some(d => moment(d).isSame(date, 'day'));
+    if (isSelected) {
+      style = {
+        ...style,
+        backgroundColor: '#e0f2fe', // light blue for selected
+      };
+    }
+
+    return { style };
   };
 
   const slotPropGetter = (date: Date) => {
     const momentDow = moment(date).day();
     const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
-    
+
     const dayHours = merchantHours.find(h => h.day_of_week === merchantDow);
-    
+    const breaksForDay = merchantBreaks.filter(b => b.day_of_week === merchantDow);
+
+    console.log("BREAKS FOR DAY: ", breaksForDay)
+
     if (!dayHours) {
-      return {
-        style: {
-          backgroundColor: '#a1a1a1',
-          cursor: 'not-allowed'
-        }
-      };
+      return { style: { backgroundColor: '#a1a1a1' } };
     }
-    
-    const currentHour = moment(date).format('HH:mm:ss');
-    const isWithinBusinessHours = currentHour >= dayHours.open_time && currentHour <= dayHours.close_time;
-    
-    return {
-      style: {
-        backgroundColor: isWithinBusinessHours ? '#ffffff' : '#a1a1a1'
-      }
-    };
+
+    // Keep the original datetime intact
+    const currentTime = moment(date);
+
+    // Check if date falls within any merchant closure period
+    const isDateInClosure = merchantClosures.some(closure => {
+      const closureStart = moment(closure.start_datetime);
+      const closureEnd = moment(closure.end_datetime);
+      return currentTime.isBetween(closureStart, closureEnd, undefined, '[]');
+    });
+
+    if (isDateInClosure) {
+      return { style: { backgroundColor: '#a1a1a1' } };
+    }
+
+    const openTime = moment(currentTime).set({
+      hour: moment(dayHours.open_time, "HH:mm:ss").hour(),
+      minute: moment(dayHours.open_time, "HH:mm:ss").minute(),
+      second: 0
+    });
+
+    const closeTime = moment(currentTime).set({
+      hour: moment(dayHours.close_time, "HH:mm:ss").hour(),
+      minute: moment(dayHours.close_time, "HH:mm:ss").minute(),
+      second: 0
+    });
+
+    const isWithinBusinessHours =
+      currentTime.isSameOrAfter(openTime) && currentTime.isBefore(closeTime);
+
+    const isWithinBreak = breaksForDay.some(b => {
+      const breakStart = moment(currentTime).clone().set({
+        hour: moment(b.break_start, "HH:mm:ss").hour(),
+        minute: moment(b.break_start, "HH:mm:ss").minute(),
+        second: 0
+      });
+      const breakEnd = moment(currentTime).clone().set({
+        hour: moment(b.break_end, "HH:mm:ss").hour(),
+        minute: moment(b.break_end, "HH:mm:ss").minute(),
+        second: 0
+      });
+
+      return currentTime.isSameOrAfter(breakStart) && currentTime.isBefore(breakEnd);
+    });
+
+    let backgroundColor = '#ffffff'; // default = open
+    if (!isWithinBusinessHours) {
+      backgroundColor = '#a1a1a1'; // closed
+    }
+    if (isWithinBreak) {
+      backgroundColor = '#a1a1a1'; // break
+    }
+
+    return { style: { backgroundColor } };
   };
 
-  const handleSelectSlot = (slotInfo: SlotInfo) => {
-    console.log("Slot info: ", slotInfo);
+  // Month view: select whole days
+  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+    if (currentView !== 'month') return;
+
+    // Adjust: slotInfo.end is exclusive, so subtract 1 day
+    const startDate = moment(slotInfo.start).startOf('day');
+    const endDate = moment(slotInfo.end).subtract(1, 'day').endOf('day');
+
+    const range: Date[] = [];
+    let current = startDate.clone();
+    while (current.isSameOrBefore(endDate, 'day')) {
+      range.push(current.toDate());
+      current.add(1, 'day');
+    }
+
+    // Always overwrite → no multiple ranges
+    setSelectedDates(range);
+
+    // // Optional ghost event for consistency
+    // const tempEvent: BookingEvent = {
+    //   id: -1,
+    //   title: 'Selected',
+    //   start: startDate.toDate(),
+    //   end: endDate.toDate(),
+    //   status: 'selected',
+    //   bookingDetails: null,
+    //   allDay: true,
+    // };
+    // setSelectionEvents([tempEvent]);
+
+    console.log('Selected range: ', startDate.format(), ' → ', endDate.format());
+  }, [currentView]);
+
+  // Week/day view: select times
+  const handleSelecting = (range: { start: Date; end: Date }) => {
+    if (currentView !== 'week' && currentView !== 'day') return true;
+
+    const start = moment.min(moment(range.start), moment(range.end));
+    const end = moment.max(moment(range.start), moment(range.end));
+
+    // Make a ghost event
+    const tempEvent: BookingEvent = {
+      id: -1, // fake ID
+      title: 'Selected',
+      start: start.toDate(),
+      end: end.toDate(),
+      status: 'selected',
+      bookingDetails: null,
+    };
+
+    setSelectionEvents([tempEvent]); // replace any existing
+    setSelectedDates([start.toDate(), end.toDate()]);
+
+    return true;
+  };
+
+  const handleRangeChange = (range: Date[] | { start: Date; end: Date }) => {
+    // Reset the selected dates when switching modes or changing range
+    setSelectedDates([]);
+  }
+
+  const handleResetSelection = () => {
+    setSelectedDates([]);
+    setSelectionEvents([]);
+  };
+
+  const handleToggleClosure = async () => {
+    setLoadingToggleClosure(true);
+
+    try {
+      const startDate = moment(selectedDates[0]);
+      const endDate = moment(selectedDates[1] || selectedDates[0]); // fallback to start date if no end date
+
+      // If no time component exists, set to start/end of day respectively
+      if (!startDate.hours() && !startDate.minutes() && !startDate.seconds()) {
+        startDate.startOf('day');
+      }
+      if (!endDate.hours() && !endDate.minutes() && !endDate.seconds()) {
+        endDate.endOf('day');
+      }
+
+      await bookingsService.toggleMerchantClosure({
+        start_date: startDate.format('YYYY-MM-DD HH:mm:ss'),
+        end_date: endDate.format('YYYY-MM-DD HH:mm:ss'),
+      });
+    } catch (err: any) {
+      console.error("Failed to toggle closure:", err);
+      ToastService.show(err.response?.data?.error || "Failed to toggle closure.");
+    } finally {
+      setLoadingToggleClosure(false);
+      fetchBookings();
+    }
   }
 
   const formats = {
@@ -363,20 +534,28 @@ const BookingCalendar: React.FC = () => {
           </div>
         </motion.div>
 
-        <div ref={contextMenuContainerRef} className="flex-1 relative min-h-[500px]">
+        <div
+          ref={contextMenuContainerRef} 
+          className="flex-1 relative min-h-[500px] cursor-pointer"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
           {loading && (
             <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
               <PawLoading />
             </div>
           )}
-          <ContextMenu items={contextMenuItems} triggerOn='right' containerRef={contextMenuContainerRef} />
+
+          <SelectionBox start={dragStart} end={dragEnd} />
+          {/* <ContextMenu items={contextMenuItems} triggerOn='left' containerRef={contextMenuContainerRef} /> */}
           <Calendar
             localizer={localizer}
-            events={events}
+            events={[...events, ...selectionEvents]}
             selectable
             startAccessor="start"
             endAccessor="end"
-            style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}
+            style={{ height: 'calc(100vh - 320px)', minHeight: '500px' }}
             onNavigate={handleNavigate}
             onView={handleViewChange}
             eventPropGetter={eventPropGetter}
@@ -384,11 +563,31 @@ const BookingCalendar: React.FC = () => {
             slotPropGetter={slotPropGetter}
             onSelectEvent={handleSelectEvent}
             onSelectSlot={handleSelectSlot}
+            onSelecting={handleSelecting}
+            onRangeChange={handleRangeChange}
             defaultView="month"
             views={['month', 'week', 'day', 'agenda']}
             formats={formats}
             length={30}
           />
+        </div>
+
+        <div className="flex flex-row gap-2 w-full pt-3">
+          <Button
+            variant="primary"
+            disabled={selectedDates.length === 0}
+            icon={<Unlock />}
+            onClick={handleToggleClosure}
+            loading={loadingToggleClosure}
+          >
+            Toggle Closure
+          </Button>
+          <Button
+            onClick={handleResetSelection}
+            variant="outline"
+          >
+            Reset Selection(s)
+          </Button>
         </div>
       </div>
 

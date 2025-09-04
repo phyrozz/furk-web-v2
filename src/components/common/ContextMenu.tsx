@@ -34,11 +34,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ items, triggerOn, cont
       }
       // Handle left click inside container
       else if (triggerOn === 'left' && e.button === 0 && isClickInsideContainer && !isClickInsideMenu) {
-        setIsOpen(true);
+        e.preventDefault();
+        setIsOpen((prev) => !prev); // Toggle menu state
         setPosition({ x: e.pageX, y: e.pageY });
       }
-      // Close menu when clicking outside container or menu
-      else if (!isClickInsideMenu) {
+      // Close menu when clicking outside container and menu
+      else if (!isClickInsideMenu && !isClickInsideContainer) {
         setIsOpen(false);
       }
     };
@@ -78,7 +79,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ items, triggerOn, cont
             <button
               key={index}
               onClick={(e) => {
-                e.stopPropagation(); // Prevent event from bubbling up
+                e.stopPropagation();
                 item.onClick();
                 setIsOpen(false);
               }}

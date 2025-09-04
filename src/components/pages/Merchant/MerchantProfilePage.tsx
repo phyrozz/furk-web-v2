@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint, CalendarX } from 'lucide-react';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import PawLoading from '../../common/PawLoading';
 import useScreenSize from '../../../hooks/useScreenSize';
 import MerchantNavbar from '../../common/MerchantNavbar';
 import { MerchantProfileService } from '../../../services/profile/merchant-profile-service';
+import SetBreakHours from './SetBreakHours/SetBreakHoursPage';
 
 export interface MerchantProfile {
   id?: string;
@@ -18,12 +19,20 @@ export interface MerchantProfile {
   province?: string;
   barangay?: string;
   business_hours?: BusinessHours[];
+  break_hours?: BreakHours[];
 }
 
 export interface BusinessHours {
   day_of_week: number;
   open_time: string;
   close_time: string;
+}
+
+interface BreakHours {
+  day_of_week: number;
+  break_start: string;
+  break_end: string;
+  label?: string;
 }
 
 const MerchantProfilePage = () => {
@@ -131,7 +140,8 @@ const MerchantProfilePage = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'business-hours', label: 'Business Hours', icon: History }
+    { id: 'business-hours', label: 'Business Hours', icon: History },
+    { id: 'break-hours', label: 'Break Hours', icon: CalendarX },
   ];
 
   const editForm = (
@@ -245,7 +255,7 @@ const MerchantProfilePage = () => {
   );
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden">
+    <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none">
       <MerchantNavbar />
       <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
         {/* Profile Header */}
@@ -426,6 +436,68 @@ const MerchantProfilePage = () => {
                       <p className="text-gray-600">No business hours set.</p>
                     )}
                   </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'break-hours' && (
+            <div className="space-y-6 h-full overflow-y-hidden pb-20">
+              <div className="flex flex-row justify-between items-center px-6 pt-6">
+                <h2 className="text-xl font-cursive font-semibold text-gray-800">Break Hours</h2>
+                <button
+                  onClick={() => {
+                    navigate("/merchant/break-hours")
+                  }}                  
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                >
+                  Edit
+                </button>
+              </div>
+
+              <div className="px-6">
+                <p className="text-gray-600">Set the hours to help notify pet owners that you're on a break and the business is temporarily closed.</p>
+              </div>
+              
+              <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
+                {profile?.break_hours && profile.break_hours.length > 0 ? (
+                  <div className="space-y-6">
+                    {[0,1,2,3,4,5,6].map((dayIndex) => {
+                      const dayBreaks = profile.break_hours?.filter(h => h.day_of_week === dayIndex) || [];
+                      const dayName = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dayIndex];
+                      
+                      return (
+                        <div key={dayIndex} className="border-b pb-4 last:border-b-0">
+                          <p className="text-gray-600 font-medium mb-2">{dayName}:</p>
+                          {dayBreaks.length > 0 ? (
+                            <div className="space-y-2 pl-4">
+                              {dayBreaks.map((hours, idx) => (
+                                <div key={idx} className="flex items-center">
+                                  <span className="w-2 h-2 bg-primary-500 rounded-full mr-2"></span>
+                                  <p className="font-semibold">
+                                    {new Date(`2000-01-01T${hours.break_start}`).toLocaleTimeString('en-US', { 
+                                      hour: 'numeric',
+                                      minute: '2-digit',
+                                      hour12: true 
+                                    })} - {new Date(`2000-01-01T${hours.break_end}`).toLocaleTimeString('en-US', {
+                                      hour: 'numeric', 
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })}
+                                    {hours.label && <span className="ml-2 text-gray-500">({hours.label})</span>}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic pl-4">No break hours set</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No break hours set.</p>
                 )}
               </div>
             </div>
