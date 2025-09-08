@@ -7,13 +7,14 @@ import Select from '../../../common/Select';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { motion } from 'framer-motion';
 import Button from '../../../common/Button';
-import { ChevronDownIcon, ChevronUpIcon, Unlock } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, Lock, Unlock } from 'lucide-react';
 import PawLoading from '../../../common/PawLoading';
 import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
 import BookingDetails from './BookingDetails';
 import SelectionBox from '../../../common/SelectionBox';
 import { ToastService } from '../../../../services/toast/toast-service';
+import Modal from '../../../common/Modal';
 
 moment.updateLocale('en', {
   week: {
@@ -22,7 +23,7 @@ moment.updateLocale('en', {
 })
 const localizer = momentLocalizer(moment);
 
-interface BookingEvent {
+export interface BookingEvent {
   id: number;
   title: string;
   start: Date;
@@ -79,7 +80,11 @@ const BookingCalendar: React.FC = () => {
   const [dragEnd, setDragEnd] = useState<{ x: number; y: number } | null>(null);
   const [selectionEvents, setSelectionEvents] = useState<BookingEvent[]>([]);
   const [merchantBreaks, setMerchantBreaks] = useState<MerchantBreaks[]>([]);
-  const [loadingToggleClosure, setLoadingToggleClosure] = useState<boolean>(false);
+  const [loadingAddClosure, setLoadingAddClosure] = useState<boolean>(false);
+  const [loadingDeleteClosure, setLoadingDeleteClosure] = useState<boolean>(false);
+  const [isAddClosureModalOpen, setIsAddClosureModalOpen] = useState<boolean>(false);
+  const [isDeleteClosureModalOpen, setIsDeleteClosureModalOpen] = useState<boolean>(false);
+
   const bookingsService = new MerchantBookingsService();
 
   const contextMenuContainerRef = useRef<HTMLDivElement>(null);
@@ -304,20 +309,19 @@ const BookingCalendar: React.FC = () => {
     const dayHours = merchantHours.find(h => h.day_of_week === merchantDow);
     const breaksForDay = merchantBreaks.filter(b => b.day_of_week === merchantDow);
 
-    console.log("BREAKS FOR DAY: ", breaksForDay)
-
     if (!dayHours) {
       return { style: { backgroundColor: '#a1a1a1' } };
     }
 
     // Keep the original datetime intact
     const currentTime = moment(date);
+    const slotEndTime = moment(date).add(30, 'minutes');
 
-    // Check if date falls within any merchant closure period
+    // Check if any part of the slot falls within a closure period
     const isDateInClosure = merchantClosures.some(closure => {
       const closureStart = moment(closure.start_datetime);
       const closureEnd = moment(closure.end_datetime);
-      return currentTime.isBetween(closureStart, closureEnd, undefined, '[]');
+      return (currentTime.isBefore(closureEnd) && slotEndTime.isAfter(closureStart));
     });
 
     if (isDateInClosure) {
@@ -337,7 +341,7 @@ const BookingCalendar: React.FC = () => {
     });
 
     const isWithinBusinessHours =
-      currentTime.isSameOrAfter(openTime) && currentTime.isBefore(closeTime);
+      slotEndTime.isAfter(openTime) && currentTime.isBefore(closeTime);
 
     const isWithinBreak = breaksForDay.some(b => {
       const breakStart = moment(currentTime).clone().set({
@@ -351,7 +355,7 @@ const BookingCalendar: React.FC = () => {
         second: 0
       });
 
-      return currentTime.isSameOrAfter(breakStart) && currentTime.isBefore(breakEnd);
+      return (currentTime.isBefore(breakEnd) && slotEndTime.isAfter(breakStart));
     });
 
     let backgroundColor = '#ffffff'; // default = open
@@ -367,72 +371,83 @@ const BookingCalendar: React.FC = () => {
 
   // Month view: select whole days
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    if (currentView !== 'month') return;
+    if (currentView === 'month') {
+      // month logic (your existing code)
+      const startDate = moment(slotInfo.start).startOf('day');
+      const endDate = moment(slotInfo.end).subtract(1, 'day').endOf('day');
 
-    // Adjust: slotInfo.end is exclusive, so subtract 1 day
-    const startDate = moment(slotInfo.start).startOf('day');
-    const endDate = moment(slotInfo.end).subtract(1, 'day').endOf('day');
+      const range: Date[] = [];
+      let current = startDate.clone();
+      while (current.isSameOrBefore(endDate, 'day')) {
+        range.push(current.toDate());
+        current.add(1, 'day');
+      }
 
-    const range: Date[] = [];
-    let current = startDate.clone();
-    while (current.isSameOrBefore(endDate, 'day')) {
-      range.push(current.toDate());
-      current.add(1, 'day');
+      setSelectedDates(range);
+      // console.log('Selected range: ', startDate.format(), ' → ', endDate.format());
+    } else if (currentView === 'week' || currentView === 'day') {
+      // week/day logic → runs only once when mouse is released
+      const start = moment(slotInfo.start);
+      const end = moment(slotInfo.end);
+
+      const tempEvent: BookingEvent = {
+        id: -1,
+        title: 'Selected',
+        start: start.toDate(),
+        end: end.toDate(),
+        status: 'selected',
+        bookingDetails: null,
+      };
+
+      setSelectionEvents([tempEvent]);
+      setSelectedDates([start.toDate(), end.toDate()]);
+
+      // console.log('Selected slot: ', start.format(), ' → ', end.format());
     }
-
-    // Always overwrite → no multiple ranges
-    setSelectedDates(range);
-
-    // // Optional ghost event for consistency
-    // const tempEvent: BookingEvent = {
-    //   id: -1,
-    //   title: 'Selected',
-    //   start: startDate.toDate(),
-    //   end: endDate.toDate(),
-    //   status: 'selected',
-    //   bookingDetails: null,
-    //   allDay: true,
-    // };
-    // setSelectionEvents([tempEvent]);
-
-    console.log('Selected range: ', startDate.format(), ' → ', endDate.format());
   }, [currentView]);
 
   // Week/day view: select times
-  const handleSelecting = (range: { start: Date; end: Date }) => {
-    if (currentView !== 'week' && currentView !== 'day') return true;
+  const handleSelecting = useCallback((range: { start: Date; end: Date }) => {
+    // if (currentView !== 'week' && currentView !== 'day') return true;
 
-    const start = moment.min(moment(range.start), moment(range.end));
-    const end = moment.max(moment(range.start), moment(range.end));
+    // const start = moment.min(moment(range.start), moment(range.end));
+    // const end = moment.max(moment(range.start), moment(range.end));
 
-    // Make a ghost event
-    const tempEvent: BookingEvent = {
-      id: -1, // fake ID
-      title: 'Selected',
-      start: start.toDate(),
-      end: end.toDate(),
-      status: 'selected',
-      bookingDetails: null,
-    };
+    // // Make a ghost event
+    // const tempEvent: BookingEvent = {
+    //   id: -1, // fake ID
+    //   title: 'Selected',
+    //   start: start.toDate(),
+    //   end: end.toDate(),
+    //   status: 'selected',
+    //   bookingDetails: null,
+    // };
 
-    setSelectionEvents([tempEvent]); // replace any existing
-    setSelectedDates([start.toDate(), end.toDate()]);
+    // setSelectionEvents([tempEvent]); // replace any existing
+    // setSelectedDates([start.toDate(), end.toDate()]);
 
     return true;
-  };
+  }, [currentView]);
 
   const handleRangeChange = (range: Date[] | { start: Date; end: Date }) => {
     // Reset the selected dates when switching modes or changing range
     setSelectedDates([]);
+    setSelectionEvents([]);
+    setSelectedEvent(null);
   }
 
   const handleResetSelection = () => {
     setSelectedDates([]);
     setSelectionEvents([]);
+    setSelectedEvent(null);
   };
 
-  const handleToggleClosure = async () => {
-    setLoadingToggleClosure(true);
+  const handleToggleClosure = async (mode: 'add' | 'delete') => {
+    if (mode === 'add') {
+      setLoadingAddClosure(true);
+    } else {
+      setLoadingDeleteClosure(true);
+    }
 
     try {
       const startDate = moment(selectedDates[0]);
@@ -449,14 +464,23 @@ const BookingCalendar: React.FC = () => {
       await bookingsService.toggleMerchantClosure({
         start_date: startDate.format('YYYY-MM-DD HH:mm:ss'),
         end_date: endDate.format('YYYY-MM-DD HH:mm:ss'),
+        mode: mode,
       });
     } catch (err: any) {
       console.error("Failed to toggle closure:", err);
       ToastService.show(err.response?.data?.error || "Failed to toggle closure.");
     } finally {
-      setLoadingToggleClosure(false);
+      if (mode === 'add') {
+        setLoadingAddClosure(false);
+      } else {
+        setLoadingDeleteClosure(false);
+      }
       fetchBookings();
     }
+
+    setSelectedDates([]);
+    setSelectionEvents([]);
+    setSelectedEvent(null);
   }
 
   const formats = {
@@ -470,6 +494,22 @@ const BookingCalendar: React.FC = () => {
   return (
     <>
       <MerchantNavbar />
+      <Modal
+        isOpen={isAddClosureModalOpen} 
+        onClose={() => setIsAddClosureModalOpen(false)} 
+        onConfirm={() => {
+          handleToggleClosure('add');
+          setIsAddClosureModalOpen(false);
+        }}
+        title="Confirm Add"
+        showCancel 
+        showConfirm
+      >
+        <div className="flex flex-col items-center justify-center">
+          <p className="text-center">Booking(s) exist for the selected dates/time. <b className="text-red-600">These will be cancelled and refunds will be issued to the pet owners.</b> Are you sure you want to close your business for the selected dates/time?</p>
+        </div>
+      </Modal>
+      
       <div className="p-6 pt-24 min-h-screen flex flex-col cursor-default container mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
@@ -576,11 +616,55 @@ const BookingCalendar: React.FC = () => {
           <Button
             variant="primary"
             disabled={selectedDates.length === 0}
-            icon={<Unlock />}
-            onClick={handleToggleClosure}
-            loading={loadingToggleClosure}
+            icon={<Lock />}
+            onClick={() => {
+              const hasEventsInRange = events.some(event => {
+                const eventStart = moment(event.start);
+                const eventEnd = moment(event.end);
+                
+                // Only check pending and confirmed bookings
+                if (!['pending', 'confirmed'].includes(event.bookingDetails.status)) {
+                  return false;
+                }
+                
+                // For week/day view, use exact times. For month view, use full days
+                let selectionStart, selectionEnd;
+                
+                if (currentView === 'month') {
+                  selectionStart = moment(selectedDates[0]).startOf('day');
+                  selectionEnd = selectedDates.length > 1 
+                    ? moment(selectedDates[selectedDates.length - 1]).endOf('day')
+                    : moment(selectedDates[0]).endOf('day');
+                } else {
+                  selectionStart = moment(selectedDates[0]);
+                  selectionEnd = selectedDates.length > 1 
+                    ? moment(selectedDates[1])
+                    : moment(selectedDates[0]);
+                }
+                
+                return (eventStart.isBetween(selectionStart, selectionEnd, undefined, '[]') ||
+                        eventEnd.isBetween(selectionStart, selectionEnd, undefined, '[]'));
+              });
+
+              if (hasEventsInRange) {
+                setIsAddClosureModalOpen(true);
+              } else {
+                handleToggleClosure('add');
+              }
+            }}
+            loading={loadingAddClosure}
           >
-            Toggle Closure
+            Add Closure
+          </Button>
+          <Button
+            color="red"
+            variant="primary"
+            disabled={selectedDates.length === 0}
+            icon={<Unlock />}
+            onClick={() => handleToggleClosure('delete')}
+            loading={loadingDeleteClosure}
+          >
+            Delete Closure
           </Button>
           <Button
             onClick={handleResetSelection}

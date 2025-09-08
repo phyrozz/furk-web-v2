@@ -92,4 +92,12 @@ export class PetServicesService {
             service_id: serviceId
         });
     }
+
+    async listClosuresAndBreaks(startDate: Date, endDate: Date, merchantId: number): Promise<any> {
+        return http.post('/booking/list-closures-and-break-times', {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            merchant_id: merchantId
+        });
+    }
 }

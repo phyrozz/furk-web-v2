@@ -124,7 +124,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   };
 
   return (
-    <AnimatePresence>
+    <div className="z-50">
       {isOpen && (
         <ResizableRightSidebar
           isOpen={isOpen}
@@ -295,7 +295,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
         <p>Are you sure you want to change the status of this booking? This action cannot be undone.</p>
       </Modal>
     )}
-    </AnimatePresence>
+    </div>
   );
 };
 
