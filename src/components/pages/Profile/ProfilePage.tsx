@@ -64,8 +64,13 @@ const ProfilePage = () => {
 
   useEffect(() => {
     document.title = 'My Profile - FURK';
-    getUserDetails();
-    fetchUserWallet();  
+
+    const loadData = async () => {
+      await getUserDetails();
+      await fetchUserWallet();
+    };
+    // Dont run API fetchings concurrently. Wait all to finish before showing the page.
+    loadData();
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');

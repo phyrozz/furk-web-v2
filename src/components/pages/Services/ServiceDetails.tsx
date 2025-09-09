@@ -189,6 +189,7 @@ const ServiceDetails = () => {
         serviceId={service.id}
         businessHours={service.business_hours}
         bookingAmount={service.price}
+        merchantId={service.merchant_id}
       />
       <ShareDialog 
         isOpen={showShareDialog}

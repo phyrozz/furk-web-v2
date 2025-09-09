@@ -36,4 +36,8 @@ export class MerchantBookingsService {
   async completeService(id: number): Promise<any> {
     return http.post(`/merchant/booking/complete/${id}`, {});
   }
+
+  async toggleMerchantClosure(data: { start_date: string, end_date: string, reason?: string, mode?: 'add' | 'delete' }): Promise<any> {
+    return http.post('/merchant/booking/toggle-closure', data);
+  }
 }

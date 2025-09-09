@@ -109,7 +109,7 @@ const SetBusinessHoursPage: React.FC = () => {
       await dataService.updateMerchantBusinessHours(hoursToSave);
       ToastService.show('Business hours updated successfully!');
       localStorageService.setHasBusinessHours(true);
-      navigate('/merchant/dashboard');
+      navigate(-1);
     } catch (error) {
       console.error('Failed to save business hours:', error);
       ToastService.show('Failed to save business hours.');
@@ -123,7 +123,7 @@ const SetBusinessHoursPage: React.FC = () => {
       <MerchantNavbar />
       <div className="container mx-auto flex flex-row justify-start items-center gap-4 mt-24 mb-4">
         <Button
-          onClick={() => navigate('/merchant/dashboard')}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2"
           variant='outline'
         >
