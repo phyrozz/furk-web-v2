@@ -308,13 +308,13 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const calendarStyle = {
     backgroundColor: '#ffffff',
     fontSize: '0.75rem',
-    '.rbc-toolbar': {
+    '.rbcToolbar': {
       marginBottom: '0.75rem',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center'
     },
-    '.rbc-toolbar button': {
+    '.rbcToolbar button': {
       color: '#374151',
       backgroundColor: '#F9FAFB',
       border: '1px solid #E5E7EB',
@@ -328,32 +328,32 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
         borderColor: '#D1D5DB',
         transform: 'translateY(-1px)'
       },
-      '&.rbc-active': {
+      '&.rbcActive': {
         backgroundColor: '#4F46E5',
         borderColor: '#4338CA',
         color: '#ffffff',
         boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
       }
     },
-    '.rbc-month-view': {
+    '.rbcMonthView': {
       border: '1px solid #E5E7EB',
       borderRadius: '0.375rem',
       overflow: 'hidden'
     },
-    '.rbc-day-bg': {
+    '.rbcDayBg': {
       backgroundColor: '#ffffff',
       transition: 'background-color 0.2s ease'
     },
-    '.rbc-off-range-bg': {
+    '.rbcOffRangeBg': {
       backgroundColor: '#F9FAFB'
     },
-    '.rbc-today': {
+    '.rbcToday': {
       backgroundColor: '#EEF2FF',
       '&:hover': {
         backgroundColor: '#E0E7FF'
       }
     },
-    '.rbc-event': {
+    '.rbcEvent': {
       backgroundColor: '#4F46E5',
       borderRadius: '0.25rem',
       color: '#ffffff',
@@ -368,11 +368,11 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
         boxShadow: '0 4px 6px rgba(79, 70, 229, 0.25)'
       }
     },
-    '.rbc-selected': {
+    '.rbcSelected': {
       backgroundColor: '#312E81',
       boxShadow: '0 4px 6px rgba(49, 46, 129, 0.3)'
     },
-    '.rbc-header': {
+    '.rbcHeader': {
       padding: '0.5rem',
       fontWeight: 600,
       borderBottom: '1px solid #E5E7EB',
@@ -381,17 +381,17 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       fontSize: '0.625rem',
       letterSpacing: '0.05em'
     },
-    '.rbc-agenda-view table': {
+    '.rbcAgendaView table': {
       border: '1px solid #E5E7EB',
       borderRadius: '0.375rem',
       overflow: 'hidden',
       boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
     },
-    '.rbc-agenda-view table thead': {
+    '.rbcAgendaView table thead': {
       backgroundColor: '#F9FAFB',
       color: '#374151'
     },
-    '.rbc-agenda-view table td': {
+    '.rbcAgendaView table td': {
       padding: '0.5rem',
       borderBottom: '1px solid #E5E7EB',
       color: '#4B5563',
@@ -400,19 +400,19 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
         backgroundColor: '#F9FAFB'
       }
     },
-    '.rbc-time-view': {
+    '.rbcTimeView': {
       border: '1px solid #E5E7EB',
       borderRadius: '0.375rem',
       overflow: 'hidden'
     },
-    '.rbc-timeslot-group': {
+    '.rbcTimeslotGroup': {
       borderBottom: '1px solid #E5E7EB'
     },
-    '.rbc-time-header': {
+    '.rbcTimeHeader': {
       borderBottom: '1px solid #E5E7EB',
       backgroundColor: '#F9FAFB'
     },
-    '.rbc-current-time-indicator': {
+    '.rbcCurrentTimeIndicator': {
       backgroundColor: '#DC2626',
       height: '2px'
     }
@@ -523,6 +523,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     const isDateInBusinessHours = businessHours.some(merchantHour => {
       return merchantDow === merchantHour.day_of_week;
     });
+    const today = moment().startOf('day');
 
     let style: React.CSSProperties = {
       backgroundColor: '#a1a1a1',
@@ -552,33 +553,60 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       };
     }
 
+    // Do not allow selection of past dates
+    if (moment(date).isBefore(today)) { 
+      style = {
+        ...style,
+        backgroundColor: '#d1d1d1',
+        opacity: 1,
+        cursor: 'not-allowed'
+      };
+    }
+
+    // Do not allow selection of dates 6 months in the future
+    if (moment(date).isAfter(today.add(6, 'month'))) {
+      style = {
+        ...style,
+        backgroundColor: '#d1d1d1',
+        opacity: 1,
+        cursor: 'not-allowed'
+      };
+    }
+
     return { style };
   };
 
-  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    const date = slotInfo.start;
-    
-    // Check if date is in closure period
-    const isDateInClosure = businessClosures.some(closure => {
-      const closureStart = moment(closure.start_datetime).startOf('day');
-      const closureEnd = moment(closure.end_datetime).endOf('day');
-      return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
-    });
+const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+  const date = slotInfo.start;
+  const today = moment().startOf('day');
+  const sixMonthsFromNow = moment().add(6, 'months').startOf('day');
+  
+  // Don't allow selection if date is before today or after 6 months
+  if (moment(date).isBefore(today) || moment(date).isAfter(sixMonthsFromNow)) {
+    return;
+  }
 
-    // Check if date is within business hours
-    const momentDow = moment(date).day();
-    const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
-    const isDateInBusinessHours = businessHours.some(merchantHour => {
-      return merchantDow === merchantHour.day_of_week;
-    });
+  // Check if date is in closure period
+  const isDateInClosure = businessClosures.some(closure => {
+    const closureStart = moment(closure.start_datetime).startOf('day');
+    const closureEnd = moment(closure.end_datetime).endOf('day');
+    return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
+  });
 
-    // Only set selected date if it's not in closure and is within business hours
-    if (!isDateInClosure && isDateInBusinessHours) {
-      setSelectedDate(date.toISOString().split('T')[0]);
-      console.log('selected date: ', date);
-    }
-    
-  }, [businessClosures, businessHours, setSelectedDate]);
+  // Check if date is within business hours
+  const momentDow = moment(date).day();
+  const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
+  const isDateInBusinessHours = businessHours.some(merchantHour => {
+    return merchantDow === merchantHour.day_of_week;
+  });
+
+  // Only set selected date if it's not in closure and is within business hours
+  if (!isDateInClosure && isDateInBusinessHours) {
+    setSelectedDate(date.toISOString().split('T')[0]);
+    console.log('selected date: ', date);
+  }
+  
+}, [businessClosures, businessHours, setSelectedDate]);
 
   return (
     <div className="z-50">
