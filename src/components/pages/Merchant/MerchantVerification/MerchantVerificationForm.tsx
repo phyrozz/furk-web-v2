@@ -139,6 +139,7 @@ const MerchantVerificationForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Location: ", formData.lat, formData.long);
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -317,8 +318,8 @@ const MerchantVerificationForm = () => {
           onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,
-              latitude: lat,
-              longitude: long
+              lat: lat,
+              long: long
             }));
 
             console.log('Location changed:', long, lat);
