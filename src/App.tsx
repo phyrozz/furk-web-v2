@@ -43,6 +43,7 @@ import PaymentSuccessPage from './components/pages/Payment/PaymentSuccessPage';
 import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPage';
 import PaymentFailedPage from './components/pages/Payment/PaymentFailedPage';
 import { ScrollToHashElement } from './utils/scroll-to-hash-element';
+import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -195,6 +196,11 @@ function App() {
                 <Route path='/merchant/profile' element={
                   <ProtectedRoute requiredRoles={['merchant']}>
                     <MerchantProfilePage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/merchant/payouts' element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <PayoutsPage />
                   </ProtectedRoute>
                 } />
                 <Route path='/merchant/business-hours' element={
