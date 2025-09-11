@@ -317,11 +317,9 @@ const MerchantVerificationForm = () => {
           onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,
-              latitude: lat,
-              longitude: long
+              lat: lat,
+              long: long
             }));
-
-            console.log('Location changed:', long, lat);
           }} 
         />
       </div>}

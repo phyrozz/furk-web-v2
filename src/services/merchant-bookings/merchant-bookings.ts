@@ -37,6 +37,23 @@ export class MerchantBookingsService {
     return http.post(`/merchant/booking/complete/${id}`, {});
   }
 
+  async listMerchantPayouts(limit: number, offset: number, keyword: string, startDate: Date, endDate: Date): Promise<any> {
+    return http.post('/merchant-payouts/list', {
+      limit,
+      offset,
+      keyword,
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    });
+  }
+
+  async getPayoutMonthlyEarnings(startDate: Date, endDate: Date): Promise<any> {
+    return http.post('/merchant-payouts/monthly-earnings', {
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    });
+  }
+
   async toggleMerchantClosure(data: { start_date: string, end_date: string, reason?: string, mode?: 'add' | 'delete' }): Promise<any> {
     return http.post('/merchant/booking/toggle-closure', data);
   }

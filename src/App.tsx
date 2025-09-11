@@ -43,6 +43,7 @@ import PaymentSuccessPage from './components/pages/Payment/PaymentSuccessPage';
 import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPage';
 import PaymentFailedPage from './components/pages/Payment/PaymentFailedPage';
 import { ScrollToHashElement } from './utils/scroll-to-hash-element';
+import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 import RoleRedirect from './components/RoleRedirect';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
 
@@ -201,6 +202,11 @@ function App() {
                 <Route path='/merchant/profile' element={
                   <ProtectedRoute requiredRoles={['merchant']}>
                     <MerchantProfilePage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/merchant/payouts' element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <PayoutsPage />
                   </ProtectedRoute>
                 } />
                 <Route path='/merchant/business-hours' element={

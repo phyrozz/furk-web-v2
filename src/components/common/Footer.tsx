@@ -9,9 +9,10 @@ const Footer = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex flex-col items-start gap-1 mb-4">
               {/* <Paw size={24} className="text-primary-400" /> */}
               <img src="/logo_new.png" width={100} />
+              <span className="text-sm font-cursive">Fur Kingdom</span>
             </div>
             <p className="text-gray-300 mb-4">
               Your one-stop shop for all pet needs in the Philippines.
