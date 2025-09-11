@@ -44,6 +44,8 @@ import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPag
 import PaymentFailedPage from './components/pages/Payment/PaymentFailedPage';
 import { ScrollToHashElement } from './utils/scroll-to-hash-element';
 import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
+import RoleRedirect from './components/RoleRedirect';
+import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -137,7 +139,11 @@ function App() {
                     <Navbar />
                     <main className="flex-grow">
                       <Routes>
-                        <Route path="/" element={<HomePage />} />
+                        {/* redirect logic for root */}
+                        <Route path="/" element={
+                          isAuthenticated ? <RoleRedirect /> : <HomePage />
+                        } />
+
                         <Route path="/services" element={<ServicesPage />} />
                         <Route path="/rewards" element={<RewardsPage />} />
                         <Route path="/services/:id" element={<ServiceDetails />} />
@@ -206,6 +212,11 @@ function App() {
                 <Route path='/merchant/business-hours' element={
                   <ProtectedRoute requiredRoles={['merchant']}>
                     <SetBusinessHoursPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/break-hours" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <SetBreakHoursPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/profile" element={

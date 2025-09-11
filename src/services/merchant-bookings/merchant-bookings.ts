@@ -53,4 +53,8 @@ export class MerchantBookingsService {
       end_date: endDate.toISOString().split('T')[0],
     });
   }
+
+  async toggleMerchantClosure(data: { start_date: string, end_date: string, reason?: string, mode?: 'add' | 'delete' }): Promise<any> {
+    return http.post('/merchant/booking/toggle-closure', data);
+  }
 }

@@ -12,6 +12,16 @@ import { BusinessHour } from './ServiceDetails';
 import SuccessDialog from '../../common/SuccessDialog';
 import Input from '../../common/Input';
 import { http } from '../../../utils/http';
+import { Calendar, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
+import moment from 'moment';
+import { BookingEvent } from '../Merchant/BookingCalendar/BookingCalendar';
+
+moment.updateLocale('en', {
+  week: {
+    dow: 1, // monday
+  }
+})
+const localizer = momentLocalizer(moment);
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -20,6 +30,7 @@ interface BookingDialogProps {
   serviceId: number;
   businessHours: BusinessHour[];
   bookingAmount: string;
+  merchantId: number;
 }
 
 // interface PaymentMethod {
@@ -40,7 +51,15 @@ interface Pet {
 //   { id: 4, code: 'maya', displayName: 'Maya' },
 // ];
 
-const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, businessHours, bookingAmount }) => {
+const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, businessHours, bookingAmount, merchantId }) => {
+  const currentMonth = useMemo(() => {
+    const now = new Date();
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    };
+  }, []);
+
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
@@ -54,6 +73,16 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const [couponCode, setCouponCode] = useState("");
   const [amount, setAmount] = useState(0);
   const [subtotal, setSubtotal] = useState<{ code: string, description: string, amount?: number }[]>([]);
+  const [events, setEvents] = useState<BookingEvent[]>([]);
+  const [selectionEvents, setSelectionEvents] = useState<BookingEvent[]>([]);
+  const [businessClosures, setBusinessClosures] = useState<{ start_datetime: string, end_datetime: string, reason?: string }[]>([]);
+  const [businessBreaks, setBusinessBreaks] = useState<{ day_of_week: number, break_start: string, break_end: string, label?: string }[]>([]);
+  const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(() => {
+    const start = new Date(new Date().getFullYear(), new Date().getMonth(), -9);
+    const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10);
+    return { start, end };
+  });
+  const [currentView, setCurrentView] = useState<View>('month');
 
   const petServicesService = new PetServicesService();
 
@@ -139,6 +168,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       setError(null);
       setSearchQuery('');
     }
+    fetchClosuresAndBreaks();
   }, [isOpen]);
 
   const searchItems = useCallback(async (query: string) => {
@@ -266,6 +296,318 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     }
   }
 
+  // For the Calendar component
+  const formats = {
+    agendaDateFormat: 'MMM D',
+    agendaTimeFormat: 'hh:mm A',
+    agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) => {
+      return `${moment(start).format('hh:mm A')} - ${moment(end).format('hh:mm A')}`;
+    }
+  };
+
+  const calendarStyle = {
+    backgroundColor: '#ffffff',
+    fontSize: '0.75rem',
+    '.rbcToolbar': {
+      marginBottom: '0.75rem',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    '.rbcToolbar button': {
+      color: '#374151',
+      backgroundColor: '#F9FAFB',
+      border: '1px solid #E5E7EB',
+      borderRadius: '0.375rem',
+      padding: '0.375rem 0.75rem',
+      fontSize: '0.75rem',
+      fontWeight: 500,
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        backgroundColor: '#F3F4F6',
+        borderColor: '#D1D5DB',
+        transform: 'translateY(-1px)'
+      },
+      '&.rbcActive': {
+        backgroundColor: '#4F46E5',
+        borderColor: '#4338CA',
+        color: '#ffffff',
+        boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+      }
+    },
+    '.rbcMonthView': {
+      border: '1px solid #E5E7EB',
+      borderRadius: '0.375rem',
+      overflow: 'hidden'
+    },
+    '.rbcDayBg': {
+      backgroundColor: '#ffffff',
+      transition: 'background-color 0.2s ease'
+    },
+    '.rbcOffRangeBg': {
+      backgroundColor: '#F9FAFB'
+    },
+    '.rbcToday': {
+      backgroundColor: '#EEF2FF',
+      '&:hover': {
+        backgroundColor: '#E0E7FF'
+      }
+    },
+    '.rbcEvent': {
+      backgroundColor: '#4F46E5',
+      borderRadius: '0.25rem',
+      color: '#ffffff',
+      padding: '0.25rem 0.5rem',
+      fontSize: '0.75rem',
+      border: 'none',
+      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)',
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        backgroundColor: '#4338CA',
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 6px rgba(79, 70, 229, 0.25)'
+      }
+    },
+    '.rbcSelected': {
+      backgroundColor: '#312E81',
+      boxShadow: '0 4px 6px rgba(49, 46, 129, 0.3)'
+    },
+    '.rbcHeader': {
+      padding: '0.5rem',
+      fontWeight: 600,
+      borderBottom: '1px solid #E5E7EB',
+      color: '#1F2937',
+      textTransform: 'uppercase',
+      fontSize: '0.625rem',
+      letterSpacing: '0.05em'
+    },
+    '.rbcAgendaView table': {
+      border: '1px solid #E5E7EB',
+      borderRadius: '0.375rem',
+      overflow: 'hidden',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    '.rbcAgendaView table thead': {
+      backgroundColor: '#F9FAFB',
+      color: '#374151'
+    },
+    '.rbcAgendaView table td': {
+      padding: '0.5rem',
+      borderBottom: '1px solid #E5E7EB',
+      color: '#4B5563',
+      transition: 'background-color 0.2s ease',
+      '&:hover': {
+        backgroundColor: '#F9FAFB'
+      }
+    },
+    '.rbcTimeView': {
+      border: '1px solid #E5E7EB',
+      borderRadius: '0.375rem',
+      overflow: 'hidden'
+    },
+    '.rbcTimeslotGroup': {
+      borderBottom: '1px solid #E5E7EB'
+    },
+    '.rbcTimeHeader': {
+      borderBottom: '1px solid #E5E7EB',
+      backgroundColor: '#F9FAFB'
+    },
+    '.rbcCurrentTimeIndicator': {
+      backgroundColor: '#DC2626',
+      height: '2px'
+    }
+  }
+
+  const fetchClosuresAndBreaks = async () => {
+    try {
+      const response = await petServicesService.listClosuresAndBreaks(
+        dateRange.start,
+        dateRange.end,
+        merchantId
+      );
+
+      setBusinessClosures(response.data?.closures || []);
+      setBusinessBreaks(response.data?.breaks || []);
+    } catch (err) {
+      console.error('Error fetching closures and breaks:', err);
+    }
+  }
+
+  const handleNavigate = (newDate: Date) => {
+    let firstDay, lastDay;
+    
+    // For month view, get first and last day of the visible calendar
+    const start = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+    const end = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+    
+    // Add buffer days before and after to ensure we fetch all relevant data
+    firstDay = moment(start).subtract(30, 'days').toDate();
+    lastDay = moment(end).add(30, 'days').toDate();
+
+    setDateRange({ start: firstDay, end: lastDay });
+    fetchClosuresAndBreaks();
+  };
+
+  const handleViewChange = (view: View) => {
+    setCurrentView(view);
+    if (view === 'agenda') {
+      const firstDay = moment(dateRange.start).add(1, 'month').subtract(10, 'days').toDate();
+      const lastDay = moment(dateRange.start).add(2, 'month').add(10, 'days').toDate();
+      setDateRange({ start: firstDay, end: lastDay });
+    }
+  };
+
+  const handleRangeChange = (range: Date[] | { start: Date; end: Date }) => {
+    // Reset the selected dates when switching modes or changing range
+    setSelectedDate('');
+    setSelectionEvents([]);
+  }
+
+  const eventPropGetter = (event: BookingEvent) => {
+    if (event.status === 'selected') {
+      return {
+        style: {
+          backgroundColor: '#e0f2fe',
+          border: '2px dashed #0284c7',
+          color: '#000',
+        }
+      };
+    }
+
+    let backgroundColor = '';
+    let color = '#ffffff';
+    
+    switch (event.status) {
+      case 'pending':
+        backgroundColor = '#fde047';
+        color = '#000000';
+        break;
+      case 'confirmed':
+        backgroundColor = '#93c5fd';
+        color = '#000000';
+        break;
+      case 'in_progress':
+        backgroundColor = '#d8b4fe';
+        color = '#000000';
+        break;
+      case 'completed':
+        backgroundColor = '#86efac';
+        color = '#000000';
+        break;
+      case 'cancelled':
+        backgroundColor = '#fca5a5';
+        color = '#000000';
+        break;
+      default:
+        backgroundColor = '#d1d5db';
+        color = '#000000';
+    }
+    
+    return { 
+      style: { 
+        backgroundColor,
+        color
+      } 
+    };
+  };
+
+  const dayPropGetter = (date: Date) => {
+    const isDateInClosure = businessClosures.some(closure => {
+      const closureStart = moment(closure.start_datetime).startOf('day');
+      const closureEnd = moment(closure.end_datetime).endOf('day');
+      return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
+    });
+    
+    const momentDow = moment(date).day();
+    const merchantDow = momentDow === 0 ? 6 : momentDow - 1; // Convert Sunday=0 to 6, Mon-Sat to 0-5
+    const isDateInBusinessHours = businessHours.some(merchantHour => {
+      return merchantDow === merchantHour.day_of_week;
+    });
+    const today = moment().startOf('day');
+
+    let style: React.CSSProperties = {
+      backgroundColor: '#a1a1a1',
+      opacity: 1,
+      cursor: 'not-allowed'
+    };
+
+    if (isDateInBusinessHours && !isDateInClosure) {
+      style = {
+        backgroundColor: '#ffffff',
+        opacity: 1,
+        cursor: 'pointer'
+      };
+    }
+
+    if (moment(date).isSame(moment(), 'day')) {
+      style = {
+        ...style,
+        backgroundColor: '#fef9c3',
+      };
+    }
+
+    if (moment(date).isSame(moment(selectedDate).add(1, 'day'), 'day') && isDateInBusinessHours && !isDateInClosure) {
+      style = {
+        ...style,
+        backgroundColor: '#e0f2fe',
+      };
+    }
+
+    // Do not allow selection of past dates
+    if (moment(date).isBefore(today)) { 
+      style = {
+        ...style,
+        backgroundColor: '#d1d1d1',
+        opacity: 1,
+        cursor: 'not-allowed'
+      };
+    }
+
+    // Do not allow selection of dates 6 months in the future
+    if (moment(date).isAfter(today.add(6, 'month'))) {
+      style = {
+        ...style,
+        backgroundColor: '#d1d1d1',
+        opacity: 1,
+        cursor: 'not-allowed'
+      };
+    }
+
+    return { style };
+  };
+
+const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+  const date = slotInfo.start;
+  const today = moment().startOf('day');
+  const sixMonthsFromNow = moment().add(6, 'months').startOf('day');
+  
+  // Don't allow selection if date is before today or after 6 months
+  if (moment(date).isBefore(today) || moment(date).isAfter(sixMonthsFromNow)) {
+    return;
+  }
+
+  // Check if date is in closure period
+  const isDateInClosure = businessClosures.some(closure => {
+    const closureStart = moment(closure.start_datetime).startOf('day');
+    const closureEnd = moment(closure.end_datetime).endOf('day');
+    return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
+  });
+
+  // Check if date is within business hours
+  const momentDow = moment(date).day();
+  const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
+  const isDateInBusinessHours = businessHours.some(merchantHour => {
+    return merchantDow === merchantHour.day_of_week;
+  });
+
+  // Only set selected date if it's not in closure and is within business hours
+  if (!isDateInClosure && isDateInBusinessHours) {
+    setSelectedDate(date.toISOString().split('T')[0]);
+    console.log('selected date: ', date);
+  }
+  
+}, [businessClosures, businessHours, setSelectedDate]);
+
   return (
     <div className="z-50">
       <SuccessDialog 
@@ -280,8 +622,30 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       >
         <form onSubmit={handleSubmit} className="p-2 flex flex-col justify-between h-full select-none">
           <div className="flex flex-col gap-4">
-            <div>
+            <div className="">
               <label className="block text-sm font-medium text-gray-700">Date</label>
+
+              <div style={{ width: '100%', aspectRatio: '1' }} className="cursor-pointer">
+                <Calendar
+                  localizer={localizer}
+                  events={[...events, ...selectionEvents]}
+                  onNavigate={handleNavigate}
+                  onView={handleViewChange}
+                  onRangeChange={handleRangeChange}
+                  eventPropGetter={eventPropGetter}
+                  dayPropGetter={dayPropGetter}
+                  onSelectSlot={handleSelectSlot}
+                  startAccessor="start"
+                  endAccessor="end"
+                  defaultView="month"
+                  views={['month']}
+                  formats={formats}
+                  length={30}
+                  style={calendarStyle}
+                  selectable
+                />
+              </div>
+{/* 
               <DateInput 
                 value={selectedDate ? new Date(selectedDate) : null}
                 min={new Date()}
@@ -291,7 +655,18 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
                   setSelectedTime(''); // Reset time when date changes
                 }}
                 className="mt-1"
-              />
+              /> */}
+            </div>
+
+            <div className="grid grid-cols-2 lg:flex md:items-center gap-2 lg:space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-gray-400" />
+                <span className="text-xs md:text-sm">Closed</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-[#fef9c3]" />
+                <span className="text-xs md:text-sm">Today</span>
+              </div>
             </div>
 
             <div>
@@ -403,7 +778,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
 
             {error && <p className="text-sm text-error-600">{error}</p>}
 
-            <div className="mt-6 flex justify-end space-x-3">
+            <div className="mt-6 flex justify-end space-x-3 mb-6">
               <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
                 Cancel
               </Button>
