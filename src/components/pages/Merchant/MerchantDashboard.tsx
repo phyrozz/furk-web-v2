@@ -35,6 +35,7 @@ interface Stats {
   confirmed_only_count: number;
   completed_only_count: number;
   cancelled_only_count: number;
+  monthly_earnings: number;
 }
 
 const MerchantDashboard = () => {
@@ -44,6 +45,7 @@ const MerchantDashboard = () => {
     confirmed_only_count: 0,
     completed_only_count: 0,
     cancelled_only_count: 0,
+    monthly_earnings: 0
   });
   const [statsLoading, setStatsLoading] = useState<boolean>(true);
 
@@ -71,7 +73,7 @@ const MerchantDashboard = () => {
 
   const { items: recentActivities, loadMore, loading, hasMore, reset } = useLazyLoad<Activity>({
     fetchData: fetchRecentActivities,
-    limit: 10,
+    limit: 50,
     enabled: true,
   });
 
@@ -113,8 +115,8 @@ const MerchantDashboard = () => {
       color: 'bg-success-500',
     },
     {
-      title: 'Total Earnings',
-      value: '0',
+      title: 'Monthly Earnings',
+      value: stats.monthly_earnings,
       icon: <DollarSign size={24} />,
       color: 'bg-secondary-500',
     },

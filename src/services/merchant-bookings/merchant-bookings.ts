@@ -1,3 +1,4 @@
+import moment from "moment";
 import { http } from "../../utils/http";
 
 export class MerchantBookingsService {
@@ -42,15 +43,15 @@ export class MerchantBookingsService {
       limit,
       offset,
       keyword,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: moment(startDate).format('YYYY-MM-DD'),
+      end_date: moment(endDate).format('YYYY-MM-DD'),
     });
   }
 
   async getPayoutMonthlyEarnings(startDate: Date, endDate: Date): Promise<any> {
     return http.post('/merchant-payouts/monthly-earnings', {
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: moment(startDate).format('YYYY-MM-DD'),
+      end_date: moment(endDate).format('YYYY-MM-DD'),
     });
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarDays, DollarSign, RefreshCw, Search } from 'lucide-react';
+import { CalendarDays, DollarSign, ExternalLink, RefreshCw, Search } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
@@ -10,6 +10,7 @@ import PawLoading from '../../../common/PawLoading';
 import { motion } from 'framer-motion';
 import moment from 'moment';
 import { formatAmount } from '../../../../utils/currency-utils';
+import { Link } from 'react-router-dom';
 
 interface PayoutsPageProps {
   
@@ -19,10 +20,11 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [dateRange, setDateRange] = useState<[Date, Date]>([
-    moment().startOf('month').add(1, 'day').toDate(),
+    moment().startOf('month').toDate(),
     moment().endOf('month').toDate()
   ]);
   const [monthlyEarnings, setMonthlyEarnings] = useState<number>(0);
+  const [loadingMonthlyTotal, setLoadingMonthlyTotal] = useState(true);
 
   const dataService = new MerchantBookingsService();
 
@@ -37,8 +39,10 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
   useEffect(() => {
     const fetchMonthlyEarnings = async () => {
       try {
+        setLoadingMonthlyTotal(true);
         const response = await dataService.getPayoutMonthlyEarnings(dateRange[0], dateRange[1]);
         setMonthlyEarnings(response.data.total_earning);
+        setLoadingMonthlyTotal(false);
       } catch (error) {
         console.error('Error fetching monthly earnings:', error);
       }
@@ -74,9 +78,8 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
             <div className="flex items-center bg-white rounded-lg shadow px-4 py-2">
               <button
                 onClick={() => {
-                  const newDate = new Date(dateRange[0]);
-                  newDate.setMonth(newDate.getMonth() - 1);
-                  setDateRange([newDate, new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0)]);
+                  const newDate = moment(dateRange[0]).subtract(1, 'month').startOf('month');
+                  setDateRange([newDate.toDate(), moment(newDate).endOf('month').toDate()]);
                 }}
                 className="p-1 hover:bg-gray-100 rounded"
               >
@@ -89,9 +92,8 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
               </span>
               <button
                 onClick={() => {
-                  const newDate = moment(dateRange[0]).add(1, 'month').add(1, 'day').startOf('month');
-                  const endDate = moment(newDate).endOf('month');
-                  setDateRange([newDate.toDate(), endDate.toDate()]);
+                  const newDate = moment(dateRange[0]).add(1, 'month').startOf('month');
+                  setDateRange([newDate.toDate(), moment(newDate).endOf('month').toDate()]);
                 }}
                 className="p-1 hover:bg-gray-100 rounded"
                 disabled={moment().isSame(dateRange[0], 'month')}
@@ -115,14 +117,26 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
 
         <div className="mb-6">
           <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <DollarSign className="text-primary-500" size={24} />
-                <h2 className="text-xl font-semibold text-gray-900">Monthly Earnings</h2>
+            <div>
+              {moment().isBefore(moment(dateRange[1]).add(7, 'days')) && <p className="text-gray-500 mb-3">
+                You'll receive payment on {moment(dateRange[1]).add(5, 'days').format('D')}-{moment(dateRange[1]).add(7, 'days').format('D MMMM')}
+              </p>}
+            </div>
+            <div className="flex md:flex-row flex-col items-center justify-between gap-2 md:gap-0">
+              <div className="flex flex-col md:items-start items-center gap-0">
+                <div className="flex flex-row gap-1">
+                  <DollarSign className="text-primary-500" size={24} />
+                  <h2 className="text-xl font-semibold text-gray-900">Monthly Earnings</h2>
+                </div>
+                <p className="text-xs">
+                  From {moment(dateRange[0]).format('MMMM D, YYYY')} to {moment(dateRange[1]).format('MMMM D, YYYY')}
+                </p>
               </div>
-              <div className="text-2xl font-bold text-primary-500">
+              
+              {loadingMonthlyTotal && <PawLoading />}
+              {!loadingMonthlyTotal && <div className="text-2xl font-bold text-primary-500">
                 {formatAmount(monthlyEarnings)} Furkredits
-              </div>
+              </div>}
             </div>
           </div>
           <div className="relative">
@@ -165,14 +179,18 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
                   layout
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-medium text-gray-900">{payout.service.name}</h3>
+                    <h3 className="md:text-lg text-sm font-medium text-gray-900">
+                      {moment(payout.earning_date).utcOffset('+00:00').format('MMMM D, YYYY h:mm A')}
+                    </h3>
                   </div>
-                  <div className="flex justify-between items-center text-sm text-gray-600">
-                    <p className="flex items-center">
-                      <CalendarDays size={16} className="mr-2" />
-                      Earning Date: {moment(payout.earning_date).utcOffset('+00:00').format('MMMM D, YYYY h:mm A')}
-                    </p>
-                    <p className="flex items-center font-bold">
+                  <div className="flex justify-between items-center text-sm">
+                    <Link to={`/services/${payout.service.id}`} className="inline-flex items-center hover:underline">
+                      <p className="flex items-center gap-1 md:text-sm text-xs text-primary-600">
+                        {payout.service.name}
+                        <ExternalLink size={14} className="text-primary-600" />
+                      </p>
+                    </Link>
+                    <p className="flex items-center font-bold text-primary-600 text-xs md:text-lg">
                       {formatAmount(payout.amount)} Furkredits
                     </p>
                   </div>
