@@ -1,6 +1,7 @@
-import { Bell } from 'lucide-react';
+import { Bell, ExternalLink } from 'lucide-react';
 import PawLoading from '../../../common/PawLoading';
 import DateUtils from '../../../../utils/date-utils';
+import { Link } from 'react-router-dom';
 
 interface Activity {
   id: number;
@@ -30,6 +31,8 @@ export const RecentActivities = ({ recentActivity, loading, hasMore, lastActivit
           {recentActivity.length > 0 ? (
             recentActivity.map((activity, index) => {
               const isLastElement = recentActivity.length === index + 1;
+              const bookingRequestMatch = activity.title.match(/^New booking request for (.*)/);
+              
               return (
                 <div
                   ref={isLastElement ? lastActivityElementRef : undefined}
@@ -38,7 +41,22 @@ export const RecentActivities = ({ recentActivity, loading, hasMore, lastActivit
                 >
                   <div className="flex-grow">
                     <div className="flex flex-col items-start justify-center">
-                      <p className="text-gray-800 font-medium">{activity.title}</p>
+                      <p className="text-gray-800 font-medium">
+                        {bookingRequestMatch ? (
+                          <>
+                            New booking request for{' '}
+                            <Link 
+                              to={`/services/${activity.service_id}`}
+                              className="text-primary-600 font-bold inline-flex items-center hover:underline"
+                            >
+                              {bookingRequestMatch[1]}
+                              <ExternalLink size={14} className="ml-1" />
+                            </Link>
+                          </>
+                        ) : (
+                          activity.title
+                        )}
+                      </p>
                       <span className="text-sm text-gray-500">
                         {DateUtils.formatRelativeTime(activity.modified_at)}
                       </span>
