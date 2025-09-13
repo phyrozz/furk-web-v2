@@ -258,6 +258,45 @@ const MerchantDashboard = () => {
           </div>
         )}
 
+        {/* TODO: add handling on application form where it overwrites the existing application instead of inserting a new one on the merchant_applications table */}
+        {status === 'rejected' && (
+          <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-medium text-error-800">
+                  Verification Rejected
+                </h2>
+                <p className="text-error-600 mt-1">
+                  Your verification has been rejected. Please review the feedback we have sent you through email and resubmit your verification documents. For assistance, contact support at <a className="underline" href="mailto:support@furk.app">support@furk.app</a>
+                </p>
+              </div>
+              <div className="flex flex-col justify-center items-end">
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/merchant/verify')}
+                >
+                  Resubmit Verification
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {status === 'suspended' && (
+          <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-error-800">
+                  Account Suspended
+                </h2>
+                <p className="text-error-600 mt-1">
+                  Your account has been suspended. Please contact support at <a className="underline" href="mailto:support@furk.app">support@furk.app</a> to resolve this issue.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!hasBusinessHours && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between md:flex-row flex-col gap-4">

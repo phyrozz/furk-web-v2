@@ -19,4 +19,8 @@ export class AdminDashboardService {
     async rejectService(applicationId: string): Promise<any> {
         return http.post('/merchant-application/reject', { application_id: applicationId });
     }
+
+    async suspendMerchant(applicationId: string): Promise<any> {
+        return http.post('/merchant-application/suspend', { application_id: applicationId });
+    }
 }

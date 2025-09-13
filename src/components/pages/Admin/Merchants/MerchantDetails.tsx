@@ -62,8 +62,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [activeTab, setActiveTab] = useState('profile');
   const [rejectLoading, setRejectLoading] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
+  const [suspendLoading, setSuspendLoading] = useState(false);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
 
@@ -115,6 +117,28 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
       ToastService.show('Error rejecting merchant: ' + (error.message || 'Unknown error'));
     }).finally(() => {
       setRejectLoading(false);
+    });
+  }
+
+  const onSuspend = () => {
+    setSuspendLoading(true);
+    dataService.suspendMerchant(merchant.id).then((res: any) => {
+      if (res?.success) {
+        // Update the merchant status locally to avoid needing a refresh
+        merchant.status = 'suspended';
+        
+        // Notify parent component about the status change
+        if (onStatusChange) {
+          onStatusChange();
+        }
+      } else {
+        ToastService.show('Failed to suspend merchant');
+      }
+    }).catch((error) => {
+      console.error('Error suspending merchant:', error);
+      ToastService.show('Error suspending merchant: ' + (error.message || 'Unknown error'));
+    }).finally(() => {
+      setSuspendLoading(false);
     });
   }
 
@@ -505,9 +529,9 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                     </div>
                     <div>
                       <p className="text-sm font-medium">
-                        Application {merchant.status === 'verified' ? 'approved' : 'rejected'}
+                        Application {merchant.status}
                       </p>
-                      <p className="text-xs text-gray-500">{new Date(merchant.updated_at).toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{new Date(merchant.modified_at).toLocaleString()}</p>
                     </div>
                   </div>
                 )}
@@ -568,6 +592,52 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
               )}
             </button>
           }
+          {merchant.status === 'verified' &&
+            <button
+              className={`px-4 py-2 bg-red-700 text-white rounded-lg flex items-center justify-center min-w-[160px] ${
+                suspendLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-red-800'
+              }`}
+              onClick={() => setShowSuspendConfirm(true)}
+              disabled={suspendLoading}
+            >
+              {suspendLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Suspending...
+                </>
+              ) : (
+                'Suspend Merchant'
+              )}
+            </button>
+          }
+          {merchant.status === 'suspended' &&
+            <button
+              className={`px-4 py-2 bg-green-700 text-white rounded-lg flex items-center justify-center min-w-[160px] ${
+                approveLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-green-800'
+              }`}
+              onClick={() => setShowApproveConfirm(true)}
+              disabled={approveLoading}
+            >
+              {approveLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Re-verifying...
+                </>
+              ) : (
+                'Re-verify Merchant'
+              )}
+            </button>
+          }
         </div>
       </div>
       
@@ -598,6 +668,34 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           onReject();
         }}
         onCancel={() => setShowRejectConfirm(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showSuspendConfirm}
+        title="Suspend Merchant"
+        message={`Are you sure you want to suspend ${merchant.business_name}? They will need to contact us to rejoin the platform.`}
+        confirmText="Suspend"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+        onConfirm={() => {
+          setShowSuspendConfirm(false);
+          onSuspend();
+        }}
+        onCancel={() => setShowSuspendConfirm(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showApproveConfirm}
+        title="Re-verify Merchant"
+        message={`Are you sure you want to re-verify ${merchant.business_name}? This will grant them access again to the platform.`}
+        confirmText="Re-verify"
+        cancelText="Cancel"
+        confirmButtonClass="bg-green-600 hover:bg-green-700"
+        onConfirm={() => {
+          setShowApproveConfirm(false);
+          onApprove();
+        }}
+        onCancel={() => setShowApproveConfirm(false)}
       />
     </div>
   );

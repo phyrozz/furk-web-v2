@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import HomePage from './components/pages/Home/HomePage';
@@ -18,13 +18,9 @@ import ManageService from './components/pages/Merchant/ManageService/ManageServi
 import AuthWrapper from './components/AuthWrapper';
 import ServiceDetails from './components/pages/Services/ServiceDetails';
 import ProfilePage from './components/pages/Profile/ProfilePage';
-import AdminProfilePage from './components/pages/Admin/AdminProfilePage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
 import BookingCalendar from './components/pages/Merchant/BookingCalendar/BookingCalendar';
-import TokenExpiredDialog from './components/common/TokenExpiredDialog';
-import { eventEmitter } from './utils/event-emitter';
-import { loginService } from './services/auth/auth-service';
 import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
 import BookingProgressTracker from './components/common/BookingProgressTracker';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
@@ -46,6 +42,7 @@ import { ScrollToHashElement } from './utils/scroll-to-hash-element';
 import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 import RoleRedirect from './components/RoleRedirect';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
+import RewardProductsPage from './components/pages/Admin/RewardProductsPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -174,6 +171,11 @@ function App() {
                     <AdminProfilePage />
                   </ProtectedRoute>
                 } /> */}
+                <Route path="/admin/reward-products" element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <RewardProductsPage />
+                  </ProtectedRoute>
+                } />
                 <Route path="/merchant/dashboard" element={
                   <ProtectedRoute requiredRoles={['merchant']}>
                     <MerchantDashboard />
