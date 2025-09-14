@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import { PetServicesService } from "../../../services/pet-services/pet-services";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
 import PawLoading from "../../common/PawLoading";
+import { Rating } from "react-simple-star-rating";
 
 interface RecommendedService {
   id: number;
@@ -116,7 +117,13 @@ const RecommendedServicesList = forwardRef<RecommendedServicesListRef, Recommend
                 <h3 className="font-medium text-gray-900 truncate">{service.name}</h3>
                 <p className="font-semibold text-primary-600">{Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span className="text-xs">Furkredits</span></p>
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-600">Rating: {service.average_rating.toFixed(1)}</span>
+                  <Rating
+                    initialValue={service.average_rating / 2}
+                    size={16}
+                    allowFraction
+                    SVGstyle={{ "display": "inline" }}
+                    readonly
+                  />
                 </div>
               </div>
             </div>

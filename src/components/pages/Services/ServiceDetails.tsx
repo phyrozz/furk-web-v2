@@ -13,6 +13,7 @@ import WarningContainer from '../../common/WarningContainer';
 import ReviewDialog from './ReviewDialog';
 import RecommendedServicesList from './RecommendedServicesList';
 import ShareDialog from '../../common/ShareDialog';
+import { Rating } from 'react-simple-star-rating';
 
 interface ServiceDetail {
   id: number;
@@ -224,27 +225,33 @@ const ServiceDetails = () => {
                   whileHover={{ x: 5 }}
                   className="flex items-center"
                 >
-                  <MapPin className="w-6 h-6 mr-3 text-primary-500" />
                   <Link to={`/merchants/${service.merchant_id}`} className="text-lg hover:underline">
                     {service.business_name}
                   </Link>
                 </motion.div>
                 <motion.div 
-                  whileHover={{ x: 5 }}
-                  className="flex items-center"
+                  whileHover={{ scale: 1.02 }}
+                  className="inline-block"
                 >
-                  <Star className="w-6 h-6 mr-3 text-accent-400" />
-                  <span className="text-lg font-semibold">
-                    {service.average_rating.toFixed(1)}
-                    {` (${service.rating_count} reviews)`}
+                  <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+                    {service.service_category_name}
                   </span>
                 </motion.div>
                 <motion.div 
                   whileHover={{ x: 5 }}
-                  className="flex items-center"
+                  className="flex items-end gap-2"
                 >
-                  <Tag className="w-6 h-6 mr-3 text-primary-500" />
-                  <span className="text-lg">{service.service_category_name}</span>
+                  <Rating
+                    initialValue={service.average_rating / 2}
+                    size={24}
+                    allowFraction
+                    SVGstyle={{ "display": "inline" }}
+                    readonly
+                  />
+                  <span className="font-semibold">
+                    {(service.average_rating / 2).toFixed(1)}
+                    {` (${service.rating_count} reviews)`}
+                  </span>
                 </motion.div>
               </div>
               <motion.div 

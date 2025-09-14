@@ -66,6 +66,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
+  const [showReapproveConfirm, setShowReapproveConfirm] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
 
@@ -622,7 +623,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-green-800'
               }`}
-              onClick={() => setShowApproveConfirm(true)}
+              onClick={() => setShowReapproveConfirm(true)}
               disabled={approveLoading}
             >
               {approveLoading ? (
@@ -685,17 +686,17 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
       />
 
       <ConfirmDialog
-        isOpen={showApproveConfirm}
+        isOpen={showReapproveConfirm}
         title="Re-verify Merchant"
         message={`Are you sure you want to re-verify ${merchant.business_name}? This will grant them access again to the platform.`}
         confirmText="Re-verify"
         cancelText="Cancel"
         confirmButtonClass="bg-green-600 hover:bg-green-700"
         onConfirm={() => {
-          setShowApproveConfirm(false);
+          setShowReapproveConfirm(false);
           onApprove();
         }}
-        onCancel={() => setShowApproveConfirm(false)}
+        onCancel={() => setShowReapproveConfirm(false)}
       />
     </div>
   );
