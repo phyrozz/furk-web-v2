@@ -27,7 +27,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
     try {
       setLoading(true);
       setError(null);
-      const response: any = await adminDashboardService.listServices(20, 0, debouncedSearchTerm, filter);
+      const response: any = await adminDashboardService.listServices(50, 0, debouncedSearchTerm, filter);
       
       if (!response || !response.data) {
         throw new Error('Invalid response format');
@@ -122,6 +122,16 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
           >
             Rejected
           </button>
+          <button
+            className={`px-3 py-1 rounded-full text-sm ${
+              filter === 'suspended'
+                ? 'bg-gray-800 text-white'
+                : 'bg-gray-100 text-gray-600'
+            }`}
+            onClick={() => setFilter('suspended')}
+          >
+            Suspended
+          </button>
         </div>
       </div>
 
@@ -161,6 +171,8 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
                     ? 'bg-yellow-100 text-yellow-800'
                     : merchant.status === 'verified'
                     ? 'bg-green-100 text-green-800'
+                    : merchant.status === 'suspended'
+                    ? 'bg-gray-800 text-white'
                     : 'bg-red-100 text-red-800'
                 }`}
               >

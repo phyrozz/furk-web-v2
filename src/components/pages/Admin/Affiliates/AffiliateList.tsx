@@ -25,7 +25,7 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
       setLoading(true);
       setError(null);
       const response = await http.post<{ data: AffiliateApplication[] }>(`/affiliate-application/list`, {
-        limit: 20,
+        limit: 50,
         offset: 0,
         search: debouncedSearchTerm,
         status: filter

@@ -66,7 +66,7 @@ const SuccessDialog: React.FC<SuccessDialogProps> = ({ isOpen, onClose, points }
             className="bg-primary-50 rounded-lg p-4 border border-primary-200"
           >
             <p className="text-primary-800 font-medium">
-              You've earned <span className="font-bold text-xl">{points}</span> FURK points
+              You've earned <span className="font-bold text-xl">{points}</span> FURKoins
             </p>
           </motion.div>
         </motion.div>

@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { PetServicesService } from "../../../services/pet-services/pet-services";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
-import { Star } from 'lucide-react';
+import { Rating } from 'react-simple-star-rating';
 import PawLoading from "../../common/PawLoading";
 import DateUtils from "../../../utils/date-utils";
 
@@ -102,14 +102,13 @@ const ReviewsList = forwardRef<ReviewsListRef, ReviewsListProps>(({ serviceId },
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1 min-w-0 flex-1">
                 <p className="font-medium text-gray-900 truncate">{review.username}</p>
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, index) => (
-                    <Star
-                      key={index}
-                      className={`w-4 h-4 ${index < review.rating ? 'fill-accent-400 text-accent-400' : 'fill-gray-200 text-gray-200'}`}
-                    />
-                  ))}
-                </div>
+                <Rating
+                  initialValue={review.rating / 2}
+                  size={24}
+                  allowFraction
+                  SVGstyle={{ "display": "inline" }}
+                  readonly
+                />
               </div>
               <time className="text-sm text-gray-500 whitespace-nowrap">
                 {DateUtils.formatRelativeTime(review.created_at)}
