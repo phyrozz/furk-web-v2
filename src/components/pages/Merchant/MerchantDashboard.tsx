@@ -273,7 +273,9 @@ const MerchantDashboard = () => {
               <div className="flex flex-col justify-center items-end">
                 <Button
                   size="lg"
-                  onClick={() => navigate('/merchant/verify')}
+                  onClick={() => navigate('/merchant/verify', {
+                    state: { isForReapplying: true }
+                  })}
                 >
                   Resubmit Verification
                 </Button>
