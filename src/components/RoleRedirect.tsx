@@ -11,7 +11,7 @@ const RoleRedirect = () => {
     case 'merchant':
       return <Navigate to="/merchant/dashboard" replace />;
     case 'admin':
-      return <Navigate to="/admin/merchants" replace />;
+      return <Navigate to="/admin/dashboard" replace />;
     case 'affiliate':
       return <Navigate to="/affiliate/dashboard" replace />;
     case 'user':

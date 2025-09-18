@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Upload, X, Check } from 'lucide-react';
 import Button from '../../../common/Button';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
 import { ToastService } from '../../../../services/toast/toast-service';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import MultipleAutocomplete from '../../../common/MultipleAutocomplete';
 import { ServiceGroup, UploadRequirement, UploadedFile, freelanceMerchantRequirements, businessMerchantRequirements } from './types';
@@ -12,10 +12,19 @@ import FreelanceMerchantForm from './FreelanceMerchantForm';
 import { LocationService } from '../../../../services/location/location-service';
 import Autocomplete from '../../../common/Autocomplete';
 import LocationPicker from '../../../common/LocationPicker';
+import { MerchantProfileService } from '../../../../services/profile/merchant-profile-service';
+import PawLoading from '../../../common/PawLoading';
 
+interface MerchantVerificationFormProps {
+  isForReapplying?: boolean;
+}
 
-const MerchantVerificationForm = () => {
+const MerchantVerificationForm: React.FC = () => {
+  const location = useLocation();
+  const { isForReapplying } = (location.state as MerchantVerificationFormProps) || {};
+
   const [merchantType, setMerchantType] = useState<'business' | 'freelance'>('business');
+  const [isLoading, setIsLoading] = useState(false);
   const [uploads, setUploads] = useState<Record<string, UploadedFile | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,10 +54,36 @@ const MerchantVerificationForm = () => {
   const s3Service = new S3UploadService();
   const dataService = new MerchantVerificationService();
   const locationService = new LocationService();
+  const merchantProfileService = new MerchantProfileService();
 
   const requirements = merchantType === 'freelance' ? freelanceMerchantRequirements : businessMerchantRequirements;
 
+const fetchMerchantProfile = useCallback(async () => {
+  try {
+    setIsLoading(true);
+    const response = await merchantProfileService.getMerchantDetails();
+    
+    if (!response || !response.data) {
+      throw new Error('Invalid response format');
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      businessName: response.data.business_name
+    }));
+
+    setIsLoading(false);
+  } catch (err: any) {
+    ToastService.show('Failed to fetch merchant profile: ' + (err.message || 'Unknown error'));
+    console.error('Error fetching merchant profile:', err);
+  }
+}, []);
+
   useEffect(() => {
+    if (isForReapplying) {
+      fetchMerchantProfile();
+    }
+
     // Load provinces on component mount
     setProvinces(locationService.getProvinces());
     retrieveDeviceLocation();
@@ -326,6 +361,17 @@ const MerchantVerificationForm = () => {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-16 cursor-default flex flex-col">
+        <MerchantNavbar />
+        <div className="flex-1 flex justify-center items-center">
+          <PawLoading />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16 cursor-default">
       <MerchantNavbar />
@@ -386,6 +432,7 @@ const MerchantVerificationForm = () => {
                   value={formData.businessName}
                   onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   required
+                  disabled={isForReapplying}
                 />
               </div>
 
@@ -515,7 +562,7 @@ const MerchantVerificationForm = () => {
               </div>
             </form>
           ) : (
-            <FreelanceMerchantForm />
+            <FreelanceMerchantForm isForReapplying={isForReapplying} businessName={formData.businessName} />
           )}
         </div>
       </div>

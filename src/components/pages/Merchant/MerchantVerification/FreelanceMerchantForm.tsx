@@ -12,12 +12,19 @@ import { LocationService } from '../../../../services/location/location-service'
 import Autocomplete from '../../../common/Autocomplete';
 import LocationPicker from '../../../common/LocationPicker';
 
+interface FreelanceMerchantFormProps {
+  isForReapplying?: boolean;
+  businessName?: string;
+}
 
-const FreelanceMerchantForm = () => {
+const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
+  isForReapplying = false,
+  businessName
+}) => {
   const [uploads, setUploads] = useState<Record<string, UploadedFile | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    businessName: '',
+    businessName: businessName || '',
     serviceGroups: [{}],
     merchantType: 'FREELANCE',
     province: '',
@@ -342,6 +349,7 @@ const FreelanceMerchantForm = () => {
           value={formData.businessName}
           onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
           required
+          disabled={isForReapplying}
         />
       </div>
 

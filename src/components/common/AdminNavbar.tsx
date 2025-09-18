@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Users, Store, TicketPercent } from 'lucide-react';
+import { Menu, X, LogOut, User, Users, Store, TicketPercent, LayoutDashboard } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -48,6 +48,7 @@ const AdminNavbar = () => {
   }, []);
 
   const navItems = [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard},
     { name: 'Merchants', path: '/admin/merchants', icon: Store },
     { name: 'Affiliates', path: '/admin/affiliates', icon: Users },
     // { name: 'Settings', path: '/admin/settings', icon: Settings },
@@ -76,7 +77,7 @@ const AdminNavbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -145,7 +146,7 @@ const AdminNavbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-gray-700 hover:text-primary-500 transition-colors"
+            className="lg:hidden text-gray-700 hover:text-primary-500 transition-colors"
             onClick={toggleMenu}
             aria-label="Toggle menu"
           >
@@ -159,7 +160,7 @@ const AdminNavbar = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden mt-4"
+            className="lg:hidden mt-4"
           >
             <div className="flex flex-col space-y-4">
               {navItems.map((item) => (

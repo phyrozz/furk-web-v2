@@ -118,7 +118,7 @@ const LoginPage = () => {
                 onSuccessfulLogin={() => {
                   if (activeTab === 'user') {
                     if (loginService.getUserRole() === 'admin') {
-                      navigate('/admin/merchants');
+                      navigate('/admin/dashboard');
                     } else {
                       navigate('/services');
                     }
