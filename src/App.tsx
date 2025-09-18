@@ -43,6 +43,7 @@ import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 import RoleRedirect from './components/RoleRedirect';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
 import RewardProductsPage from './components/pages/Admin/RewardProductsPage';
+import AdminDashboardPage from './components/pages/Admin/AdminDashboardPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -151,6 +152,11 @@ function App() {
                 } />
 
                 {/* Protected Routes */}
+                <Route path='/admin/dashboard' element={
+                  <ProtectedRoute requiredRoles={['admin']}>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                } />
                 <Route path='/admin/merchants' element={
                   <ProtectedRoute requiredRoles={['admin']}>
                     <AdminPage />
