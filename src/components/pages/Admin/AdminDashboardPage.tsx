@@ -215,7 +215,6 @@ const AdminDashboardPage = () => {
             </div>
             <TrendChart
               data={trendData.petOwner}
-              title="Pet Owners"
               lineColor="#6366f1"
               viewType={trendFilters.petOwner.viewType}
             />
@@ -234,7 +233,6 @@ const AdminDashboardPage = () => {
             </div>
             <TrendChart
               data={trendData.merchant}
-              title="Merchants"
               lineColor="#f59e0b"
               viewType={trendFilters.merchant.viewType}
             />
@@ -253,7 +251,6 @@ const AdminDashboardPage = () => {
             </div>
             <TrendChart
               data={trendData.affiliate}
-              title="Affiliates"
               lineColor="#10b981"
               viewType={trendFilters.affiliate.viewType}
             />

@@ -18,7 +18,6 @@ type ViewType = 'weekly' | 'monthly' | 'biannual';
 
 interface TrendChartProps {
   data: TrendData[];
-  title: string;
   lineColor?: string;
   dataKey?: string;
   viewType?: ViewType;
@@ -26,7 +25,6 @@ interface TrendChartProps {
 
 const TrendChart: React.FC<TrendChartProps> = ({ 
   data, 
-  title,
   lineColor = '#8884d8',
   dataKey = 'count',
   viewType = 'weekly'
@@ -67,7 +65,6 @@ const TrendChart: React.FC<TrendChartProps> = ({
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
