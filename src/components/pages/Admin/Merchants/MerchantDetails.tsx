@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Check, X, ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2 } from 'lucide-react';
 import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { ToastService } from '../../../../services/toast/toast-service';
 
@@ -67,8 +67,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [showReapproveConfirm, setShowReapproveConfirm] = useState(false);
-  const [adminNotes, setAdminNotes] = useState('');
-  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [adminNotes, setAdminNotes] = useState<string | undefined>("");
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -79,7 +78,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
   const onApprove = () => {
     setApproveLoading(true);
-    dataService.approveService(merchant.id).then((res: any) => {
+    dataService.approveService(merchant.id, adminNotes).then((res: any) => {
       if (res?.success) {
         // Update the merchant status locally to avoid needing a refresh
         merchant.status = 'verified';
@@ -101,7 +100,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
   const onReject = () => {
     setRejectLoading(true);
-    dataService.rejectService(merchant.id).then((res: any) => {
+    dataService.rejectService(merchant.id, adminNotes).then((res: any) => {
       if (res?.success) {
         // Update the merchant status locally to avoid needing a refresh
         merchant.status = 'rejected';
@@ -123,7 +122,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
   const onSuspend = () => {
     setSuspendLoading(true);
-    dataService.suspendMerchant(merchant.id).then((res: any) => {
+    dataService.suspendMerchant(merchant.id, adminNotes).then((res: any) => {
       if (res?.success) {
         // Update the merchant status locally to avoid needing a refresh
         merchant.status = 'suspended';
@@ -174,6 +173,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
   };
+
+  useEffect(() => {
+    setAdminNotes(merchant.notes || "");
+  }, [merchant.admin_notes])
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -238,7 +241,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           >
             Photos
           </button>
-          <button
+          {/* <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'notes'
                 ? 'border-b-2 border-primary-500 text-primary-600'
@@ -247,7 +250,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
             onClick={() => setActiveTab('notes')}
           >
             Notes
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -457,7 +460,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
         </>
         )}
 
-        {activeTab === 'notes' && (
+        {/* {activeTab === 'notes' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Admin Notes</h3>
@@ -485,12 +488,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                 <button
                   className={`px-4 py-2 bg-primary-600 text-white rounded-lg flex items-center ${isSavingNotes ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700'}`}
                   onClick={() => {
-                    setIsSavingNotes(true);
-                    // Simulate saving notes to the backend
-                    setTimeout(() => {
-                      ToastService.show('Notes saved successfully');
-                      setIsSavingNotes(false);
-                    }, 800);
+
                   }}
                   disabled={isSavingNotes}
                 >
@@ -539,14 +537,27 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
 
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
-        <div className="flex justify-end space-x-4">
+        <div className="rounded-lg space-y-4">
+          <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
+            Notes
+          </label>
+          <textarea
+            id="admin-notes"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
+            placeholder="Add notes about this merchant application..."
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+            maxLength={2000}
+          />
+        </div>
+        <div className="flex justify-end space-x-4 pt-3">
           {merchant.status === 'pending' && 
             <button
               className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[160px] ${
