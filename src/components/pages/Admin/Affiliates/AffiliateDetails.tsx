@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, X, ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2 } from 'lucide-react';
-import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { AffiliateApplication } from '../types';
 import { http } from '../../../../utils/http';
@@ -66,22 +65,22 @@ const AffiliateDetails: React.FC<AffiliateDetailsProps> = ({ affiliate, onStatus
   const [approveLoading, setApproveLoading] = useState(false);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
-  const [adminNotes, setAdminNotes] = useState('');
-  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [adminNotes, setAdminNotes] = useState<string | undefined>("");
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
     return attachment ? attachment[key] : '';
   };
 
-  const dataService = new AdminDashboardService();
-
 const onApprove = async () => {
   setApproveLoading(true);
   try {
-    const response = await http.post<{success: boolean, message: string}>(`/affiliate-application/approve`, {
-      affiliate_id: affiliate.id
-    });
+    const payload: any = { affiliate_id: affiliate.id };
+    if (adminNotes) {
+        payload.notes = adminNotes;
+    }
+
+    const response = await http.post<{success: boolean, message: string}>(`/affiliate-application/approve`, payload);
 
     if (response.success) {
       // Update the affiliate status locally to avoid needing a refresh
@@ -105,9 +104,12 @@ const onApprove = async () => {
   const onReject = async () => {
     setRejectLoading(true);
     try {
-      const response = await http.post<{success: boolean, message: string}>(`/affiliate-application/reject`, {
-        affiliate_id: affiliate.id
-      });
+      const payload: any = { affiliate_id: affiliate.id };
+      if (adminNotes) {
+          payload.notes = adminNotes;
+      }
+
+      const response = await http.post<{success: boolean, message: string}>(`/affiliate-application/reject`, payload);
 
       if (response.success) {
         // Update the affiliate status locally to avoid needing a refresh
@@ -159,6 +161,10 @@ const onApprove = async () => {
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
   };
+
+  useEffect(() => {
+    setAdminNotes(affiliate.notes || "");
+  }, [affiliate.notes])
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -212,16 +218,6 @@ const onApprove = async () => {
           >
             Documents
           </button>
-          <button
-            className={`px-6 py-3 font-medium ${
-              activeTab === 'notes'
-                ? 'border-b-2 border-primary-500 text-primary-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setActiveTab('notes')}
-          >
-            Notes
-          </button>
         </div>
       </div>
 
@@ -272,94 +268,23 @@ const onApprove = async () => {
             />
           </div>
         )}
-
-        {activeTab === 'notes' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Admin Notes</h3>
-              <span className="text-sm text-gray-500">
-                Last updated: {new Date().toLocaleString()}
-              </span>
-            </div>
-            
-            <div className="bg-white rounded-lg border p-6 space-y-4">
-              <div>
-                <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700 mb-2">
-                  Private Notes
-                </label>
-                <textarea
-                  id="admin-notes"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
-                  placeholder="Add private notes about this affiliate application..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-2">These notes are only visible to administrators.</p>
-              </div>
-              
-              <div className="flex justify-end">
-                <button
-                  className={`px-4 py-2 bg-primary-600 text-white rounded-lg flex items-center ${isSavingNotes ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700'}`}
-                  onClick={() => {
-                    setIsSavingNotes(true);
-                    // Simulate saving notes to the backend
-                    setTimeout(() => {
-                      ToastService.show('Notes saved successfully');
-                      setIsSavingNotes(false);
-                    }, 800);
-                  }}
-                  disabled={isSavingNotes}
-                >
-                  {isSavingNotes ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Saving...
-                    </>
-                  ) : 'Save Notes'}
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg border p-6">
-              <h4 className="font-medium text-gray-900 mb-4">Activity History</h4>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="bg-primary-100 rounded-full p-2 mr-3">
-                    <Check size={16} className="text-primary-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Application created</p>
-                    <p className="text-xs text-gray-500">{new Date(affiliate.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-                {affiliate.application_status !== 'pending' && (
-                  <div className="flex items-start">
-                    <div className={`rounded-full p-2 mr-3 ${affiliate.application_status === 'verified' ? 'bg-green-100' : 'bg-red-100'}`}>
-                      {affiliate.application_status === 'verified' ? (
-                        <Check size={16} className="text-green-600" />
-                      ) : (
-                        <X size={16} className="text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Application {affiliate.application_status === 'verified' ? 'approved' : 'rejected'}
-                      </p>
-                      <p className="text-xs text-gray-500">{new Date(affiliate.modified_at).toLocaleString()}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
+        <div className="rounded-lg space-y-4">
+          <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
+            Notes
+          </label>
+          <textarea
+            id="admin-notes"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
+            placeholder="Add notes about this affiliate application..."
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+            maxLength={2000}
+          />
+        </div>
         <div className="flex justify-end space-x-4">
           {affiliate.application_status === 'pending' && 
             <button

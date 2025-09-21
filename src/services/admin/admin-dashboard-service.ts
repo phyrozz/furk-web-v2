@@ -12,15 +12,27 @@ export class AdminDashboardService {
         return http.post('/merchant-application/list', data);
     }
 
-    async approveService(applicationId: string): Promise<any> {
-        return http.post('/merchant-application/approve', { application_id: applicationId });
+    async approveService(applicationId: string, notes?: string): Promise<any> {
+        const payload: any = { application_id: applicationId };
+        if (notes) {
+            payload.notes = notes;
+        }
+        return http.post('/merchant-application/approve', payload);
     }
 
-    async rejectService(applicationId: string): Promise<any> {
-        return http.post('/merchant-application/reject', { application_id: applicationId });
+    async rejectService(applicationId: string, notes?: string): Promise<any> {
+        const payload: any = { application_id: applicationId };
+        if (notes) {
+            payload.notes = notes;
+        }
+        return http.post('/merchant-application/reject', payload);
     }
 
-    async suspendMerchant(applicationId: string): Promise<any> {
-        return http.post('/merchant-application/suspend', { application_id: applicationId });
+    async suspendMerchant(applicationId: string, notes?: string): Promise<any> {
+        const payload: any = { application_id: applicationId };
+        if (notes) {
+            payload.notes = notes;
+        }
+        return http.post('/merchant-application/suspend', payload);
     }
 }

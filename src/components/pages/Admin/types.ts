@@ -7,6 +7,7 @@ export interface MerchantApplication {
   business_types: BusinessType[] | [];
   created_at: string;
   updated_at: string;
+  notes?: string;
 }
 
 export interface AffiliateApplication {
@@ -22,6 +23,7 @@ export interface AffiliateApplication {
   created_at: string;
   modified_at: string;
   attachments: any;
+  notes?: string;
 }
 
 interface BusinessType {
