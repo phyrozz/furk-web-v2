@@ -1,8 +1,7 @@
-import { useState } from 'react';
-
 export interface UploadedFile {
   file: File;
   preview: string;
+  type: 'image' | 'video' | 'document';
 }
 
 interface FileUploadFieldProps {
@@ -26,6 +25,12 @@ const FileUploadField = ({
   onFilesChange,
   helperText
 }: FileUploadFieldProps) => {
+  const getFileType = (file: File): 'image' | 'video' | 'document' => {
+    if (file.type.startsWith('image/')) return 'image';
+    if (file.type.startsWith('video/')) return 'video';
+    return 'document';
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
@@ -41,7 +46,8 @@ const FileUploadField = ({
     const newFiles = await Promise.all(
       validFiles.map(async (file) => ({
         file,
-        preview: URL.createObjectURL(file)
+        preview: URL.createObjectURL(file),
+        type: getFileType(file)
       }))
     );
 
@@ -58,6 +64,38 @@ const FileUploadField = ({
     onFilesChange(updatedFiles);
   };
 
+  const renderFilePreview = (file: UploadedFile) => {
+    switch (file.type) {
+      case 'image':
+        return (
+          <img
+            src={file.preview}
+            alt={`Preview ${file.file.name}`}
+            className="w-full h-40 object-cover rounded-lg"
+          />
+        );
+      case 'video':
+        return (
+          <video
+            src={file.preview}
+            className="w-full h-40 object-cover rounded-lg"
+            controls
+          />
+        );
+      case 'document':
+        return (
+          <div className="w-full h-40 bg-gray-100 rounded-lg flex flex-col items-center justify-center p-4">
+            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <p className="mt-2 text-sm text-gray-600 text-center truncate w-full">
+              {file.file.name}
+            </p>
+          </div>
+        );
+    }
+  };
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -67,11 +105,7 @@ const FileUploadField = ({
       <div className="mt-2 grid grid-cols-2 gap-4">
         {files.map((file, index) => (
           <div key={index} className="relative">
-            <img
-              src={file.preview}
-              alt={`Preview ${index + 1}`}
-              className="w-full h-40 object-cover rounded-lg"
-            />
+            {renderFilePreview(file)}
             <button
               type="button"
               onClick={() => handleFileDelete(index)}

@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2 } from 'lucide-react';
+import { ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2, X, Check, Save, MailPlusIcon } from 'lucide-react';
 import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { ToastService } from '../../../../services/toast/toast-service';
+import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
+import Button from '../../../common/Button';
+import { Tooltip } from '../../../common/Tooltip';
+import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -68,6 +72,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [showSuspendConfirm, setShowSuspendConfirm] = useState(false);
   const [showReapproveConfirm, setShowReapproveConfirm] = useState(false);
   const [adminNotes, setAdminNotes] = useState<string | undefined>("");
+  const [loadingSaveNotesAndAgreement, setLoadingSaveNotesAndAgreement] = useState(false);
+  const [uploadedAgreement, setUploadedAgreement] = useState<UploadedFile[]>([]);
+  const [feePercent, setFeePercent] = useState(merchant.fee_percent ?? 0);
+  const [loadingSaveNotes, setLoadingSaveNotes] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -142,6 +150,68 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
     });
   }
 
+  const saveAgreement = async () => {
+    setLoadingSaveNotesAndAgreement(true);
+
+    // Upload agreement file to S3 if provided
+    if (uploadedAgreement.length > 0) {
+      const s3Service = new S3UploadService();
+      const file = uploadedAgreement[0].file;
+      const uniqueFileName = s3Service.generateUniqueFileName(file.name);
+      const key = `merchant-agreements/${merchant.id}/${uniqueFileName}`;
+
+      try {
+        // Get presigned URL for upload
+        const uploadUrl = await s3Service.generateUploadUrl(key, file.type);
+        
+        // Upload file using presigned URL
+        await s3Service.uploadToS3ByPresignedUrl(uploadUrl, file);
+      } catch (error) {
+        console.error('Error uploading agreement:', error);
+        ToastService.show('Failed to upload agreement file');
+        setLoadingSaveNotesAndAgreement(false);
+        return;
+      }
+    }
+
+    dataService.saveAgreement(merchant.id, feePercent).then((res: any) => {
+      if (res?.success) {
+        merchant.fee_percent = feePercent;
+        merchant.agreements = res?.data.agreements;
+        ToastService.show('Agreement saved');
+      } else {
+        ToastService.show('Failed to save agreement');
+      }
+    }).catch((error) => {
+      console.error('Error saving agreement:', error);
+      ToastService.show('Error saving agreement: ' + (error.message || 'Unknown error'));
+      setLoadingSaveNotesAndAgreement(false);
+      setUploadedAgreement([]);
+    }).finally(() => {
+      setLoadingSaveNotesAndAgreement(false);
+      setUploadedAgreement([]);
+    });
+  }
+
+  const saveNotes = async () => {
+    setLoadingSaveNotes(true);
+
+    dataService.saveNotes(merchant.id, adminNotes ?? '').then((res: any) => {
+      if (res?.success) {
+        merchant.notes = adminNotes;
+        ToastService.show('Notes saved');
+      } else {
+        ToastService.show('Failed to save notes');
+      }
+    }).catch((error) => {
+      console.error('Error saving notes:', error);
+      ToastService.show('Error saving notes: ' + (error.message || 'Unknown error'));
+      setLoadingSaveNotes(false);
+    }).finally(() => {
+      setLoadingSaveNotes(false);
+    });
+  }
+
   // Function to get status badge color based on merchant status
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -162,7 +232,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const getStatusDisplayText = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pending Review';
+        return 'Pending';
       case 'verified':
         return 'Approved';
       case 'rejected':
@@ -176,10 +246,11 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
   useEffect(() => {
     setAdminNotes(merchant.notes || "");
-  }, [merchant.admin_notes])
+    setFeePercent(merchant.fee_percent || 0.000);
+  }, [merchant.notes, merchant.fee_percent])
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-lg shadow select-none">
       {/* Header */}
       <div className="p-6 border-b">
         <div className="flex justify-between items-start mb-2">
@@ -210,11 +281,11 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
       {/* Tabs */}
       <div className="border-b">
-        <div className="flex">
+        <div className="flex overflow-x-auto">
           <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'profile'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('profile')}
@@ -224,7 +295,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'documents'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('documents')}
@@ -234,12 +305,22 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'photos'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('photos')}
           >
             Photos
+          </button>
+          <button
+            className={`px-6 py-3 font-medium ${
+              activeTab === 'agreements'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('agreements')}
+          >
+            Agreements
           </button>
           {/* <button
             className={`px-6 py-3 font-medium ${
@@ -257,12 +338,12 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
       {/* Content */}
       <div className="p-6">
         {activeTab === 'profile' && (
-          <div className="space-y-6">
+          <div className="space-y-6 cursor-default select-text">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Business Information
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
                     Business Name
@@ -460,6 +541,87 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
         </>
         )}
 
+        {activeTab === 'agreements' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-end mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Merchant Agreement</h3>
+              <div className="flex flex-col sm:flex-row items-end gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={<Save className="h-4 w-4" />}
+                  loading={loadingSaveNotesAndAgreement}
+                  onClick={saveAgreement}
+                >
+                  Save Agreement
+                </Button>
+                {/* <Tooltip content="Send email to merchant" position="left">
+                  <Button
+                    variant="ghost"
+                    icon={<MailPlusIcon />}
+                  >
+                    Send Email
+                  </Button>
+                </Tooltip> */}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fee Percentage
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    className="w-32 p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Enter %"
+                    min="0"
+                    max="100"
+                    value={feePercent}
+                    onChange={(e) => setFeePercent(parseFloat(e.target.value))}
+                  />
+                  <span className="ml-2 text-gray-600">%</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Set the fee percentage for this merchant's services
+                </p>
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-end gap-4">
+                  <div className="flex-1">
+                    <FileUploadField
+                      label="Agreement Document"
+                      required={true}
+                      accept=".pdf,.docx"
+                      maxFiles={1}
+                      maxSizeMB={10}
+                      files={uploadedAgreement}
+                      onFilesChange={setUploadedAgreement}
+                      helperText="PDF or DOCX up to 10MB"
+                    />
+                  </div>
+                  {merchant.agreements && (
+                    <div className="flex items-center gap-2 mt-8">
+                      <a 
+                        href={merchant.agreements}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
+                      >
+                        <FileText size={16} />
+                        <span>View Current Agreement</span>
+                        <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* {activeTab === 'notes' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center mb-4">
@@ -544,10 +706,22 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
-        <div className="rounded-lg space-y-4">
-          <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
-            Notes
-          </label>
+        <div className="rounded-lg space-y-1">
+          <div className="flex justify-between items-center">
+            <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
+              Notes
+            </label>
+            <Button
+              size="sm"
+              variant="ghost"
+              color="primary"
+              onClick={saveNotes}
+              loading={loadingSaveNotes}
+              icon={<Save className="h-4 w-4" />}
+            >
+              Save Notes
+            </Button>
+          </div>
           <textarea
             id="admin-notes"
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
@@ -560,7 +734,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
         <div className="flex justify-end space-x-4 pt-3">
           {merchant.status === 'pending' && 
             <button
-              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[160px] ${
+              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[100px] sm:min-w-[160px] whitespace-nowrap ${
                 approveLoading || rejectLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-red-50'
@@ -577,13 +751,16 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   Rejecting...
                 </>
               ) : (
-                'Reject Application'
+                <>
+                  <X className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline truncate">Reject Application</span>
+                </>
               )}
             </button>
           }
           {merchant.status === 'pending' &&
             <button
-              className={`px-4 py-2 bg-green-700 text-white rounded-lg flex items-center justify-center min-w-[160px] ${
+              className={`px-4 py-2 bg-green-700 text-white rounded-lg flex items-center justify-center min-w-[100px] sm:min-w-[160px] whitespace-nowrap ${
                 rejectLoading || approveLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-green-800'
@@ -600,7 +777,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   Approving...
                 </>
               ) : (
-                'Approve Application'
+                <>
+                  <Check className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline truncate">Approve Application</span>
+                </>
               )}
             </button>
           }

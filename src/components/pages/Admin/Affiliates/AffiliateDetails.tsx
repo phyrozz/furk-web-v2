@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Check, X, ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2 } from 'lucide-react';
+import { Check, X, ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2, Save } from 'lucide-react';
 import { ToastService } from '../../../../services/toast/toast-service';
 import { AffiliateApplication } from '../types';
 import { http } from '../../../../utils/http';
+import Button from '../../../common/Button';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -66,6 +67,7 @@ const AffiliateDetails: React.FC<AffiliateDetailsProps> = ({ affiliate, onStatus
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [adminNotes, setAdminNotes] = useState<string | undefined>("");
+  const [loadingSaveNotes, setLoadingSaveNotes] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -130,6 +132,30 @@ const onApprove = async () => {
     }
   }
 
+const saveNotes = async () => {
+  setLoadingSaveNotes(true);
+  try {
+    const payload = { 
+      affiliate_id: affiliate.id,
+      notes: adminNotes ?? ''
+    };
+
+    const response = await http.post<{success: boolean, message: string}>('/affiliate-application/save-notes', payload);
+
+    if (response.success) {
+      affiliate.notes = adminNotes;
+      ToastService.show('Notes saved');
+    } else {
+      ToastService.show('Failed to save notes');
+    }
+  } catch (error) {
+    console.error('Error saving notes:', error);
+    ToastService.show('Error saving notes');
+  } finally {
+    setLoadingSaveNotes(false);
+  }
+}
+
   // Function to get status badge color based on affiliate status
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -150,7 +176,7 @@ const onApprove = async () => {
   const getStatusDisplayText = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pending Review';
+        return 'Pending';
       case 'verified':
         return 'Approved';
       case 'rejected':
@@ -167,7 +193,7 @@ const onApprove = async () => {
   }, [affiliate.notes])
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-lg shadow select-none">
       {/* Header */}
       <div className="p-6 border-b">
         <div className="flex justify-between items-start mb-2">
@@ -197,11 +223,11 @@ const onApprove = async () => {
 
       {/* Tabs */}
       <div className="border-b">
-        <div className="flex">
+        <div className="flex overflow-x-auto">
           <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'profile'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('profile')}
@@ -211,7 +237,7 @@ const onApprove = async () => {
           <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'documents'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('documents')}
@@ -224,12 +250,12 @@ const onApprove = async () => {
       {/* Content */}
       <div className="p-6">
         {activeTab === 'profile' && (
-          <div className="space-y-6">
+          <div className="space-y-6 select-text cursor-default">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Business Information
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">
                     Email
@@ -272,10 +298,22 @@ const onApprove = async () => {
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
-        <div className="rounded-lg space-y-4">
-          <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
-            Notes
-          </label>
+        <div className="rounded-lg space-y-1">
+          <div className="flex justify-between items-center">
+            <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
+              Notes
+            </label>
+            <Button
+              size="sm"
+              variant="ghost"
+              color="primary"
+              onClick={saveNotes}
+              loading={loadingSaveNotes}
+              icon={<Save className="h-4 w-4" />}
+            >
+              Save Notes
+            </Button>
+          </div>
           <textarea
             id="admin-notes"
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
@@ -285,10 +323,10 @@ const onApprove = async () => {
             maxLength={2000}
           />
         </div>
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 pt-3">
           {affiliate.application_status === 'pending' && 
             <button
-              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[160px] ${
+              className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[100px] sm:min-w-[160px] whitespace-nowrap ${
                 approveLoading || rejectLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-red-50'
@@ -298,20 +336,22 @@ const onApprove = async () => {
             >
               {rejectLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Rejecting...
                 </>
               ) : (
-                'Reject Application'
+                <>
+                  <X className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline truncate">Reject Application</span>
+                </>
               )}
             </button>
           }
           {affiliate.application_status === 'pending' &&
             <button
-              className={`px-4 py-2 bg-green-700 text-white rounded-lg flex items-center justify-center min-w-[160px] ${
+              className={`px-4 py-2 bg-green-700 text-white rounded-lg flex items-center justify-center min-w-[100px] sm:min-w-[160px] whitespace-nowrap ${
                 rejectLoading || approveLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-green-800'
@@ -321,14 +361,16 @@ const onApprove = async () => {
             >
               {approveLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Approving...
                 </>
               ) : (
-                'Approve Application'
+                <>
+                  <Check className="h-4 w-4 sm:hidden" />
+                  <span className="hidden sm:inline truncate">Approve Application</span>
+                </>
               )}
             </button>
           }

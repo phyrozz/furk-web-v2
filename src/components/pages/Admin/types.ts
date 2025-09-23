@@ -8,6 +8,7 @@ export interface MerchantApplication {
   created_at: string;
   updated_at: string;
   notes?: string;
+  fee_percent?: number;
 }
 
 export interface AffiliateApplication {
@@ -24,6 +25,7 @@ export interface AffiliateApplication {
   modified_at: string;
   attachments: any;
   notes?: string;
+  fee_percent?: number;
 }
 
 interface BusinessType {
