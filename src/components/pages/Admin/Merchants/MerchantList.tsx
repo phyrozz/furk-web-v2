@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { Search, RefreshCw } from 'lucide-react';
 import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { MerchantApplication } from '../types';
@@ -91,9 +90,9 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
           </button>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'pending'
                 ? 'bg-yellow-100 text-yellow-800'
                 : 'bg-gray-100 text-gray-600'
@@ -103,17 +102,17 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
             Pending
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-gray-100 text-gray-600'
             }`}
             onClick={() => setFilter('verified')}
           >
-            Verified
+            Approved
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'rejected'
                 ? 'bg-red-100 text-red-800'
                 : 'bg-gray-100 text-gray-600'
@@ -123,7 +122,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
             Rejected
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'suspended'
                 ? 'bg-gray-800 text-white'
                 : 'bg-gray-100 text-gray-600'
@@ -176,7 +175,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
                     : 'bg-red-100 text-red-800'
                 }`}
               >
-                {merchant.status.charAt(0).toUpperCase() + merchant.status.slice(1)}
+                {merchant.status === 'verified' ? 'Approved' : merchant.status.charAt(0).toUpperCase() + merchant.status.slice(1)}
               </span>
             </button>
           ))

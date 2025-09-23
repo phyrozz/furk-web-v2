@@ -35,4 +35,14 @@ export class AdminDashboardService {
         }
         return http.post('/merchant-application/suspend', payload);
     }
+
+    async saveAgreement(applicationId: string, feePercent: number): Promise<any> {
+        const payload: any = { application_id: applicationId, fee_percent: feePercent };
+        return http.post('/merchant-application/save-agreement', payload);
+    }
+
+    async saveNotes(applicationId: string, notes: string): Promise<any> {
+        const payload: any = { application_id: applicationId, notes: notes };
+        return http.post('/merchant-application/save-notes', payload);
+    }
 }

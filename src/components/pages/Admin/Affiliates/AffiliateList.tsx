@@ -93,9 +93,9 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
           </button>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'pending'
                 ? 'bg-yellow-100 text-yellow-800'
                 : 'bg-gray-100 text-gray-600'
@@ -105,17 +105,17 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
             Pending
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-gray-100 text-gray-600'
             }`}
             onClick={() => setFilter('verified')}
           >
-            Verified
+            Approved
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm ${
+            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
               filter === 'rejected'
                 ? 'bg-red-100 text-red-800'
                 : 'bg-gray-100 text-gray-600'
@@ -166,7 +166,7 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
                     : 'bg-red-100 text-red-800'
                 }`}
               >
-                {affiliate.application_status.charAt(0).toUpperCase() + affiliate.application_status.slice(1)}
+                {affiliate.application_status === 'verified' ? 'Approved' : affiliate.application_status.charAt(0).toUpperCase() + affiliate.application_status.slice(1)}
               </span>
             </button>
           ))
