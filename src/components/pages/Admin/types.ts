@@ -13,6 +13,7 @@ export interface MerchantApplication {
 
 export interface AffiliateApplication {
   id: number;
+  application_id: number;
   code: string;
   address: string;
   first_name: string;

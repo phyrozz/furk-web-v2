@@ -6,6 +6,7 @@ import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
 import Button from '../../../common/Button';
 import { Tooltip } from '../../../common/Tooltip';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
+import NotesList from './NotesList';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -76,6 +77,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [uploadedAgreement, setUploadedAgreement] = useState<UploadedFile[]>([]);
   const [feePercent, setFeePercent] = useState(merchant.fee_percent ?? 0);
   const [loadingSaveNotes, setLoadingSaveNotes] = useState(false);
+  const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -198,8 +200,9 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
     dataService.saveNotes(merchant.id, adminNotes ?? '').then((res: any) => {
       if (res?.success) {
-        merchant.notes = adminNotes;
         ToastService.show('Notes saved');
+        setNotesRefreshKey((prev) => prev + 1);
+        setAdminNotes("");
       } else {
         ToastService.show('Failed to save notes');
       }
@@ -245,9 +248,8 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   };
 
   useEffect(() => {
-    setAdminNotes(merchant.notes || "");
     setFeePercent(merchant.fee_percent || 0.000);
-  }, [merchant.notes, merchant.fee_percent])
+  }, [merchant.fee_percent])
 
   return (
     <div className="bg-white rounded-lg shadow select-none">
@@ -322,16 +324,16 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           >
             Agreements
           </button>
-          {/* <button
+          <button
             className={`px-6 py-3 font-medium ${
               activeTab === 'notes'
-                ? 'border-b-2 border-primary-500 text-primary-600'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
             onClick={() => setActiveTab('notes')}
           >
             Notes
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -552,6 +554,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   icon={<Save className="h-4 w-4" />}
                   loading={loadingSaveNotesAndAgreement}
                   onClick={saveAgreement}
+                  disabled={!feePercent || feePercent < 0.001 || feePercent > 100.000 || uploadedAgreement.length === 0}
                 >
                   Save Agreement
                 </Button>
@@ -622,116 +625,48 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
           </div>
         )}
 
-        {/* {activeTab === 'notes' && (
+        {activeTab === 'notes' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Admin Notes</h3>
-              <span className="text-sm text-gray-500">
-                Last updated: {new Date().toLocaleString()}
-              </span>
-            </div>
-            
-            <div className="bg-white rounded-lg border p-6 space-y-4">
-              <div>
-                <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700 mb-2">
-                  Private Notes
+            <div className="rounded-lg space-y-1">
+              <div className="flex justify-between items-center">
+                <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
+                  Add Note
                 </label>
-                <textarea
-                  id="admin-notes"
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
-                  placeholder="Add private notes about this merchant application..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-2">These notes are only visible to administrators.</p>
-              </div>
-              
-              <div className="flex justify-end">
-                <button
-                  className={`px-4 py-2 bg-primary-600 text-white rounded-lg flex items-center ${isSavingNotes ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700'}`}
-                  onClick={() => {
-
-                  }}
-                  disabled={isSavingNotes}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  color="primary"
+                  onClick={saveNotes}
+                  loading={loadingSaveNotes}
+                  disabled={!adminNotes}
+                  icon={<Save className="h-4 w-4" />}
                 >
-                  {isSavingNotes ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Saving...
-                    </>
-                  ) : 'Save Notes'}
-                </button>
+                  Save Note
+                </Button>
               </div>
+              <textarea
+                id="admin-notes"
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
+                placeholder="Add notes about this application..."
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                maxLength={2000}
+              />
             </div>
-            
-            <div className="bg-gray-50 rounded-lg border p-6">
-              <h4 className="font-medium text-gray-900 mb-4">Activity History</h4>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="bg-primary-100 rounded-full p-2 mr-3">
-                    <Check size={16} className="text-primary-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Application created</p>
-                    <p className="text-xs text-gray-500">{new Date(merchant.created_at).toLocaleString()}</p>
-                  </div>
-                </div>
-                {merchant.status !== 'pending' && (
-                  <div className="flex items-start">
-                    <div className={`rounded-full p-2 mr-3 ${merchant.status === 'verified' ? 'bg-green-100' : 'bg-red-100'}`}>
-                      {merchant.status === 'verified' ? (
-                        <Check size={16} className="text-green-600" />
-                      ) : (
-                        <X size={16} className="text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Application {merchant.status}
-                      </p>
-                      <p className="text-xs text-gray-500">{new Date(merchant.modified_at).toLocaleString()}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Notes History</h3>
+              <NotesList applicationId={merchant.id} refreshKey={notesRefreshKey} />
             </div>
           </div>
-        )} */}
+        )}
       </div>
 
 
 
       {/* Action Buttons */}
       <div className="p-6 border-t bg-gray-50">
-        <div className="rounded-lg space-y-1">
-          <div className="flex justify-between items-center">
-            <label htmlFor="admin-notes" className="block text-sm font-medium text-gray-700">
-              Notes
-            </label>
-            <Button
-              size="sm"
-              variant="ghost"
-              color="primary"
-              onClick={saveNotes}
-              loading={loadingSaveNotes}
-              icon={<Save className="h-4 w-4" />}
-            >
-              Save Notes
-            </Button>
-          </div>
-          <textarea
-            id="admin-notes"
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[150px]"
-            placeholder="Add notes about this merchant application..."
-            value={adminNotes}
-            onChange={(e) => setAdminNotes(e.target.value)}
-            maxLength={2000}
-          />
-        </div>
-        <div className="flex justify-end space-x-4 pt-3">
+        <div className="flex justify-end space-x-4">
           {merchant.status === 'pending' && 
             <button
               className={`px-4 py-2 border border-red-500 text-red-500 rounded-lg flex items-center justify-center min-w-[100px] sm:min-w-[160px] whitespace-nowrap ${

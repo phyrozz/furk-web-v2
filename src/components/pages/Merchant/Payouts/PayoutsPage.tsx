@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 import moment from 'moment';
 import { formatAmount } from '../../../../utils/currency-utils';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPesoSign } from '@fortawesome/free-solid-svg-icons';
 
 interface PayoutsPageProps {
   
@@ -125,7 +127,7 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
             <div className="flex md:flex-row flex-col items-center justify-between gap-2 md:gap-0">
               <div className="flex flex-col md:items-start items-center gap-0">
                 <div className="flex flex-row gap-1">
-                  <DollarSign className="text-primary-500" size={24} />
+                  <FontAwesomeIcon icon={faPesoSign} size="xl" className="text-primary-500" />
                   <h2 className="text-xl font-semibold text-gray-900">Monthly Earnings</h2>
                 </div>
                 <p className="text-xs">
@@ -135,7 +137,7 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
               
               {loadingMonthlyTotal && <PawLoading />}
               {!loadingMonthlyTotal && <div className="text-2xl font-bold text-primary-500">
-                {formatAmount(monthlyEarnings)} Furkredits
+                ₱ {formatAmount(monthlyEarnings)}
               </div>}
             </div>
           </div>
@@ -191,7 +193,7 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
                       </p>
                     </Link>
                     <p className="flex items-center font-bold text-primary-600 text-xs md:text-lg">
-                      {formatAmount(payout.amount)} Furkredits
+                      ₱ {formatAmount(payout.amount)}
                     </p>
                   </div>
                 </motion.div>
