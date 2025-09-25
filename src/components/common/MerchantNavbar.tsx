@@ -48,10 +48,10 @@ const MerchantNavbar = () => {
   }, []);
 
   const navItems = [
-    { name: 'Dashboard', path: '/merchant/dashboard', icon: Package },
-    { name: 'Services', path: '/merchant/manage-services', icon: FileText },
-    { name: 'Bookings', path: '/merchant/bookings', icon: Calendar },
-    { name: 'Payouts', path: '/merchant/payouts', icon: DollarSign },
+    { name: 'Dashboard', path: '/merchant/dashboard' },
+    { name: 'Services', path: '/merchant/manage-services' },
+    { name: 'Bookings', path: '/merchant/bookings' },
+    { name: 'Payouts', path: '/merchant/payouts' },
     // { name: 'Notifications', path: '/merchant/notifications', icon: Bell },
   ];
 
@@ -87,7 +87,6 @@ const MerchantNavbar = () => {
                     : ''
                 }`}
               >
-                <item.icon size={20} />
                 <span>{item.name}</span>
               </Link>
             ))}
@@ -173,7 +172,6 @@ const MerchantNavbar = () => {
                 }`}
                 onClick={closeMenu}
               >
-                <item.icon size={20} />
                 <span>{item.name}</span>
               </Link>
             ))}

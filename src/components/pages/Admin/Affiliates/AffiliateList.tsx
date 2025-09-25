@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Search, RefreshCw } from 'lucide-react';
 import { AffiliateApplication } from '../types';
 import { useDebounce } from 'use-debounce';
 import { http } from '../../../../utils/http';
-
+import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 
 interface AffiliateListProps {
   selectedAffiliate: AffiliateApplication | null;
@@ -15,18 +15,16 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [filter, setFilter] = useState('pending');
-  const [affiliates, setaffiliates] = useState<AffiliateApplication[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const limit = 10;
 
-  const fetchaffiliates = useCallback(async () => {
+  const fetchAffiliates = async (limit: number, offset: number) => {
     try {
-      setLoading(true);
       setError(null);
-      const response = await http.post<{ data: AffiliateApplication[] }>(`/affiliate-application/list`, {
-        limit: 50,
-        offset: 0,
+      const response = await http.post<{ data: AffiliateApplication[] }>('/affiliate-application/list', {
+        limit,
+        offset,
         search: debouncedSearchTerm,
         status: filter
       });
@@ -36,37 +34,53 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
       }
       
       // Server should already filter by status, but we'll double-check
-      const filteredaffiliates = response.data.filter(
+      const filteredAffiliates = response.data.filter(
         (affiliate: AffiliateApplication) => affiliate.application_status === filter
       );
       
-      setaffiliates(filteredaffiliates);
-      
-      // If the currently selected affiliate is in the list, update its data
-      if (selectedAffiliate) {
-        const updatedAffiliate = filteredaffiliates.find((m: any) => m.id === selectedAffiliate.id);
-        if (updatedAffiliate && updatedAffiliate.application_status !== selectedAffiliate.application_status) {
-          onSelectAffiliate(updatedAffiliate);
-          if (onAffiliateStatusChange) {
-            onAffiliateStatusChange();
-          }
-        }
-      }
+      return filteredAffiliates;
     } catch (err: any) {
       setError('Failed to fetch affiliate applications: ' + (err.message || 'Unknown error'));
       console.error('Error fetching affiliates:', err);
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [debouncedSearchTerm, filter, selectedAffiliate, onSelectAffiliate, onAffiliateStatusChange]);
+  };
+
+  const { items: affiliates, loading, hasMore, loadMore, reset } = useLazyLoad<AffiliateApplication>({
+    fetchData: fetchAffiliates,
+    limit,
+    dependencies: [debouncedSearchTerm, filter, refreshKey],
+  });
+
+  const observer = useRef<IntersectionObserver>();
+  const lastAffiliateElementRef = useCallback((node: HTMLButtonElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMore]);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
+    reset();
   };
 
-  useEffect(() => {
-    fetchaffiliates();
-  }, [fetchaffiliates, refreshKey]);
+  // Update selected affiliate if its status changes
+  useCallback(() => {
+    if (selectedAffiliate) {
+      const updatedAffiliate = affiliates.find(a => a.id === selectedAffiliate.id);
+      if (updatedAffiliate && updatedAffiliate.application_status !== selectedAffiliate.application_status) {
+        onSelectAffiliate(updatedAffiliate);
+        if (onAffiliateStatusChange) {
+          onAffiliateStatusChange();
+        }
+      }
+    }
+  }, [affiliates, selectedAffiliate, onSelectAffiliate, onAffiliateStatusChange]);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -127,17 +141,8 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
         </div>
       </div>
 
-      {/* affiliate List */}
+      {/* Affiliate List */}
       <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative">
-        {loading && (
-          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-100" />
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-200" />
-            </div>
-          </div>
-        )}
         {error ? (
           <div className="p-4 text-center text-red-500">{error}</div>
         ) : affiliates.length === 0 ? (
@@ -145,9 +150,10 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
             No affiliate applications found
           </div>
         ) : (
-          affiliates.map((affiliate) => (
+          affiliates.map((affiliate, index) => (
             <button
               key={affiliate.id}
+              ref={index === affiliates.length - 1 ? lastAffiliateElementRef : undefined}
               className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
                 selectedAffiliate?.id === affiliate.id ? 'bg-primary-50' : ''
               }`}
@@ -170,6 +176,16 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
               </span>
             </button>
           ))
+        )}
+        
+        {loading && (
+          <div className="p-4 text-center">
+            <div className="flex justify-center space-x-2">
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-100" />
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-200" />
+            </div>
+          </div>
         )}
       </div>
     </div>

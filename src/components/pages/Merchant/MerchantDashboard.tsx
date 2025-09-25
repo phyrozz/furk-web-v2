@@ -10,6 +10,8 @@ import PawLoading from '../../common/PawLoading';
 import { RecentActivities } from './MerchantDashboard/RecentActivities';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import { useMerchantStatus } from '../../../hooks/useMerchantStatus';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
 
 const merchantDashboardService = new MerchantDashboardService();
 
@@ -117,7 +119,7 @@ const MerchantDashboard = () => {
     {
       title: 'Monthly Earnings',
       value: stats.monthly_earnings,
-      icon: <DollarSign size={24} />,
+      icon: <FontAwesomeIcon icon={faPesoSign} size="lg" />,
       color: 'bg-secondary-500',
     },
   ];

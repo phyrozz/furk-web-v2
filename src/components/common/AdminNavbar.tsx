@@ -48,12 +48,12 @@ const AdminNavbar = () => {
   }, []);
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard},
-    { name: 'Merchants', path: '/admin/merchants', icon: Store },
-    { name: 'Affiliates', path: '/admin/affiliates', icon: Users },
+    { name: 'Dashboard', path: '/admin/dashboard'},
+    { name: 'Merchants', path: '/admin/merchants'},
+    { name: 'Affiliates', path: '/admin/affiliates'},
     // { name: 'Settings', path: '/admin/settings', icon: Settings },
-    { name: 'Promos', path: '/admin/promos', icon: TicketPercent },
-    { name: 'Reward Products', path: '/admin/reward-products', icon: TicketPercent}
+    { name: 'Promos', path: '/admin/promos'},
+    { name: 'Reward Products', path: '/admin/reward-products'}
   ];
 
   return (
@@ -88,7 +88,6 @@ const AdminNavbar = () => {
                     : ''
                 }`}
               >
-                <item.icon size={20} />
                 <span>{item.name}</span>
               </Link>
             ))}
@@ -174,7 +173,6 @@ const AdminNavbar = () => {
                   }`}
                   onClick={closeMenu}
                 >
-                  <item.icon size={20} />
                   <span>{item.name}</span>
                 </Link>
               ))}

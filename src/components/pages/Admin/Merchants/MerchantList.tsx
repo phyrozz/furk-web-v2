@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Search, RefreshCw } from 'lucide-react';
 import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { MerchantApplication } from '../types';
 import { useDebounce } from 'use-debounce';
-
+import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 
 interface MerchantListProps {
   selectedMerchant: MerchantApplication | null;
@@ -17,16 +17,14 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [filter, setFilter] = useState('pending');
-  const [merchants, setMerchants] = useState<MerchantApplication[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const limit = 50;
 
-  const fetchMerchants = useCallback(async () => {
+  const fetchMerchants = async (limit: number, offset: number) => {
     try {
-      setLoading(true);
       setError(null);
-      const response: any = await adminDashboardService.listServices(50, 0, debouncedSearchTerm, filter);
+      const response: any = await adminDashboardService.listServices(limit, offset, debouncedSearchTerm, filter);
       
       if (!response || !response.data) {
         throw new Error('Invalid response format');
@@ -37,33 +35,49 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
         (merchant: MerchantApplication) => merchant.status === filter
       );
       
-      setMerchants(filteredMerchants);
-      
-      // If the currently selected merchant is in the list, update its data
-      if (selectedMerchant) {
-        const updatedMerchant = filteredMerchants.find((m: any) => m.id === selectedMerchant.id);
-        if (updatedMerchant && updatedMerchant.status !== selectedMerchant.status) {
-          onSelectMerchant(updatedMerchant);
-          if (onMerchantStatusChange) {
-            onMerchantStatusChange();
-          }
-        }
-      }
+      return filteredMerchants;
     } catch (err: any) {
       setError('Failed to fetch merchant applications: ' + (err.message || 'Unknown error'));
       console.error('Error fetching merchants:', err);
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [debouncedSearchTerm, filter, selectedMerchant, onSelectMerchant, onMerchantStatusChange]);
+  };
+
+  const { items: merchants, loading, hasMore, loadMore, reset } = useLazyLoad<MerchantApplication>({
+    fetchData: fetchMerchants,
+    limit,
+    dependencies: [debouncedSearchTerm, filter, refreshKey],
+  });
+
+  const observer = useRef<IntersectionObserver>();
+  const lastMerchantElementRef = useCallback((node: HTMLButtonElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMore]);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
+    reset();
   };
 
-  useEffect(() => {
-    fetchMerchants();
-  }, [fetchMerchants, refreshKey]);
+  // Update selected merchant if its status changes
+  useCallback(() => {
+    if (selectedMerchant) {
+      const updatedMerchant = merchants.find(m => m.id === selectedMerchant.id);
+      if (updatedMerchant && updatedMerchant.status !== selectedMerchant.status) {
+        onSelectMerchant(updatedMerchant);
+        if (onMerchantStatusChange) {
+          onMerchantStatusChange();
+        }
+      }
+    }
+  }, [merchants, selectedMerchant, onSelectMerchant, onMerchantStatusChange]);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -136,15 +150,6 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
 
       {/* Merchant List */}
       <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative">
-        {loading && (
-          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-100" />
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-200" />
-            </div>
-          </div>
-        )}
         {error ? (
           <div className="p-4 text-center text-red-500">{error}</div>
         ) : merchants.length === 0 ? (
@@ -152,9 +157,10 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
             No merchant applications found
           </div>
         ) : (
-          merchants.map((merchant) => (
+          merchants.map((merchant, index) => (
             <button
               key={merchant.id}
+              ref={index === merchants.length - 1 ? lastMerchantElementRef : undefined}
               className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
                 selectedMerchant?.id === merchant.id ? 'bg-primary-50' : ''
               }`}
@@ -179,6 +185,16 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
               </span>
             </button>
           ))
+        )}
+        
+        {loading && (
+          <div className="p-4 text-center">
+            <div className="flex justify-center space-x-2">
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-100" />
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce delay-200" />
+            </div>
+          </div>
         )}
       </div>
     </div>
