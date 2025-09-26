@@ -78,12 +78,21 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf'],
   },
   {
+    id: 'bank_details',
+    name: 'Bank Details',
+    type: 'photo',
+    description: 'Screenshot of Bank Account Name and Account Number',
+    required: true,
+    maxSize: 5,
+    acceptedFormats: ['.jpg', '.jpeg', '.png'],
+  },
+  {
     id: 'exterior_photo',
     name: 'Exterior Photo',
     type: 'photo',
     description: 'Photo of establishment facade',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png'],
   },
   {
@@ -92,7 +101,7 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     type: 'photo',
     description: 'First interior photo',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png'],
   },
   {
@@ -101,7 +110,7 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     type: 'photo',
     description: 'Second interior photo',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png'],
   },
   {
@@ -158,7 +167,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'document',
     description: 'Social Security System ID or UMID',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf']
   },
   {
@@ -167,7 +176,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'document',
     description: 'Document showing TIN and Full Name',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf']
   },
   {
@@ -176,7 +185,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'document',
     description: 'Passport, Driver\'s License, etc.',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf']
   },
   {
@@ -185,8 +194,17 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'document',
     description: 'Valid NBI Clearance',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf']
+  },
+  {
+    id: 'bank_details',
+    name: 'Bank Details',
+    type: 'photo',
+    description: 'Screenshot of Bank Account Name and Account Number',
+    required: true,
+    maxSize: 5,
+    acceptedFormats: ['.jpg', '.jpeg', '.png'],
   },
   {
     id: 'service_photo_1',
@@ -194,7 +212,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'photo',
     description: 'Photo of actual pet service',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png']
   },
   {
@@ -203,7 +221,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'photo',
     description: 'Photo of actual pet service',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png']
   },
   {
@@ -212,7 +230,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     type: 'photo',
     description: 'Photo of actual pet service',
     required: true,
-    maxSize: 2,
+    maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png']
   },
   {

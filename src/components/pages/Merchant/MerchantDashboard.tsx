@@ -182,6 +182,7 @@ const MerchantDashboard = () => {
                     <li>BIR 2303/COR (Image or Scan)</li>
                     <li>Mayor's Permit(Image or Scan)</li>
                     <li>2 Valid IDs (Image or Scan)</li>
+                    <li>Screenshot of Bank Account Name and Account Number</li>
                     <li>1 Exterior Photo of Business</li>
                     <li>2 Interior Photos of Business</li>
                     <li>2 Videos of Actual Pet Service</li>
@@ -209,6 +210,7 @@ const MerchantDashboard = () => {
                     <li>BIR TIN Document (Image or Scan)</li>
                     <li>1 Other Valid ID (Image or Scan)</li>
                     <li>NBI Clearance (Image or Scan)</li>
+                    <li>Screenshot of Bank Account Name and Account Number</li>
                     <li>3 Photos of Actual Pet Service</li>
                     <li>2 Videos of Actual Pet Service</li>
                   </ul>
