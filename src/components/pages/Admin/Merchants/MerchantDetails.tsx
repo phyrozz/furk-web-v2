@@ -417,6 +417,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   name="NBI Clearance"
                   url={getAttachmentValue(merchant.attachments, 'nbi_clearance')}
                 />
+                <DocumentItem
+                  name="Screenshot of Bank Details"
+                  url={getAttachmentValue(merchant.attachments, 'bank_details')}
+                />
               </>
             )
 
@@ -453,6 +457,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                 <DocumentItem
                   name="Valid ID 2"
                   url={getAttachmentValue(merchant.attachments, 'valid_id_2')}
+                />
+                <DocumentItem
+                  name="Screenshot of Bank Details"
+                  url={getAttachmentValue(merchant.attachments, 'bank_details')}
                 />
               </>
             ) : (

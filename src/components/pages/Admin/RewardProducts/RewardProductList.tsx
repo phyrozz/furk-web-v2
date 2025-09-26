@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Search, RefreshCw, Plus } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { http } from '../../../../utils/http';
 import { RewardProduct } from '../../../../models/reward-product';
+import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 
 interface RewardProductListProps {
   selectedRewardProduct: RewardProduct | null;
@@ -14,102 +15,65 @@ interface RewardProductListProps {
 
 const PAGE_SIZE = 50;
 
-const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardProduct, onSelectRewardProduct, onAddRewardProduct, refreshTrigger }) => {
+const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardProduct, onSelectRewardProduct, onRewardProductStatusChange, onAddRewardProduct, refreshTrigger }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [rewardProducts, setRewardProducts] = useState<RewardProduct[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const lastRewardProductRef = useRef<HTMLButtonElement | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const selectedRewardProductId = selectedRewardProduct?.id ?? null;
 
-  const fetchRewardProducts = useCallback(async (pageNum: number) => {
+  const fetchRewardProducts = async (limit: number, offset: number) => {
     try {
-      setLoading(true);
       setError(null);
-
       const response = await http.post<{ data: RewardProduct[] }>('/admin-reward-products/list', {
-        limit: PAGE_SIZE,
-        offset: (pageNum - 1) * PAGE_SIZE,
+        limit,
+        offset,
         keyword: debouncedSearchTerm
       });
-
-      const newRewardProducts = response.data;
-
-      setRewardProducts(prev => (pageNum === 1 ? newRewardProducts : [...prev, ...newRewardProducts]));
-      setHasMore(newRewardProducts.length === PAGE_SIZE);
+      return response.data;
     } catch (err: any) {
       setError('Failed to fetch reward products: ' + (err.message || 'Unknown error'));
       console.error('Error fetching reward products:', err);
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [debouncedSearchTerm]);
-
-  const handleRefresh = () => {
-    setRewardProducts([]);
-    setPage(1);
-    setHasMore(true);
-    fetchRewardProducts(1);
   };
 
-  useEffect(() => {
-    if (!hasMore && page > 1) return;
-    fetchRewardProducts(page);
-  }, [page, debouncedSearchTerm, refreshTrigger]);
+  const { items: rewardProducts, loading, hasMore, loadMore, reset } = useLazyLoad<RewardProduct>({
+    fetchData: fetchRewardProducts,
+    limit: PAGE_SIZE,
+    dependencies: [debouncedSearchTerm, refreshTrigger],
+  });
 
-  useEffect(() => {
-    setRewardProducts([]);
-    setPage(1);
-    setHasMore(true);
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (!selectedRewardProductId) return;
-    const updated = rewardProducts.find(p => p.id === selectedRewardProductId);
-    if (updated) {
-      const changed =
-        selectedRewardProduct == null ||
-        updated !== selectedRewardProduct;
-      if (changed) onSelectRewardProduct(updated);
-    }
-  }, [rewardProducts, selectedRewardProductId, onSelectRewardProduct, selectedRewardProduct]);
-
-  useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        const first = entries[0];
-        if (first.isIntersecting && hasMore && !loading) {
-          setPage(prev => prev + 1);
-        }
-      },
-      {
-        root: listContainerRef.current ?? null,
-        threshold: 0.5
+  const observer = useRef<IntersectionObserver>();
+  const lastRewardProductRef = useCallback((node: HTMLButtonElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
       }
-    );
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMore]);
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [hasMore, loading]);
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    reset();
+  };
 
-  useEffect(() => {
-    const node = lastRewardProductRef.current;
-    const obs = observerRef.current;
-    if (node && obs) {
-      obs.observe(node);
-      return () => obs.unobserve(node);
+  // Update selected reward product if its data changes
+  useCallback(() => {
+    if (selectedRewardProductId) {
+      const updated = rewardProducts.find(p => p.id === selectedRewardProductId);
+      if (updated && updated !== selectedRewardProduct) {
+        onSelectRewardProduct(updated);
+        if (onRewardProductStatusChange) {
+          onRewardProductStatusChange();
+        }
+      }
     }
-  }, [rewardProducts]);
+  }, [rewardProducts, selectedRewardProductId, onSelectRewardProduct, selectedRewardProduct, onRewardProductStatusChange]);
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -123,9 +87,7 @@ const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardPro
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setRewardProducts([]);
-                setHasMore(true);
-                setPage(1);
+                reset();
               }}
             />
             <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
@@ -149,11 +111,8 @@ const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardPro
         </div>
       </div>
 
-      <div
-        ref={listContainerRef}
-        className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative"
-      >
-        {loading && page === 1 && (
+      <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative">
+        {loading && rewardProducts.length === 0 && (
           <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
             <div className="flex space-x-2">
               <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
@@ -171,7 +130,7 @@ const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardPro
           rewardProducts.map((product, index) => (
             <button
               key={product.id}
-              ref={index === rewardProducts.length - 1 ? lastRewardProductRef : null}
+              ref={index === rewardProducts.length - 1 ? lastRewardProductRef : undefined}
               className={`w-full p-6 text-left hover:bg-gray-50 transition-colors group ${
                 selectedRewardProductId === product.id ? 'bg-primary-50' : ''
               }`}
@@ -189,7 +148,7 @@ const RewardProductList: React.FC<RewardProductListProps> = ({ selectedRewardPro
           ))
         )}
 
-        {loading && page > 1 && (
+        {loading && rewardProducts.length > 0 && (
           <div className="p-4 text-center">
             <div className="flex justify-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" />

@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Search, RefreshCw, Plus } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { http } from '../../../../utils/http';
 import { Promo } from '../../../../models/promo';
+import { useLazyLoad } from '../../../../hooks/useLazyLoad';
 
 interface PromoListProps {
   selectedPromo: Promo | null;
@@ -17,99 +18,49 @@ const PAGE_SIZE = 50;
 const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onAddPromo, refreshTrigger }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [promos, setPromos] = useState<Promo[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const lastPromoRef = useRef<HTMLButtonElement | null>(null);
-
-  const selectedPromoId = selectedPromo?.id ?? null;
-
-  const fetchPromos = useCallback(async (pageNum: number) => {
+  const fetchPromos = async (limit: number, offset: number) => {
     try {
-      setLoading(true);
       setError(null);
-
       const response = await http.post<{ data: Promo[] }>('/coupon/list', {
-        limit: PAGE_SIZE,
-        offset: (pageNum - 1) * PAGE_SIZE,
+        limit,
+        offset,
         keyword: debouncedSearchTerm
       });
-
-      const newPromos = response.data;
-
-      setPromos(prev => (pageNum === 1 ? newPromos : [...prev, ...newPromos]));
-      setHasMore(newPromos.length === PAGE_SIZE);
+      return response.data;
     } catch (err: any) {
       setError('Failed to fetch promos: ' + (err.message || 'Unknown error'));
       console.error('Error fetching promos:', err);
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [debouncedSearchTerm]);
-
-  const handleRefresh = () => {
-    setPromos([]);
-    setPage(1);
-    setHasMore(true);
-    fetchPromos(1);
   };
 
-  useEffect(() => {
-    if (!hasMore && page > 1) return;
-    fetchPromos(page);
-  }, [page, debouncedSearchTerm, refreshTrigger]);
+  const { items: promos, loading, hasMore, loadMore, reset } = useLazyLoad<Promo>({
+    fetchData: fetchPromos,
+    limit: PAGE_SIZE,
+    dependencies: [debouncedSearchTerm, refreshTrigger],
+  });
 
-  useEffect(() => {
-    setPromos([]);
-    setPage(1);
-    setHasMore(true);
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (!selectedPromoId) return;
-    const updated = promos.find(p => p.id === selectedPromoId);
-    if (updated) {
-      const changed =
-        selectedPromo == null ||
-        updated !== selectedPromo;
-      if (changed) onSelectPromo(updated);
-    }
-  }, [promos, selectedPromoId, onSelectPromo, selectedPromo]);
-
-  useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        const first = entries[0];
-        if (first.isIntersecting && hasMore && !loading) {
-          setPage(prev => prev + 1);
-        }
-      },
-      {
-        root: listContainerRef.current ?? null,
-        threshold: 0.5
+  const observer = useRef<IntersectionObserver>();
+  const lastPromoElementRef = useCallback((node: HTMLButtonElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMore();
       }
-    );
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMore]);
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [hasMore, loading]);
+  const selectedPromoId = selectedPromo?.id ?? null;
 
-  useEffect(() => {
-    const node = lastPromoRef.current;
-    const obs = observerRef.current;
-    if (node && obs) {
-      obs.observe(node);
-      return () => obs.unobserve(node);
-    }
-  }, [promos]);
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    reset();
+  };
 
   const getDiscountLabel = (discountValue: number, type: string) => {
     switch (type) {
@@ -140,12 +91,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
               placeholder="Search promos..."
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPromos([]);
-                setHasMore(true);
-                setPage(1);
-              }}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
           </div>
@@ -168,11 +114,8 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
         </div>
       </div>
 
-      <div
-        ref={listContainerRef}
-        className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative"
-      >
-        {loading && page === 1 && (
+      <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative">
+        {loading && promos.length === 0 && (
           <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
             <div className="flex space-x-2">
               <div className="w-3 h-3 rounded-full bg-primary-500 animate-bounce" />
@@ -190,7 +133,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
           promos.map((promo, index) => (
             <button
               key={promo.id}
-              ref={index === promos.length - 1 ? lastPromoRef : null}
+              ref={index === promos.length - 1 ? lastPromoElementRef : null}
               className={`w-full p-6 text-left hover:bg-gray-50 transition-colors group ${
                 selectedPromoId === promo.id ? 'bg-primary-50' : ''
               }`}
@@ -229,7 +172,7 @@ const PromoList: React.FC<PromoListProps> = ({ selectedPromo, onSelectPromo, onA
           ))
         )}
 
-        {loading && page > 1 && (
+        {loading && promos.length > 0 && (
           <div className="p-4 text-center">
             <div className="flex justify-center space-x-2">
               <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" />
