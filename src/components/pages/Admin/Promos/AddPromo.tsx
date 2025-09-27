@@ -81,11 +81,8 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Code */}
         <div>
-          <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-            Code
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Code"
             id="code"
             name="code"
             maxLength={50}
@@ -97,11 +94,8 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Description"
             id="description"
             name="description"
             maxLength={100}
@@ -114,9 +108,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
         {/* Discount Type & Value */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="discount_type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="discount_type" className="block text-sm font-bold text-gray-700 mb-1">
               Discount Type
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <Select
               options={discountTypeOptions}
@@ -128,11 +122,8 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
             />
           </div>
           <div>
-            <label htmlFor="discount_value" className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Value
-              <span className="text-red-500">*</span>
-            </label>
             <Input
+              label="Discount Value"
               id="discount_value"
               name="discount_value"
               type="number"
@@ -147,9 +138,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
         {/* Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="start_date" className="block text-sm font-bold text-gray-700 mb-1">
               Start Date
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <DateInput
               value={formData.start_date ? new Date(formData.start_date) : null}
@@ -163,9 +154,9 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
             />
           </div>
           <div>
-            <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="end_date" className="block text-sm font-bold text-gray-700 mb-1">
               End Date
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <DateInput
               value={formData.end_date ? new Date(formData.end_date) : null}
@@ -181,11 +172,8 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
         </div>
 
         <div>
-          <label htmlFor="usage_limit" className="block text-sm font-medium text-gray-700 mb-1">
-            Usage Limit
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Usage Limit"
             id="usage_limit"
             name="usage_limit"
             type="number"
@@ -199,11 +187,8 @@ const AddPromoForm: React.FC<AddPromoFormProps> = ({ onSuccess, onCancel }) => {
         </div>
 
         <div>
-          <label htmlFor="per_user_limit" className="block text-sm font-medium text-gray-700 mb-1">
-            Per User Limit
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Per User Limit"
             id="per_user_limit"
             name="per_user_limit"
             type="number"

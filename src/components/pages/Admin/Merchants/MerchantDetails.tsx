@@ -579,8 +579,9 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
 
             <div className="bg-white rounded-lg border p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
                   Fee Percentage
+                  <span className="text-red-500"> *</span>
                 </label>
                 <div className="flex items-center">
                   <input

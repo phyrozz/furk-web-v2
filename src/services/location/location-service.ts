@@ -21,13 +21,21 @@ export class LocationService {
   }
 
   getProvinces(): string[] {
-    const provinces: string[] = [];
-    Object.values(this.data).forEach(region => {
+    const ncrProvinces: string[] = [];
+    const otherProvinces: string[] = [];
+
+    Object.entries(this.data).forEach(([regionName, region]) => {
+      const isNCR = regionName === "NCR";
       Object.keys(region.province_list).forEach(province => {
-        provinces.push(province);
+        if (isNCR) {
+          ncrProvinces.push(province);
+        } else {
+          otherProvinces.push(province);
+        }
       });
     });
-    return provinces.sort();
+
+    return [...ncrProvinces.sort(), ...otherProvinces.sort()];
   }
 
   getCities(province: string): string[] {

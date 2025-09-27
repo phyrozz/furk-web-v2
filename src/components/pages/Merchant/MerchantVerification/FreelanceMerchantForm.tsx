@@ -246,9 +246,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
   const locationFields = (
     <div className="space-y-4 mb-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           Province
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={provinces.map(province => ({ value: province }))}
@@ -263,9 +263,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           City/Municipality
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={cities.map(city => ({ value: city }))}
@@ -280,9 +280,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           Barangay
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={barangays.map(barangay => ({ value: barangay }))}
@@ -297,9 +297,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
       </div>
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
           Address
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <input
           type="text"
@@ -313,9 +313,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
       </div>
 
       { formData.long !== 0 && formData.lat !== 0 && <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
           Business Location
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <LocationPicker 
           initialLng={formData.long}
@@ -337,9 +337,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-2">
           Business Name
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <input
           type="text"
@@ -354,9 +354,9 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="serviceGroup" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="serviceGroup" className="block text-sm font-bold text-gray-700">
           Business Type
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <MultipleAutocomplete
           options={serviceGroups}

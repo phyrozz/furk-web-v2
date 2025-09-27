@@ -37,6 +37,7 @@ const Autocomplete = <T extends object>({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const lastScrollPosition = useRef<number>(0);
+  const prevValueRef = useRef<typeof value>(null);
 
   const debouncedSearch = useCallback(
     async (query: string, searchOffset: number = 0) => {
@@ -100,16 +101,28 @@ const Autocomplete = <T extends object>({
     };
   }, []);
 
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    // only sync if the actual value changed
+    if (prevValueRef.current !== value) {
+      if (value) {
+        setSearchTerm(getOptionLabel(value));
+      } else {
+        setSearchTerm('');
+      }
+      prevValueRef.current = value;
+    }
+  }, [value, getOptionLabel]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
+    const inputValue = e.target.value;
     
-    const value = e.target.value;
-    setSearchTerm(value);
+    setSearchTerm(inputValue);
     setIsOpen(true);
     setOffset(0);
     lastScrollPosition.current = 0;
-    
-    if (!value) {
+
+    if (!inputValue) {
       onChange(null);
     }
 
@@ -118,7 +131,7 @@ const Autocomplete = <T extends object>({
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      debouncedSearch(value, 0);
+      debouncedSearch(inputValue, 0);
     }, debounceMs);
   };
 

@@ -14,6 +14,7 @@ import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
 import Switch from '../../common/Switch';
 import { checkImage } from '../../../utils/s3-file-utils';
 import { motion } from 'framer-motion';
+import Input from '../../common/Input';
 
 export interface PetProfile {
     id: string;
@@ -309,50 +310,47 @@ const PetProfiles = () => {
                         />
                     </div>}
                     <div 
-                        className="grid gap-6"
+                        className="grid"
                         style={{
                             gridTemplateColumns: `repeat(auto-fit, minmax(${Math.min(window.innerWidth * 0.4, 300)}px, 1fr))`
                         }}
                     >
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Name
-                            </label>
-                            <input
+                            <Input 
+                                label="Name"
+                                id="name"
                                 type="text"
                                 required
-                                value={formData.name}
+                                value={formData.name!}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 disabled={editingPet ? true : false}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Species
-                            </label>
-                            <input
+                            <Input 
+                                label="Species"
+                                id="species"
                                 type="text"
                                 required
-                                value={formData.species}
+                                value={formData.species!}
                                 onChange={(e) => setFormData({ ...formData, species: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 disabled={editingPet ? true : false}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Breed
-                            </label>
-                            <input
+                            <Input
+                                label="Breed"
+                                id="breed"
                                 type="text"
-                                value={formData.breed}
+                                value={formData.breed!}
                                 onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">
                                 Sex
                             </label>
                             <Select
@@ -365,7 +363,7 @@ const PetProfiles = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-2 mt-3">
                                 Birth Date
                             </label>
                             <DateInput
@@ -375,26 +373,24 @@ const PetProfiles = () => {
                                 className="mt-1"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Weight (kg)
-                            </label>
-                            <input
+                        <div className="mt-3">
+                            <Input
+                                label="Weight (kg)"
+                                id="weight_kg"
                                 type="number"
                                 step="0.1"
                                 min="0"
-                                value={formData.weight_kg}
+                                value={formData.weight_kg!}
                                 onChange={(e) => setFormData({ ...formData, weight_kg: parseFloat(e.target.value) })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Color
-                            </label>
-                            <input
+                            <Input
+                                label="Color"
+                                id="color"
                                 type="text"
-                                value={formData.color}
+                                value={formData.color!}
                                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
@@ -404,12 +400,12 @@ const PetProfiles = () => {
                                 isOn={formData.is_neutered ? true : false}
                                 handleToggle={() => setFormData({ ...formData, is_neutered: !formData.is_neutered })}
                             />
-                            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">    
+                            <label className="flex items-center space-x-2 text-sm font-bold text-gray-700">    
                                 <span>Neutered</span>
                             </label>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-2 mt-4">
                                 Notes
                             </label>
                             <textarea

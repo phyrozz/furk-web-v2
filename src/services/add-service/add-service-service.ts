@@ -16,7 +16,8 @@ export class AddServiceService {
             service_category_id: formData.category.id,
             name: formData.name,
             description: formData.description,
-            price: formData.price
+            price: formData.price,
+            duration: formData.duration
         };
 
         return http.post('/merchant-service/insert', data);

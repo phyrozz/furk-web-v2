@@ -14,6 +14,7 @@ import Autocomplete from '../../../common/Autocomplete';
 import LocationPicker from '../../../common/LocationPicker';
 import { MerchantProfileService } from '../../../../services/profile/merchant-profile-service';
 import PawLoading from '../../../common/PawLoading';
+import Input from '../../../common/Input';
 
 interface MerchantVerificationFormProps {
   isForReapplying?: boolean;
@@ -108,6 +109,52 @@ const fetchMerchantProfile = useCallback(async () => {
       setBarangays([]);
     }
   }, [formData.city]);
+
+  const handleProvinceSearch = async (query: string) => {
+    if (!query) {
+      setProvinces(locationService.getProvinces());
+      return;
+    }
+
+    const allProvinces = locationService.getProvinces();
+    const filtered = allProvinces.filter(p =>
+      p.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setProvinces(filtered);
+  };
+
+  const handleCitySearch = async (query: string) => {
+    if (!formData.province) return; // prevent searching if province is not selected
+
+    if (!query) {
+      setCities(locationService.getCities(formData.province));
+      return;
+    }
+
+    const allCities = locationService.getCities(formData.province);
+    const filtered = allCities.filter(c =>
+      c.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setCities(filtered);
+  };
+
+  const handleBarangaySearch = async (query: string) => {
+    // If no query, reset to full barangay list
+    if (!query) {
+      setBarangays(locationService.getBarangays(formData.province, formData.city));
+      return;
+    }
+
+    // Case-insensitive filter
+    const allBarangays = locationService.getBarangays(formData.province, formData.city);
+    const filtered = allBarangays.filter(b =>
+      b.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setBarangays(filtered);
+  };
 
   const retrieveDeviceLocation = () => {
     try {
@@ -275,43 +322,77 @@ const fetchMerchantProfile = useCallback(async () => {
   const locationFields = (
     <div className="space-y-4 mb-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           Province
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={provinces.map(province => ({ value: province }))}
           value={formData.province ? { value: formData.province } : null}
           onChange={(value) => {
-            const provinceValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
-            setFormData({ ...formData, province: provinceValue });
+            const provinceValue =
+              value && typeof value === 'object' && 'value' in value
+                ? String(value.value)
+                : '';
+
+            // Cascade clear fields
+            setFormData(prev => ({
+              ...prev,
+              province: provinceValue,
+              city: '',
+              barangay: ''
+            }));
+
+            if (provinceValue) {
+              setCities(locationService.getCities(provinceValue));
+            } else {
+              setCities([]);
+            }
+            setBarangays([]);
           }}
+          onSearch={handleProvinceSearch}
           getOptionLabel={(option: { value: string }) => option.value}
           placeholder="Select province"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           City/Municipality
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={cities.map(city => ({ value: city }))}
           value={formData.city ? { value: formData.city } : null}
           onChange={(value) => {
-            const cityValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
-            setFormData({ ...formData, city: cityValue });
+            const cityValue =
+              value && typeof value === 'object' && 'value' in value
+                ? String(value.value)
+                : '';
+
+            // Cascade clear fields
+            setFormData(prev => ({
+              ...prev,
+              city: cityValue,
+              barangay: ''
+            }));
+
+            if (cityValue) {
+              setBarangays(locationService.getBarangays(formData.province, cityValue));
+            } else {
+              setBarangays([]);
+            }
           }}
+          onSearch={handleCitySearch}
           getOptionLabel={(option: { value: string }) => option.value}
           placeholder="Select city"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-bold text-gray-700 mb-1">
           Barangay
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <Autocomplete
           options={barangays.map(barangay => ({ value: barangay }))}
@@ -320,17 +401,15 @@ const fetchMerchantProfile = useCallback(async () => {
             const barangayValue = value && typeof value === 'object' && 'value' in value ? String(value.value) : '';
             setFormData({ ...formData, barangay: barangayValue });
           }}
+          onSearch={handleBarangaySearch}
           getOptionLabel={(option: { value: string }) => option.value}
           placeholder="Select barangay"
         />
       </div>
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-          Address
-          <span className="text-red-500">*</span>
-        </label>
-        <input
+        <Input
+          label="Address"
           type="text"
           id="address"
           maxLength={512}
@@ -342,9 +421,9 @@ const fetchMerchantProfile = useCallback(async () => {
       </div>
 
       { formData.long !== 0 && formData.lat !== 0 && <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
           Business Location
-          <span className="text-red-500">*</span>
+          <span className="text-red-500"> *</span>
         </label>
         <LocationPicker 
           initialLng={formData.long}
@@ -387,9 +466,9 @@ const fetchMerchantProfile = useCallback(async () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
               Merchant Type
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <div className="flex gap-4">
               <label className="inline-flex items-center">
@@ -420,11 +499,8 @@ const fetchMerchantProfile = useCallback(async () => {
           {merchantType === 'business' ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Business Name
-                  <span className="text-red-500">*</span>
-                </label>
-                <input
+                <Input 
+                  label="Business Name"
                   type="text"
                   id="businessName"
                   maxLength={255}
@@ -437,9 +513,9 @@ const fetchMerchantProfile = useCallback(async () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="serviceGroup" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="serviceGroup" className="block text-sm font-bold text-gray-700">
                   Business Type
-                  <span className="text-red-500">*</span>
+                  <span className="text-red-500"> *</span>
                 </label>
                 <MultipleAutocomplete
                   options={serviceGroups}

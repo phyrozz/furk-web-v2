@@ -7,6 +7,7 @@ import { ToastService } from '../../../../services/toast/toast-service';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
+import Input from '../../../common/Input';
 
 // interface ServiceFormData {
 //   category: string;
@@ -29,6 +30,7 @@ const AddService = () => {
     description: '',
     price: 0,
     images: [],
+    duration: null
   });
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,11 +128,8 @@ const AddService = () => {
 
         <form onSubmit={handleSubmit} className="flex-1 space-y-6 bg-white rounded-lg shadow-sm p-6 overflow-y-auto">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Service Name
-              <span className="text-red-500">*</span>
-            </label>
-            <input
+            <Input 
+              label="Service Name"
               type="text"
               id="name"
               maxLength={255}
@@ -142,9 +141,9 @@ const AddService = () => {
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-1">
               Service Category
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <Autocomplete
               options={categories}
@@ -160,9 +159,9 @@ const AddService = () => {
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
               Description
-              <span className="text-red-500">*</span>
+              <span className="text-red-500"> *</span>
             </label>
             <textarea
               id="description"
@@ -176,11 +175,8 @@ const AddService = () => {
           </div>
 
           <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-              Price (₱)
-              <span className="text-red-500">*</span>
-            </label>
-            <input
+            <Input 
+              label="Price (₱)"
               type="number"
               id="price"
               min="0"
@@ -191,6 +187,20 @@ const AddService = () => {
               onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
               required
             />
+          </div>
+            <Input 
+              label="Duration"
+              id="duration"
+              type="number"
+              min={0}
+              max={999999}
+              step={1}
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+              placeholder="Estimated service duration (in minutes)"
+            />
+          <div>
+
           </div>
 
           <FileUploadField

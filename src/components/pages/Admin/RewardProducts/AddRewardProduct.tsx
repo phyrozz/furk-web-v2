@@ -101,11 +101,8 @@ const AddRewardProductForm: React.FC<AddRewardProductFormProps> = ({ onSuccess, 
 
         {/* Sponsor Name */}
         <div>
-          <label htmlFor="sponsor_name" className="block text-sm font-medium text-gray-700 mb-1">
-            Business Name
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Business Name"
             id="sponsor_name"
             name="sponsor_name"
             maxLength={255}
@@ -117,11 +114,8 @@ const AddRewardProductForm: React.FC<AddRewardProductFormProps> = ({ onSuccess, 
 
         {/* Product Name */}
         <div>
-          <label htmlFor="product_name" className="block text-sm font-medium text-gray-700 mb-1">
-            Product Name
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Product Name"
             id="product_name"
             name="product_name"
             maxLength={255}
@@ -133,11 +127,8 @@ const AddRewardProductForm: React.FC<AddRewardProductFormProps> = ({ onSuccess, 
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Description"
             id="description"
             name="description"
             maxLength={1000}
@@ -149,11 +140,8 @@ const AddRewardProductForm: React.FC<AddRewardProductFormProps> = ({ onSuccess, 
 
         {/* Required Furkoins */}
         <div>
-          <label htmlFor="required_furkoins" className="block text-sm font-medium text-gray-700 mb-1">
-            Required Furkoins
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Required Furkoins"
             id="required_furkoins"
             name="required_furkoins"
             type="number"
@@ -166,11 +154,8 @@ const AddRewardProductForm: React.FC<AddRewardProductFormProps> = ({ onSuccess, 
 
         {/* Stock */}
         <div>
-          <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-            Stock
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Stock"
             id="stock"
             name="stock"
             type="number"
