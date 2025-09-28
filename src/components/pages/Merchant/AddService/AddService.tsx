@@ -8,6 +8,7 @@ import { S3UploadService } from '../../../../services/s3-upload/s3-upload-servic
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
 import Input from '../../../common/Input';
+import Switch from '../../../common/Switch';
 
 // interface ServiceFormData {
 //   category: string;
@@ -30,7 +31,8 @@ const AddService = () => {
     description: '',
     price: 0,
     images: [],
-    duration: null
+    duration: null,
+    payoutPerCompletion: false
   });
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,6 +190,7 @@ const AddService = () => {
               required
             />
           </div>
+          <div>
             <Input 
               label="Duration"
               id="duration"
@@ -199,8 +202,16 @@ const AddService = () => {
               onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
               placeholder="Estimated service duration (in minutes)"
             />
-          <div>
-
+          </div>
+          <div className="flex gap-2 justify-start items-center">
+            <Switch
+              isOn={formData.payoutPerCompletion ? true : false}
+              handleToggle={() => setFormData({ ...formData, payoutPerCompletion: !formData.payoutPerCompletion })}
+            />
+            <label className="flex items-center space-x-2 text-sm font-bold text-gray-700 gap-1">    
+              Enable payout per service completion
+              <span className="text-red-500">*</span>
+            </label>
           </div>
 
           <FileUploadField

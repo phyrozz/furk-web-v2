@@ -19,6 +19,7 @@ interface Service {
   price: number;
   category: string;
   attachments: string[];
+  payout_per_completion: boolean;
 }
 
 const ManageService = () => {
@@ -185,12 +186,17 @@ const ManageService = () => {
                         </motion.div>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">{service.description}</p>
-                      <div className="mt-2 flex items-center gap-1">
+                      <div className="mt-2 flex items-center gap-2">
                         <span className="text-sm text-gray-900">₱</span>
                         <span className="text-sm text-gray-900 font-bold">
                           {service.price.toLocaleString()}
                         </span>
                         <span className="text-sm text-gray-500">{service.category}</span>
+                        {service.payout_per_completion && (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                            Per-Completion Payout
+                          </span>
+                        )}
                       </div>
                     </div>
                     <motion.button

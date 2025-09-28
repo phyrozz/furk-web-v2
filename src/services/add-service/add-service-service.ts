@@ -17,7 +17,8 @@ export class AddServiceService {
             name: formData.name,
             description: formData.description,
             price: formData.price,
-            duration: formData.duration
+            duration: formData.duration,
+            payout_per_completion: formData.payoutPerCompletion
         };
 
         return http.post('/merchant-service/insert', data);
