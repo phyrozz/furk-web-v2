@@ -67,6 +67,20 @@ class DateUtils {
             return `${diffInSeconds} ${diffInSeconds === 1 ? 'second' : 'seconds'} ago`;
         }
     }
+
+    static formatDuration(minutes: number): string {
+        if (isNaN(minutes) || minutes < 0) return "N/A";
+
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+
+        let result = [];
+
+        if (hrs > 0) result.push(`${hrs} hr${hrs > 1 ? "s" : ""}`);
+        if (mins > 0) result.push(`${mins} min${mins > 1 ? "s" : ""}`);
+
+        return result.join(" ");
+    }
 }
 
 export default DateUtils;

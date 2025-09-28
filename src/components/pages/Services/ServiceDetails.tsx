@@ -14,6 +14,7 @@ import ReviewDialog from './ReviewDialog';
 import RecommendedServicesList from './RecommendedServicesList';
 import ShareDialog from '../../common/ShareDialog';
 import { Rating } from 'react-simple-star-rating';
+import DateUtils from '../../../utils/date-utils';
 
 interface ServiceDetail {
   id: number;
@@ -33,6 +34,7 @@ interface ServiceDetail {
   has_reviewed: boolean;
   last_completed_timestamp: string | null;
   rating_count: number;
+  duration?: number;
 }
 
 export interface BusinessHour {
@@ -260,9 +262,16 @@ const ServiceDetails = () => {
                 transition={{ delay: 0.4 }}
                 className="mt-6 flex flex-row justify-between items-center"
               >
-                <p className="sm:text-2xl text-xl sm:text-left text-center font-bold text-primary-500">
-                  {Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span className="text-base">Furkredits</span>
-                </p>
+                <div className="flex flex-col">
+                  <p className="sm:text-2xl text-xl font-bold text-primary-500">
+                    {Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    <span className="text-base"> Furkredits</span>
+                  </p>
+                  {service.duration != null && service.duration !== 0 && <span className="text-gray-500 text-sm">
+                    ⏱ {DateUtils.formatDuration(service.duration)}
+                  </span>}
+                </div>
+
                 <div className='flex items-center'>
                   <Button onClick={() => setShowShareDialog(true)} variant='ghost'>
                     <Share2 />
