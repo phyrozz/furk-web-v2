@@ -63,11 +63,8 @@ const UpdateRewardProductForm: React.FC<UpdateRewardProductFormProps> = ({ produ
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Description"
             id="description"
             name="description"
             maxLength={1000}
@@ -78,11 +75,8 @@ const UpdateRewardProductForm: React.FC<UpdateRewardProductFormProps> = ({ produ
         </div>
 
         <div>
-          <label htmlFor="required_furkoins" className="block text-sm font-medium text-gray-700 mb-1">
-            Required Furkoins
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Required Furkoins"
             id="required_furkoins"
             name="required_furkoins"
             type="number"
@@ -94,11 +88,8 @@ const UpdateRewardProductForm: React.FC<UpdateRewardProductFormProps> = ({ produ
         </div>
 
         <div>
-          <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-            Stock
-            <span className="text-red-500">*</span>
-          </label>
           <Input
+            label="Stock"
             id="stock"
             name="stock"
             type="number"

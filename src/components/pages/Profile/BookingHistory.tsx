@@ -1,8 +1,10 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { UserProfileService } from "../../../services/profile/user-profile-service";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
 import PawLoading from "../../common/PawLoading";
 import { useNavigate } from "react-router-dom";
+import Button from "../../common/Button";
+import Modal from "../../common/Modal";
 
 interface Booking {
   booking_id: string;
@@ -72,6 +74,13 @@ const statusBadge = (status: string) => {
           Cancelled
         </span>
       );
+    case "cancelled_by_user":
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          Cancelled by user
+        </span>
+      );
     default:
       return (
         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
@@ -85,10 +94,12 @@ const statusBadge = (status: string) => {
 const BookingHistory = () => {
   const service = new UserProfileService();
   const navigate = useNavigate();
+  const [loadingCancel, setLoadingCancel] = useState(false);
+  const [isCancelConfirmDialogShow, setIsCancelConfirmDialogShow] = useState(false);
+  const [selectedCancelBookingId, setSelectedCancelBookingId] = useState<string>("");
 
   const fetchBookings = async (limit: number, offset: number) => {
     const res: any = await service.listBookingHistory(limit, offset);
-    // If the API returns { data: Booking[] }, adjust accordingly
     return res.data || [];
   };
 
@@ -118,6 +129,20 @@ const BookingHistory = () => {
     [loading, hasMore, loadMore]
   );
 
+  const handleCancel = async (bookingId: string) => {
+    setLoadingCancel(true);
+    try {
+      await service.cancelBooking(parseInt(bookingId));
+    } catch (err) {
+      console.error("Cancel failed", err);
+
+      setLoadingCancel(false);
+    } finally {
+      setLoadingCancel(false);
+      window.location.reload();
+    }
+  };
+
   if (!bookings.length && loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -137,39 +162,66 @@ const BookingHistory = () => {
 
   return (
     <div className="space-y-4 overflow-y-auto max-h-full pb-20 px-6 py-2">
+      {/* Confirm Cancel Dialog */}
+      <Modal
+        isOpen={isCancelConfirmDialogShow} 
+        onClose={() => {
+          setIsCancelConfirmDialogShow(false);
+          setSelectedCancelBookingId("");
+        }} 
+        onConfirm={() => {
+          setIsCancelConfirmDialogShow(false);
+          handleCancel(selectedCancelBookingId);
+          setSelectedCancelBookingId("");
+        }}
+        title="Confirm Cancel"
+        showCancel
+        showConfirm
+      >
+        <div className="flex flex-col items-center justify-center">
+          <p className="text-center">Are you sure you want to cancel your booking for this service?</p>
+        </div>
+      </Modal>
+
       {bookings.map((booking, idx) => {
         const isLast = idx === bookings.length - 1;
         const isCancelled = booking.status === "cancelled";
         const isCompleted = booking.status === "completed";
+        const isPending = booking.status === "pending";
         return (
           <div
             key={booking.booking_id}
             ref={isLast ? lastBookingRef : undefined}
-            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row gap-4 cursor-pointer ${
+            className={`transition-shadow bg-white rounded-xl shadow-sm hover:shadow-md border p-5 flex flex-col md:flex-row gap-4 ${
               isCancelled
                 ? "bg-red-50 border-red-100"
                 : isCompleted
                 ? "bg-green-50 border-green-100"
                 : ""
             }`}
-            onClick={() => {
-              navigate(`/services/${booking.service_id}`);
-            }}
           >
             <div className="flex-shrink-0">
               <img 
                 src={booking.attachment!} 
                 alt={booking.service_name}
-                className="w-32 h-32 object-cover rounded-lg shadow-sm"
+                className="w-32 h-32 object-cover rounded-lg shadow-sm cursor-pointer"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/default-service-image.jpg';
+                }}
+                onClick={() => {
+                  navigate(`/services/${booking.service_id}`);
                 }}
               />
             </div>
             <div className="flex-1 min-w-0 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="font-semibold text-gray-800 text-lg truncate">{booking.service_name}</div>
+                  <div 
+                    className="font-semibold text-gray-800 text-lg truncate cursor-pointer"
+                    onClick={() => {
+                      navigate(`/services/${booking.service_id}`);
+                    }}
+                  >{booking.service_name}</div>
                   <span className="text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5">{booking.service_category_name}</span>
                   {statusBadge(booking.status)}
                 </div>
@@ -186,26 +238,38 @@ const BookingHistory = () => {
                     <span className="italic text-gray-400">Not yet scheduled by merchant</span>
                   )}
                 </div>
-                {/* <div className="text-sm text-gray-500 mb-1">
-                  <span className="font-medium">Payment:</span> {booking.payment_method_name}{" "}
-                  <span className="ml-1 px-2 py-0.5 rounded bg-gray-100 text-xs">{booking.payment_status}</span>
-                </div> */}
               </div>
-              <div>
-                {booking.cancelled_at && (
-                  <div className="text-xs text-red-500 flex items-center gap-1 mt-2" title={`Cancelled by ${booking.cancelled_by || "unknown"}`}>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    Cancelled at {formatDate(booking.cancelled_at)}
-                    {booking.cancelled_by && (
-                      <span className="ml-1 text-gray-400">(by {booking.cancelled_by})</span>
-                    )}
-                  </div>
-                )}
-                {booking.remarks && (
-                  <div className="text-xs text-gray-400 mt-2 truncate" title={booking.remarks}>
-                    <svg className="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m2-4h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
-                    Remarks: {booking.remarks}
-                  </div>
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex-1">
+                  {booking.cancelled_at && (
+                    <div className="text-xs text-red-500 flex items-center gap-1" title={`Cancelled by ${booking.cancelled_by || "unknown"}`}>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      Cancelled at {formatDate(booking.cancelled_at)}
+                      {booking.cancelled_by && (
+                        <span className="ml-1 text-gray-400">(by {booking.cancelled_by})</span>
+                      )}
+                    </div>
+                  )}
+                  {booking.remarks && (
+                    <div className="text-xs text-gray-400 mt-2 truncate" title={booking.remarks}>
+                      <svg className="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m2-4h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
+                      Remarks: {booking.remarks}
+                    </div>
+                  )}
+                </div>
+                {isPending && (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    color="red"
+                    onClick={() => {
+                      setIsCancelConfirmDialogShow(true);
+                      setSelectedCancelBookingId(booking.booking_id);
+                    }}
+                    loading={loadingCancel}
+                  >
+                    Cancel
+                  </Button>
                 )}
               </div>
             </div>

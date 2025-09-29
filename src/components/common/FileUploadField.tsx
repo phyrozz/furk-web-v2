@@ -98,9 +98,9 @@ const FileUploadField = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-bold text-gray-700 mb-1">
         {label}
-        {required && <span className="text-red-500">*</span>}
+        {required && <span className="text-red-500"> *</span>}
       </label>
       <div className="mt-2 grid grid-cols-2 gap-4">
         {files.map((file, index) => (

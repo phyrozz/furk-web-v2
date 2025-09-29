@@ -6,6 +6,7 @@ import Select from '../../common/Select';
 import { http } from '../../../utils/http';
 import { UserWallet } from '../../../models/user-wallet';
 import { useNavigate } from 'react-router';
+import Input from '../../common/Input';
 
 interface TopUpSidebarProps {
   isOpen: boolean;
@@ -77,16 +78,17 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
           
           <div className="space-y-4">
             <div className="flex flex-col gap-2">
-              <label className="font-medium">Amount</label>
-              <input
+              <Input 
+                label="Amount"
+                id="amount"
                 type="number"
                 placeholder="Enter amount"
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary border-gray-300"
                 value={amount ?? ''}
                 min={10}
                 max={1000000}
                 step={10}
                 onChange={(e) => onAmountInputChange(e)}
+                required
               />
             </div>
 

@@ -12,7 +12,8 @@ const Badge: React.FC<BadgeProps> = ({ status, className }) => {
     blue: 'bg-blue-600 text-white',
     gray: 'bg-gray-600 text-white',
     red: 'bg-red-600 text-white',
-    purple: 'bg-purple-600 text-white'
+    purple: 'bg-purple-600 text-white',
+    orange: 'bg-orange-600 text-white'
   };
 
   const statusGroups = {
@@ -21,7 +22,8 @@ const Badge: React.FC<BadgeProps> = ({ status, className }) => {
     blue: ['confirmed'],
     gray: [''],
     red: ['cancelled'],
-    purple: ['in_progress']
+    purple: ['in_progress'],
+    orange: ['cancelled_by_user']
   };
 
   const getStatusColor = (status: string) => {
