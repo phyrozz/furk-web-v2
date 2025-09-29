@@ -55,4 +55,8 @@ export class UserProfileService {
             offset: offset
         });
     }
+
+    async cancelBooking(bookingId: number): Promise<any> {
+        return http.post(`/pet-owner-profile/cancel-booking/${bookingId}`);
+    }
 }

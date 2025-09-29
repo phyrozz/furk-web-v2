@@ -245,6 +245,10 @@ const BookingCalendar: React.FC = () => {
         backgroundColor = '#fca5a5';
         color = '#000000';
         break;
+      case 'cancelled_by_user':
+        backgroundColor = '#fdba74';
+        color = '#000000';
+        break;
       default:
         backgroundColor = '#d1d5db';
         color = '#000000';
@@ -565,6 +569,10 @@ const BookingCalendar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-red-300" />
                 <span className="text-xs md:text-sm">Cancelled</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 rounded-full bg-orange-300" />
+                <span className="text-xs md:text-sm">Cancelled by user</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-[#a1a1a1]" />
