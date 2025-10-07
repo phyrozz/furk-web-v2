@@ -44,6 +44,7 @@ import RoleRedirect from './components/RoleRedirect';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
 import RewardProductsPage from './components/pages/Admin/RewardProductsPage';
 import AdminDashboardPage from './components/pages/Admin/AdminDashboardPage';
+import ChatPage from './components/pages/Chat/ChatPage';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -255,6 +256,16 @@ function App() {
                 <Route path="/payment/failed" element={
                   <ProtectedRoute requiredRoles={['user', 'merchant']}>
                     <PaymentFailedPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/chat" element={
+                  <ProtectedRoute requiredRoles={['user']}>
+                    <ChatPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/merchant/chat" element={
+                  <ProtectedRoute requiredRoles={['merchant']}>
+                    <ChatPage />
                   </ProtectedRoute>
                 } />
               </Routes>
