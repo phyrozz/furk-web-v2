@@ -4,7 +4,7 @@ import { loginService } from '../services/auth/auth-service';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
-  onAuthStatusChange: (isAuthenticated: boolean) => void;
+  onAuthStatusChange: (isAuthenticated: boolean, role: string | null) => void;
 }
 
 const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, onAuthStatusChange }) => {
@@ -15,7 +15,8 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, onAuthStatusChange 
   useEffect(() => {
     const checkAuth = async () => {
       const isAuthenticated = await loginService.isAuthenticated();
-      onAuthStatusChange(isAuthenticated);
+      const role = isAuthenticated ? loginService.getUserRole() : null;
+      onAuthStatusChange(isAuthenticated, role);
 
       // if (!isAuthenticated && !isPublicRoute) {
       //   navigate('/login', { state: { from: location } });

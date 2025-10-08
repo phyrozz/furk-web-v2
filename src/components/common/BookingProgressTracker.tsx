@@ -65,14 +65,14 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
     const authenticated = await loginService.isAuthenticated();
     if (!authenticated) return;
 
-    const token = localStorage.getItem('cognitoIdToken');
-    if (!token) return;
+    const username = await loginService.getUsernameFromToken();
+    if (!username) return;
 
     const websocketUrl = import.meta.env.VITE_WEBSOCKET_URL;
     
     if (wsRef.current) return;
 
-    const ws = new WebSocket(`${websocketUrl}?token=${token}`);
+    const ws = new WebSocket(`${websocketUrl}?username=${username}`);
 
     ws.onopen = () => {
       console.log('WebSocket Connected');
@@ -83,6 +83,8 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        if (!['booking_progress', 'booking_completed', 'booking_started', 'booking_cancelled'].includes(data.event)) return;
+
         console.log('Received WebSocket message:', data);
         // If the websocket sends a single booking progress, update the state
         if (data && typeof data === 'object' && data.booking_status) {
