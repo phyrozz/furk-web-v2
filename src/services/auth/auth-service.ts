@@ -14,6 +14,7 @@ import {
 import { ToastService } from '../toast/toast-service';
 import { roleMapping } from '../../utils/role-mapping';
 import { http } from '../../utils/http';
+import { jwtDecode } from 'jwt-decode';
 
 Amplify.configure({
   Auth: {
@@ -401,6 +402,20 @@ export class LoginService {
         return new Error('Invalid verification code');
       default:
         return new Error(authError.message || 'An unexpected error occurred');
+    }
+  }
+
+  public async getUsernameFromToken(): Promise<string | null> {
+    const idToken = localStorage.getItem('cognitoIdToken');
+    if (!idToken) {
+      return null;
+    }
+    try {
+      const decodedToken = jwtDecode<{ 'cognito:username': string }>(idToken);
+      return decodedToken['cognito:username'] || null;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
     }
   }
 }

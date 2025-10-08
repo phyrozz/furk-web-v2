@@ -52,6 +52,7 @@ const MerchantNavbar = () => {
     { name: 'Services', path: '/merchant/manage-services' },
     { name: 'Bookings', path: '/merchant/bookings' },
     { name: 'Payouts', path: '/merchant/payouts' },
+    { name: 'Chat', path: '/merchant/chat' },
     // { name: 'Notifications', path: '/merchant/notifications', icon: Bell },
   ];
 

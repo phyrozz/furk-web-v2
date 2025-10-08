@@ -202,6 +202,17 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            {/* Chat link for authenticated users */}
+            {isAuth && (
+              <Link
+                to="/chat"
+                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  location.pathname === '/chat' ? 'text-primary-500 font-semibold' : ''
+                }`}
+              >
+                Chat
+              </Link>
+            )}
             {isAuth ? (
               <>
                 <Tooltip content="Notifications" position='bottom'>
@@ -359,6 +370,18 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            {/* Chat link for authenticated users in mobile menu */}
+            {isAuth && (
+              <Link
+                to="/chat"
+                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  location.pathname === '/chat' ? 'text-primary-500 font-semibold' : ''
+                }`}
+                onClick={closeMenu}
+              >
+                Chat
+              </Link>
+            )}
             {isAuth ? (
               <>
                 <button
