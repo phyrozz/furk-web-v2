@@ -10,6 +10,8 @@ interface Conversation {
   pet_owner_id: number;
   merchant_id: number;
   merchant_user_id: number;
+  first_name?: string;
+  last_name?: string;
   business_name: string;
   created_at: string;
   last_message_content: string;
@@ -82,7 +84,7 @@ export default function ChatSidebar({ onSelectConversation }: { onSelectConversa
       {/* Search and Refresh */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          {/* <div className="relative flex-1">
             <input
               type="text"
               placeholder="Search chats..."
@@ -91,7 +93,7 @@ export default function ChatSidebar({ onSelectConversation }: { onSelectConversa
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-          </div>
+          </div> */}
           <button
             onClick={handleRefresh}
             className="p-2 text-gray-500 hover:text-gray-700 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -118,7 +120,9 @@ export default function ChatSidebar({ onSelectConversation }: { onSelectConversa
               onClick={() => onSelectConversation(c)}
             >
               <div>
-                <p className="font-medium">{c.business_name}</p>
+                <p className="font-medium">
+                  {c.first_name || c.last_name ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : c.business_name}
+                </p>
                 {/* <p className="text-sm text-gray-500 truncate">{c.last_message_content}</p> */}
               </div>
               {/* {c.unread > 0 && (

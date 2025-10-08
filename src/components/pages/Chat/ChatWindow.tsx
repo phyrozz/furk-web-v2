@@ -11,6 +11,8 @@ interface Conversation {
   pet_owner_id: number;
   merchant_id: number;
   merchant_user_id: number;
+  first_name?: string;
+  last_name?: string;
   business_name: string;
   created_at: string;
   last_message_content: string;
@@ -197,12 +199,18 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-white">
-        <button
-          onClick={() => navigate(`/merchants/${conversation.merchant_id}`)}
-          className="font-semibold hover:text-primary-600 hover:underline transition-all text-left bg-transparent border-none p-0 cursor-pointer"
-        >
-          {conversation.business_name}
-        </button>
+        {conversation.first_name || conversation.last_name ? (
+          <span className="font-semibold text-left">
+            {conversation.first_name} {conversation.last_name}
+          </span>
+        ) : (
+          <button
+            onClick={() => navigate(`/merchants/${conversation.merchant_id}`)}
+            className="font-semibold hover:text-primary-600 hover:underline transition-all text-left bg-transparent border-none p-0 cursor-pointer"
+          >
+            {conversation.business_name}
+          </button>
+        )}
       </div>
 
       {/* Messages */}
