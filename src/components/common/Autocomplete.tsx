@@ -137,11 +137,8 @@ const Autocomplete = <T extends object>({
 
   const handleFocus = () => {
     if (disabled) return;
-    
     setIsOpen(true);
-    if (!value && searchTerm) {
-      debouncedSearch(searchTerm, offset);
-    } else if (!value && !searchTerm && onSearch) {
+    if (options.length === 0 && onSearch) {
       debouncedSearch('', 0);
     }
   };

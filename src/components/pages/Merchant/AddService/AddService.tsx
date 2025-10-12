@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../common/Button';
 import { AddServiceService } from '../../../../services/add-service/add-service-service';
@@ -9,15 +9,16 @@ import MerchantNavbar from '../../../common/MerchantNavbar';
 import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
 import Input from '../../../common/Input';
 import Switch from '../../../common/Switch';
-
-// interface ServiceFormData {
-//   category: string;
-//   price: number;
-// }
+import { http } from '../../../../utils/http';
 
 interface ServiceCategory {
   id: number;
   code: string;
+  name: string;
+}
+
+interface MerchantServiceCategory {
+  id: number;
   name: string;
 }
 
@@ -27,7 +28,8 @@ const AddService = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<any>({
     name: '',
-    category: '',
+    category: { id: null, name: '' },
+    merchantCategory: { id: null, name: '' },
     description: '',
     price: 0,
     images: [],
@@ -36,6 +38,8 @@ const AddService = () => {
   });
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Global categories state
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -43,9 +47,20 @@ const AddService = () => {
   const [offset, setOffset] = useState(0);
   const limit = 20;
 
+  // Merchant categories state
+  const [merchantCategories, setMerchantCategories] = useState<MerchantServiceCategory[]>([]);
+  const [isLoadingMerchant, setIsLoadingMerchant] = useState(false);
+  const [hasMoreMerchant, setHasMoreMerchant] = useState(false);
+  const [keywordMerchant, setKeywordMerchant] = useState('');
+  const [offsetMerchant, setOffsetMerchant] = useState(0);
+
+  // Toggle between global and merchant categories
+  const [useMerchantCategories, setUseMerchantCategories] = useState(false);
+
   const dataService = new AddServiceService();
   const s3Service = new S3UploadService();
 
+  // Global categories handlers
   const handleSearch = async (keyword: string) => {
     setIsLoading(true);
     try {
@@ -77,7 +92,45 @@ const AddService = () => {
     }
   };
 
+  // Merchant categories handlers
+  const handleSearchMerchant = async (keyword: string) => {
+    setIsLoadingMerchant(true);
+    try {
+      const data = await http.post<any>('/service-categories/list', {
+        limit,
+        offset: 0,
+        keyword
+      });
+      setMerchantCategories(data.data);
+      setHasMoreMerchant(data.data.length === limit);
+      setKeywordMerchant(keyword);
+      setOffsetMerchant(0);
+    } catch (error) {
+      console.error('Error searching merchant categories:', error);
+    } finally {
+      setIsLoadingMerchant(false);
+    }
+  };
 
+  const handleLoadMoreMerchant = async () => {
+    if (isLoadingMerchant) return;
+    
+    setIsLoadingMerchant(true);
+    try {
+      const data = await http.post<any>('/service-categories/list', {
+        limit,
+        offset: offsetMerchant,
+        keyword: keywordMerchant
+      });
+      setMerchantCategories(prev => [...prev, ...data.data]);
+      setHasMoreMerchant(data.data.length === limit);
+      setOffsetMerchant(prev => prev + limit);
+    } catch (error) {
+      console.error('Error loading more merchant categories:', error);
+    } finally {
+      setIsLoadingMerchant(false);
+    }
+  };
 
   const uploadImages = async (serviceId: string): Promise<string[]> => {
     const uploadPromises = uploadedImages.map(async (image) => {
@@ -113,7 +166,17 @@ const AddService = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };1
+  };
+
+  // useEffect(() => {
+  //   if (useMerchantCategories) {
+  //     setFormData({ ...formData, category: { id: null, name: '' } });
+  //     handleSearchMerchant('');
+  //   } else {
+  //     setFormData({ ...formData, merchantCategory: { id: null, name: '' } });
+  //     handleSearch('');
+  //   }
+  // }, [useMerchantCategories]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16 h-screen overflow-y-hidden flex flex-col cursor-default">
@@ -142,22 +205,50 @@ const AddService = () => {
             />
           </div>
 
+          {/* Category source toggle */}
+          <div className="flex gap-2 justify-start items-center">
+            <Switch
+              isOn={useMerchantCategories}
+              handleToggle={() => {
+                setUseMerchantCategories(prev => !prev);
+                setFormData({ ...formData, category: { id: null, name: '' }, merchantCategory: { id: null, name: '' } });
+              }}
+            />
+            <label className="flex items-center space-x-2 text-sm font-bold text-gray-700 gap-1">    
+              Use my own service categories
+            </label>
+          </div>
+
           <div>
             <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-1">
               Service Category
               <span className="text-red-500"> *</span>
             </label>
-            <Autocomplete
-              options={categories}
-              value={formData.category}
-              onChange={(category) => setFormData({ ...formData, category })}
-              getOptionLabel={(category) => category.name}
-              placeholder="Search for a service category..."
-              isLoading={isLoading}
-              onSearch={handleSearch}
-              onLoadMore={handleLoadMore}
-              hasMore={hasMore}
-            />
+            {!useMerchantCategories ? (
+              <Autocomplete
+                options={categories}
+                value={formData.category}
+                onChange={(category) => setFormData({ ...formData, category })}
+                getOptionLabel={(category) => category.name}
+                placeholder="Search for a service category..."
+                isLoading={isLoading}
+                onSearch={handleSearch}
+                onLoadMore={handleLoadMore}
+                hasMore={hasMore}
+              />
+            ) : (
+              <Autocomplete
+                options={merchantCategories}
+                value={formData.merchantCategory}
+                onChange={(category) => setFormData({ ...formData, merchantCategory: category })}
+                getOptionLabel={(category) => category.name}
+                placeholder="Search for your service categories..."
+                isLoading={isLoadingMerchant}
+                onSearch={handleSearchMerchant}
+                onLoadMore={handleLoadMoreMerchant}
+                hasMore={hasMoreMerchant}
+              />
+            )}
           </div>
 
           <div>

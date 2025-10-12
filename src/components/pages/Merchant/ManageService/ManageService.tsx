@@ -11,9 +11,12 @@ import useScreenSize from '../../../../hooks/useScreenSize';
 import MobileMenu from '../../../common/MobileMenu';
 import { LocalStorageService } from '../../../../services/local-storage/local-storage-service';
 import { useDebounce } from 'use-debounce';
+import { Tooltip } from '../../../common/Tooltip';
 
 interface Service {
   id: string;
+  service_category_id: string;
+  service_category_name: string;
   name: string;
   description: string;
   price: number;
@@ -56,8 +59,8 @@ const ManageService = () => {
       await serviceApi.deleteService({ id: service.id });
       ToastService.show('Service deleted successfully');
       reset();
-    } catch (error) {
-      ToastService.show('Failed to delete service');
+    } catch (error: any) {
+      ToastService.show(`Failed to delete service: ${error?.response?.data?.error || error.message}`);
     }
   };
 
@@ -102,14 +105,14 @@ const ManageService = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <Button
+            {/* <Button
               onClick={() => navigate('/merchant/dashboard')}
               className="flex items-center gap-2"
               variant='outline'
             >
               <ArrowLeft size={20} /> 
               {!isMobile && 'Back'}
-            </Button>
+            </Button> */}
             <h1 className="font-bold font-cursive text-gray-900 md:text-2xl text-md">Manage Services</h1>
           </div>
           {
@@ -128,7 +131,7 @@ const ManageService = () => {
             <Button
               onClick={() => reset()}
               className="flex items-center gap-2"
-              variant='outline'
+              variant='ghost'
               disabled={!isAllowed}
             >
               <RefreshCcw size={20} />
@@ -173,7 +176,6 @@ const ManageService = () => {
                   <motion.div
                     className="p-4 hover:bg-gray-50 flex justify-between items-center cursor-pointer"
                     onClick={() => toggleExpand(service.id)}
-                    whileTap={{ scale: 0.99 }}
                   >
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
@@ -198,18 +200,42 @@ const ManageService = () => {
                           </span>
                         )}
                       </div>
+                      {/* Display category name */}
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-400">Category: {service.service_category_name}</span>
+                      </div>
                     </div>
-                    <motion.button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(service);
-                      }}
-                      className="p-2 ml-4 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Trash2 size={20} />
-                    </motion.button>
+                    <div className="flex items-center gap-2">
+                      {/* Edit Button */}
+                      <Tooltip content="Edit Service" position="left">
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/merchant/edit-service/${service.id}`);
+                          }}
+                          className="p-2 text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-full transition-colors"
+                          whileHover={{ scale: 1.1 }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </motion.button>
+                      </Tooltip>
+                      {/* Delete Button */}
+                      <Tooltip content="Delete Service" position="left">
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(service);
+                          }}
+                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
+                          whileHover={{ scale: 1.1 }}
+                        >
+                          <Trash2 size={20} />
+                        </motion.button>
+                      </Tooltip>
+                    </div>
                   </motion.div>
 
                   {/* Expanded Content */}
