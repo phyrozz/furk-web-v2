@@ -38,6 +38,7 @@ import TermsOfService from './components/pages/TermsOfService/TermsOfService';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
+import EditService from './components/pages/Merchant/EditService/EditService';
 
 function AppContent({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
   const location = useLocation();
@@ -147,6 +148,11 @@ function AppContent({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         <Route path="/merchant/add-service" element={
           <ProtectedRoute requiredRoles={['merchant']}>
             <AddService />
+          </ProtectedRoute>
+        } />
+        <Route path="/merchant/edit-service/:id" element={
+          <ProtectedRoute requiredRoles={['merchant']}>
+            <EditService />
           </ProtectedRoute>
         } />
         <Route path="/merchant/manage-services" element={

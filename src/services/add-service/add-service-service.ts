@@ -14,8 +14,8 @@ export class AddServiceService {
     async insertService(formData: any): Promise<any> {
         const data = {
             service_category_id: formData.category.id,
-            name: formData.name,
-            description: formData.description,
+            name: formData.name.trim(),
+            description: formData.description.trim(),
             price: formData.price,
             duration: formData.duration,
             payout_per_completion: formData.payoutPerCompletion
