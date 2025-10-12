@@ -158,7 +158,8 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
       validBankAccountFile !== null &&
       validIdFile !== null &&
       acceptTerms &&
-      dataPrivacyAccepted
+      dataPrivacyAccepted &&
+      affiliateId !== ''
     );
   };
 
@@ -262,6 +263,12 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    http.publicGet('/affiliate-login/code').then((res: any) => {
+      setAffiliateId(res.data.code);
+    });
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
