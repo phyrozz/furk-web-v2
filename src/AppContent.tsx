@@ -22,6 +22,7 @@ import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/Mer
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantVerificationForm from './components/pages/Merchant/MerchantVerification/MerchantVerificationForm';
 import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
+import ServiceCategoriesPage from './components/pages/Merchant/ServiceCategories/ServiceCategoriesPage';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
 import SetBusinessHoursPage from './components/pages/Merchant/SetBusinessHours/SetBusinessHoursPage';
 import PaymentCancelledPage from './components/pages/Payment/PaymentCancelledPage';
@@ -183,6 +184,11 @@ function AppContent({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         <Route path="/merchant/break-hours" element={
           <ProtectedRoute requiredRoles={['merchant']}>
             <SetBreakHoursPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/merchant/service-categories" element={
+          <ProtectedRoute requiredRoles={['merchant']}>
+            <ServiceCategoriesPage />
           </ProtectedRoute>
         } />
         <Route path="/profile" element={

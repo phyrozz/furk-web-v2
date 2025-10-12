@@ -50,6 +50,7 @@ const MerchantNavbar = () => {
   const navItems = [
     { name: 'Dashboard', path: '/merchant/dashboard' },
     { name: 'Services', path: '/merchant/manage-services' },
+    { name: 'Categories', path: '/merchant/service-categories' },
     { name: 'Bookings', path: '/merchant/bookings' },
     { name: 'Payouts', path: '/merchant/payouts' },
     { name: 'Chat', path: '/merchant/chat' },

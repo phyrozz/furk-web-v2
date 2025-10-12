@@ -15,6 +15,8 @@ import { Tooltip } from '../../../common/Tooltip';
 
 interface Service {
   id: string;
+  service_category_id: string;
+  service_category_name: string;
   name: string;
   description: string;
   price: number;
@@ -103,14 +105,14 @@ const ManageService = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <Button
+            {/* <Button
               onClick={() => navigate('/merchant/dashboard')}
               className="flex items-center gap-2"
               variant='outline'
             >
               <ArrowLeft size={20} /> 
               {!isMobile && 'Back'}
-            </Button>
+            </Button> */}
             <h1 className="font-bold font-cursive text-gray-900 md:text-2xl text-md">Manage Services</h1>
           </div>
           {
@@ -129,7 +131,7 @@ const ManageService = () => {
             <Button
               onClick={() => reset()}
               className="flex items-center gap-2"
-              variant='outline'
+              variant='ghost'
               disabled={!isAllowed}
             >
               <RefreshCcw size={20} />
@@ -197,6 +199,10 @@ const ManageService = () => {
                             Per-Completion Payout
                           </span>
                         )}
+                      </div>
+                      {/* Display category name */}
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-400">Category: {service.service_category_name}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

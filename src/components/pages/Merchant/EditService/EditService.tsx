@@ -32,10 +32,10 @@ const EditService = () => {
   });
   // const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  // const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  // const [hasMore, setHasMore] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [offset, setOffset] = useState(0);
   const limit = 20;
@@ -62,44 +62,44 @@ const EditService = () => {
     }
   }, [id]);
 
-  const handleSearch = async (keyword: string) => {
-    setIsLoading(true);
-    try {
-      const response = await http.post<any>(`/merchant-service/list-service-categories`, {
-        limit,
-        offset: 0,
-        keyword: keyword
-      });
-      setCategories(response.data);
-      setHasMore(response.data.length === limit);
-      setKeyword(keyword);
-      setOffset(0);
-    } catch (error) {
-      console.error('Error searching categories:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleSearch = async (keyword: string) => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await http.post<any>(`/merchant-service/list-service-categories`, {
+  //       limit,
+  //       offset: 0,
+  //       keyword: keyword
+  //     });
+  //     setCategories(response.data);
+  //     setHasMore(response.data.length === limit);
+  //     setKeyword(keyword);
+  //     setOffset(0);
+  //   } catch (error) {
+  //     console.error('Error searching categories:', error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  const handleLoadMore = async () => {
-    if (isLoading) return;
+  // const handleLoadMore = async () => {
+  //   if (isLoading) return;
     
-    setIsLoading(true);
-    try {
-      const response = await http.post<any>(`/merchant-service/list-service-categories`, {
-        limit,
-        offset: offset,
-        keyword: keyword
-      });
-      setCategories(prev => [...prev, ...response.data]);
-      setHasMore(response.data.length === limit);
-      setOffset(prev => prev + limit);
-    } catch (error) {
-      console.error('Error loading more categories:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await http.post<any>(`/merchant-service/list-service-categories`, {
+  //       limit,
+  //       offset: offset,
+  //       keyword: keyword
+  //     });
+  //     setCategories(prev => [...prev, ...response.data]);
+  //     setHasMore(response.data.length === limit);
+  //     setOffset(prev => prev + limit);
+  //   } catch (error) {
+  //     console.error('Error loading more categories:', error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,7 +156,7 @@ const EditService = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-1">
               Service Category
               <span className="text-red-500"> *</span>
@@ -172,7 +172,7 @@ const EditService = () => {
               onLoadMore={handleLoadMore}
               hasMore={hasMore}
             />
-          </div>
+          </div> */}
 
           <div>
             <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">
