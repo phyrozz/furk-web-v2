@@ -210,7 +210,7 @@ const saveNotes = async () => {
         </div>
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div>
-            <p className="text-gray-500">Affiliate ID: {affiliate.id}</p>
+            <p className="text-sm text-gray-500">Affiliate code: {affiliate.code}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-500 text-sm">

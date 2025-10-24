@@ -265,8 +265,9 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
         </div>
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div>
-            <p className="text-gray-500">Application ID: {merchant.id}</p>
-            <p className="text-gray-500 mt-1">Type: {merchant.merchant_type}</p>
+            <p className="text-sm text-gray-500">Merchant ID: {merchant.merchant_id}</p>
+            <p className="text-sm text-gray-500">Application ID: {merchant.id}</p>
+            <p className="text-sm text-gray-500 mt-1">Type: {merchant.merchant_type}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-500 text-sm">
