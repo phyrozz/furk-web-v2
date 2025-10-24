@@ -41,7 +41,7 @@ import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
 import EditService from './components/pages/Merchant/EditService/EditService';
 
-function AppContent({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
+function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
   const location = useLocation();
 
   const isChatPage =
@@ -240,4 +240,4 @@ function AppContent({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
   );
 }
 
-export default AppContent;
+export default PageRoutes;

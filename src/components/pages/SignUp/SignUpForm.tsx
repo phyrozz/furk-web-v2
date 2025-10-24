@@ -87,7 +87,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
       setShowVerification(true);
       setIsLoading(false);
     } catch (err: any) {
-      setError(err?.message || 'An error occurred during login. Please try again.');
+      setError(err?.message?.replace('PreSignUp failed with error', '').trim() || 'An error occurred during login. Please try again.');
       setIsLoading(false);
     }
   };
