@@ -9,7 +9,7 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import { GuideTooltipProvider } from './providers/GuideTooltip';
 import { ScrollToHashElement } from './utils/scroll-to-hash-element';
-import AppContent from './AppContent';
+import PageRoutes from './PageRoutes';
 
 // Fix Leaflet's default icon path issues in bundlers like Vite/Vercel
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -65,7 +65,7 @@ function App() {
             setUserRole(role);
           }}>
             <div className="min-h-screen flex flex-col bg-gray-50">
-              <AppContent isAuthenticated={isAuthenticated} userRole={userRole} />
+              <PageRoutes isAuthenticated={isAuthenticated} userRole={userRole} />
             </div>
           </AuthWrapper>
           

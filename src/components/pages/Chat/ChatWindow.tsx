@@ -5,6 +5,12 @@ import { http } from "../../../utils/http";
 import { subscribe, send } from "../../../utils/websockets";
 import { loginService } from "../../../services/auth/auth-service";
 import { useNavigate } from "react-router-dom";
+import { ToastService } from "../../../services/toast/toast-service";
+import { Flag } from "lucide-react";
+import Modal from "../../common/Modal";
+import TextareaAutosize from "react-textarea-autosize";
+import Button from "../../common/Button";
+import { Tooltip } from "../../common/Tooltip";
 
 interface Conversation {
   id: number;
@@ -42,6 +48,9 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const limit = 50;
@@ -195,6 +204,33 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
     });
   };
 
+  /** Report conversation */
+  const handleSubmitReport  = async () => {
+    // Modal component has no handling for loading yet...
+    // I guess we'll just close the modal regardless if the report is submitted successfully or not
+    setIsReportOpen(false);
+
+    try {
+      const res = await http.post<any>("/report/insert", {
+        conversation_id: conversation.id,
+        reason: reportReason.trim(),
+      });
+
+      if (res.success) {
+        ToastService.show("Report submitted successfully. Our admins will review it and email you.");
+        setIsReportOpen(false);
+        setReportReason("");
+      } else {
+        ToastService.show("Failed to submit report.");
+      }
+    } catch (err) {
+      console.error("Error submitting report:", err);
+      ToastService.show("Unable to send report right now.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -211,6 +247,17 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
             {conversation.business_name}
           </button>
         )}
+
+        {/* Report button */}
+        <Tooltip position="left" content="Report conversation">
+          <Button
+            onClick={() => setIsReportOpen(true)}
+            size="sm"
+            variant="ghost"
+          >
+            <Flag size={14} />
+          </Button>
+        </Tooltip>
       </div>
 
       {/* Messages */}
@@ -246,6 +293,31 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
       <div className="p-4 border-t bg-white">
         <MessageInput onSend={handleSend} />
       </div>
+
+      {/* Report Modal */}
+      <Modal
+        isOpen={isReportOpen}
+        onClose={() => {
+          setIsReportOpen(false);
+          setReportReason('');
+          setLoading(false);
+        }}
+        onConfirm={handleSubmitReport}
+        showConfirm
+        showCancel
+        confirmDisabled={!reportReason.trim() || submitting}
+        title="Report Conversation"
+      >
+        <p className="text-sm text-gray-600 mb-2">
+          Please describe the issue you want to report. Our team will review it and email you.
+        </p>
+        <TextareaAutosize
+          value={reportReason}
+          onChange={(e) => setReportReason(e.target.value)}
+          placeholder="Enter your reason..."
+          className="w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none resize-none min-h-[5rem]"
+        />
+      </Modal>
     </div>
   );
 }
