@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -13,6 +13,7 @@ import useScreenSize from '../../../hooks/useScreenSize';
 import Favorites from './Favorites';
 import PetProfiles from './PetProfiles';
 import TransactionHistory from './TransactionHistory';
+import RewardTiers from './RewardTiers';
 import { UserWallet } from '../../../models/user-wallet';
 import { http } from '../../../utils/http';
 import TopUpSidebar from './TopUpSidebar';
@@ -31,6 +32,13 @@ export interface UserProfile {
   created_at: string;
   modified_by: string;
   modified_at: string;
+  tier_level?: number | null;
+  tier_name?: string | null;
+  tier_description?: string | null;
+  tier_required_furkredits?: number | null;
+  tier_icon_key?: string | null;
+  tier_color_code?: string | null;
+  tier_assigned_at?: string | null;
 }
 
 const ProfilePage = () => {
@@ -136,7 +144,8 @@ const ProfilePage = () => {
     // { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'history', label: 'Booking History', icon: History },
     { id: 'transactions', label: 'Transaction History', icon: Wallet },
-    { id: 'favorites', label: 'Favorites', icon: Heart }
+    { id: 'favorites', label: 'Favorites', icon: Heart },
+    { id: 'rewards', label: 'Reward Tiers', icon: Award }
   ];
 
   const editForm = (
@@ -277,6 +286,23 @@ const ProfilePage = () => {
                     {/* <span className="mx-2">•</span>
                     <span>{profile?.location}</span> */}
                   </div>
+                  {/* Display current tier if available */}
+                  {profile?.tier_name && (
+                    <div className="flex items-center mt-2">
+                      <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                        style={{
+                          backgroundColor: profile.tier_color_code || '#e5e7eb',
+                          color: '#ffffff'
+                        }}
+                      >
+                        {profile.tier_name}
+                      </span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        Subscribed on {profile.tier_assigned_at && DateUtils.formatDateStringFromTimestamp(profile.tier_assigned_at)}
+                      </span>
+                    </div>
+                  )}
                   {userWallet && <div className="flex flex-row gap-5 items-center mt-3">
                     <div className="">
                       <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
@@ -465,6 +491,12 @@ const ProfilePage = () => {
               <div className="overflow-y-hidden h-full">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800 py-6 px-6">Transaction History</h2>
                 <TransactionHistory />
+              </div>
+            )}
+
+            {activeTab === 'rewards' && (
+              <div className="overflow-y-hidden h-full">
+                <RewardTiers />
               </div>
             )}
           </div>
