@@ -176,7 +176,7 @@ const RewardTiers = () => {
 
       {loadingCurrent ? (
         <div className="flex justify-center items-center p-4">
-          <PawLoading size={36} />
+          <PawLoading />
         </div>
       ) : currentTier ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
