@@ -5,6 +5,7 @@ import PawLoading from '../../common/PawLoading';
 import { http } from '../../../utils/http';
 import AdminNavbar from '../../common/AdminNavbar';
 import TrendChart from './Dashboard/TrendChart';
+import PetOwnersWidget from './Dashboard/PetOwnersWidget';
 import Select from '../../common/Select';
 
 interface DashboardCard {
@@ -83,6 +84,7 @@ const AdminDashboardPage = () => {
   });
   
   const [statsLoading, setStatsLoading] = useState<boolean>(true);
+  // const petOwnersWidgetRef = useRef<{ refetch: () => void } | null>(null);
 
   const fetchStats = async () => {
     try {
@@ -135,6 +137,20 @@ const AdminDashboardPage = () => {
       }
     }));
   };
+
+  // Refetch all data every 10 seconds when component is mounted
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchTrendData('petOwner');
+      fetchTrendData('merchant');
+      fetchTrendData('affiliate');
+      // petOwnersWidgetRef.current?.refetch();
+    }, 10000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchStats();
@@ -255,6 +271,11 @@ const AdminDashboardPage = () => {
               viewType={trendFilters.affiliate.viewType}
             />
           </div>
+        </div>
+
+        {/* Pet Owners Widget */}
+        <div className="mt-6">
+          <PetOwnersWidget />
         </div>
       </div>}
     </div>
