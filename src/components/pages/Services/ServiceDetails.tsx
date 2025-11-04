@@ -15,6 +15,7 @@ import RecommendedServicesList from './RecommendedServicesList';
 import ShareDialog from '../../common/ShareDialog';
 import { Rating } from 'react-simple-star-rating';
 import DateUtils from '../../../utils/date-utils';
+import LocationPicker from '../../common/LocationPicker';
 
 interface ServiceDetail {
   id: number;
@@ -35,6 +36,8 @@ interface ServiceDetail {
   last_completed_timestamp: string | null;
   rating_count: number;
   duration?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface BusinessHour {
@@ -396,6 +399,14 @@ const ServiceDetails = () => {
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-2xl font-semibold mb-4">About</h2>
                 <p className="text-gray-600">{service.description}</p>
+              </div>
+
+              {/* Map Location */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-2xl font-semibold mb-6">Location</h2>
+                <div className="h-96 rounded-lg overflow-hidden bg-gray-100">
+                  {service.latitude && service.longitude && <LocationPicker initialLat={service.latitude} initialLng={service.longitude} onChange={() => {}} readonly />}
+                </div>
               </div>
               
               <div className="bg-white rounded-lg shadow-sm p-6">
