@@ -9,6 +9,7 @@ interface Service {
   name: string;
   description: string;
   price: number;
+  furkredit_price: number;
   service_category_id: number;
   service_category_name: string;
   service_category_description: string;
@@ -77,7 +78,7 @@ const ServicesList = ({ merchantId }: ServicesListProps) => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{service.name}</h3>
               <p className="text-gray-600 text-sm mb-3 line-clamp-2">{service.description}</p>
               <div className="flex items-center justify-between">
-                <span className="text-primary-600 font-semibold">{service.price.toLocaleString()} Furkredits</span>
+                <span className="text-primary-600 font-semibold">{service.furkredit_price.toLocaleString()} Furkredits</span>
                 <div className="flex items-center space-x-1">
                   <span className="text-accent-500">★</span>
                   <span className="text-sm text-gray-600">{service.overall_rating.toFixed(1)}</span>

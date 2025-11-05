@@ -15,6 +15,7 @@ import RecommendedServicesList from './RecommendedServicesList';
 import ShareDialog from '../../common/ShareDialog';
 import { Rating } from 'react-simple-star-rating';
 import DateUtils from '../../../utils/date-utils';
+import LocationPicker from '../../common/LocationPicker';
 
 interface ServiceDetail {
   id: number;
@@ -22,6 +23,7 @@ interface ServiceDetail {
   description: string;
   service_category_name: string;
   price: string;
+  furkredit_price: number;
   merchant_id: number;
   business_name: number;
   merchant_type: string;
@@ -35,6 +37,8 @@ interface ServiceDetail {
   last_completed_timestamp: string | null;
   rating_count: number;
   duration?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface BusinessHour {
@@ -191,7 +195,7 @@ const ServiceDetails = () => {
         onSuccess={handleBookingDialogSuccess}
         serviceId={service.id}
         businessHours={service.business_hours}
-        bookingAmount={service.price}
+        bookingAmount={String(service.furkredit_price)}
         merchantId={service.merchant_id}
       />
       <ShareDialog 
@@ -264,7 +268,7 @@ const ServiceDetails = () => {
               >
                 <div className="flex flex-col">
                   <p className="sm:text-2xl text-xl font-bold text-primary-500">
-                    {Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    {Number(service.furkredit_price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     <span className="text-base"> Furkredits</span>
                   </p>
                   {service.duration != null && service.duration !== 0 && <span className="text-gray-500 text-sm">
@@ -396,6 +400,14 @@ const ServiceDetails = () => {
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-2xl font-semibold mb-4">About</h2>
                 <p className="text-gray-600">{service.description}</p>
+              </div>
+
+              {/* Map Location */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h2 className="text-2xl font-semibold mb-6">Location</h2>
+                <div className="h-96 rounded-lg overflow-hidden bg-gray-100">
+                  {service.latitude && service.longitude && <LocationPicker initialLat={service.latitude} initialLng={service.longitude} onChange={() => {}} readonly />}
+                </div>
               </div>
               
               <div className="bg-white rounded-lg shadow-sm p-6">

@@ -119,7 +119,7 @@ const PopularServices = () => {
                       <h3 className="font-semibold text-lg mb-1 truncate">{service.name}</h3>
                       <p className="text-sm text-gray-600 mb-2 truncate">{service.business_name}</p>
                       <div className="flex items-center justify-between text-sm text-gray-700">
-                        <span className="text-primary-600 font-semibold">{service.price} <span className="text-xs">Furkredits</span></span>
+                        <span className="text-primary-600 font-semibold">{service.furkredit_price} <span className="text-xs">Furkredits</span></span>
                         <div className="flex items-center gap-2">
                           <Rating
                             initialValue={service.avg_rating}

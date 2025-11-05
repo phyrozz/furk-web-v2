@@ -10,6 +10,7 @@ interface RecommendedService {
   description: string;
   service_category_name: string;
   price: number;
+  furkredit_price: number;
   merchant_id: number;
   business_name: string;
   merchant_type: string;
@@ -115,7 +116,7 @@ const RecommendedServicesList = forwardRef<RecommendedServicesListRef, Recommend
               
               <div className="space-y-2 mt-4">
                 <h3 className="font-medium text-gray-900 truncate">{service.name}</h3>
-                <p className="font-semibold text-primary-600">{Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span className="text-xs">Furkredits</span></p>
+                <p className="font-semibold text-primary-600">{Number(service.furkredit_price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span className="text-xs">Furkredits</span></p>
                 <div className="flex items-center">
                   <Rating
                     initialValue={service.average_rating / 2}

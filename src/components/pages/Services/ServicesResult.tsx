@@ -13,6 +13,7 @@ interface Service {
   description: string;
   service_category_name: string;
   price: number;
+  furkredit_price: number;
   business_name: string;
   merchant_type: string;
   email: string;
@@ -182,7 +183,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-4">
                     <span className="text-primary-800 font-semibold">
-                      {service.price}
+                      {service.furkredit_price}
                     </span>
                     <Rating
                       initialValue={service.average_rating}

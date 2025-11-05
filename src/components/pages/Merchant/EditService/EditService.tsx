@@ -9,6 +9,7 @@ import Input from '../../../common/Input';
 import Switch from '../../../common/Switch';
 import { http } from '../../../../utils/http';
 import PawLoading from '../../../common/PawLoading';
+import { formatAmount } from '../../../../utils/currency-utils';
 
 interface ServiceCategory {
   id: number;
@@ -203,6 +204,7 @@ const EditService = () => {
               onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
               required
             />
+            <p className="text-sm text-gray-600 font-bold">Furkredit: {formatAmount(formData.price ? formData.price * 0.0125 : 0)}</p>
           </div>
           <div>
             <Input 
