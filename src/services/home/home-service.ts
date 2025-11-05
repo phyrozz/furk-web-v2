@@ -11,6 +11,7 @@ export interface PopularService {
   total_reviews: number;
   total_bookings: number;
   price: number;
+  furkredit_price: number;
 }
 
 export class HomeService {

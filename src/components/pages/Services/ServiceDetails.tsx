@@ -23,6 +23,7 @@ interface ServiceDetail {
   description: string;
   service_category_name: string;
   price: string;
+  furkredit_price: number;
   merchant_id: number;
   business_name: number;
   merchant_type: string;
@@ -194,7 +195,7 @@ const ServiceDetails = () => {
         onSuccess={handleBookingDialogSuccess}
         serviceId={service.id}
         businessHours={service.business_hours}
-        bookingAmount={service.price}
+        bookingAmount={String(service.furkredit_price)}
         merchantId={service.merchant_id}
       />
       <ShareDialog 
@@ -267,7 +268,7 @@ const ServiceDetails = () => {
               >
                 <div className="flex flex-col">
                   <p className="sm:text-2xl text-xl font-bold text-primary-500">
-                    {Number(service.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    {Number(service.furkredit_price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     <span className="text-base"> Furkredits</span>
                   </p>
                   {service.duration != null && service.duration !== 0 && <span className="text-gray-500 text-sm">
