@@ -10,6 +10,7 @@ import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
 import Input from '../../../common/Input';
 import Switch from '../../../common/Switch';
 import { http } from '../../../../utils/http';
+import { formatAmount } from '../../../../utils/currency-utils';
 
 interface ServiceCategory {
   id: number;
@@ -280,6 +281,7 @@ const AddService = () => {
               onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
               required
             />
+            <p className="text-sm text-gray-600 font-bold">Furkredit: {formatAmount(formData.price ? formData.price * 0.0125 : 0)}</p>
           </div>
           <div>
             <Input 
