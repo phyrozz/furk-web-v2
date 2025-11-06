@@ -90,6 +90,14 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
                 onChange={(e) => onAmountInputChange(e)}
                 required
               />
+              <div className="text-sm text-gray-500">
+                1 PHP = 0.0125 Furkredit
+              </div>
+              {amount !== null && (
+                <div className="text-sm text-gray-600 font-bold">
+                  {(amount * 0.0125).toFixed(2)} Furkredits
+                </div>
+              )}
             </div>
 
             {/* <div className="flex flex-col gap-2">
