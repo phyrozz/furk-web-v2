@@ -84,7 +84,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
                 type="number"
                 placeholder="Enter amount"
                 value={amount ?? ''}
-                min={10}
+                min={200}
                 max={1000000}
                 step={10}
                 onChange={(e) => onAmountInputChange(e)}
@@ -131,7 +131,7 @@ const TopUpSidebar: React.FC<TopUpSidebarProps> = ({ isOpen, onClose, onSuccess 
           </Button>
 
           <div className="text-sm text-gray-500">
-            Note: Minimum top up amount is PHP 10. Funds will be available in your account immediately after successful payment.
+            Note: Minimum top up amount is PHP 200. Funds will be available in your account immediately after successful payment.
           </div>
           <div className="text-sm text-gray-500">
             You will be redirected to our secure payment gateway.
