@@ -9,6 +9,7 @@ interface ModalProps {
   showConfirm?: boolean;
   showCancel?: boolean;
   confirmDisabled?: boolean;
+  confirmButtonColor?: 'primary' | 'secondary' | 'accent' | 'red' | 'yellow';
   title: string;
   children: React.ReactNode;
 }
@@ -20,6 +21,7 @@ const Modal: React.FC<ModalProps> = ({
   showConfirm, 
   showCancel, 
   confirmDisabled,
+  confirmButtonColor = 'primary',
   title, 
   children 
 }) => {
@@ -82,6 +84,7 @@ const Modal: React.FC<ModalProps> = ({
                   <Button
                     onClick={onConfirm}
                     variant="primary"
+                    color={confirmButtonColor}
                     disabled={confirmDisabled}
                   >
                     Confirm

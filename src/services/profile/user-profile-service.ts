@@ -59,4 +59,8 @@ export class UserProfileService {
     async cancelBooking(bookingId: number): Promise<any> {
         return http.post(`/pet-owner-profile/cancel-booking/${bookingId}`);
     }
+
+    async deleteAccount(id: number): Promise<any> {
+        return http.delete(`/pet-owner-profile/delete-account/${id}`);
+    }
 }

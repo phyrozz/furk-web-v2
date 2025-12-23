@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award, AlertTriangle } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -18,6 +18,9 @@ import { UserWallet } from '../../../models/user-wallet';
 import { http } from '../../../utils/http';
 import TopUpSidebar from './TopUpSidebar';
 import { formatAmount } from '../../../utils/currency-utils';
+
+import Modal from '../../common/Modal';
+import Input from '../../common/Input';
 
 export interface UserProfile {
   id: number;
@@ -51,6 +54,10 @@ const ProfilePage = () => {
   const [loadingSave, setLoadingSave] = useState(false);
   const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
   const [isTopUpSidebarOpen, setIsTopUpSidebarOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteAccountEmail, setDeleteAccountEmail] = useState('');
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
 
   const dataService = new UserProfileService();
   const navigate  = useNavigate();
@@ -129,6 +136,31 @@ const ProfilePage = () => {
       }
     }
   }
+
+  const handleDeleteAccount = async () => {
+    if (!profile?.id) return;
+    setIsDeleteModalOpen(false);
+    setDeleteAccountLoading(true);
+
+    try {
+      setIsDeleting(true);
+      await dataService.deleteAccount(profile.id);
+      ToastService.show('Account deleted successfully');
+      await loginService.logout();
+      setDeleteAccountLoading(false);
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+      setDeleteAccountLoading(false);
+      if (error?.response?.data?.error) {
+        ToastService.show(error?.response?.data?.error);
+      } else {
+        ToastService.show('Error deleting account');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -406,6 +438,24 @@ const ProfilePage = () => {
                       </div> */}
                     </div>
                   )}
+                  
+                  {!isEdit && (
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Danger Zone</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Once you delete your account, there is no going back. Please be certain.
+                      </p>
+                      <Button
+                        variant="primary"
+                        color="red"
+                        onClick={() => setIsDeleteModalOpen(true)}
+                        icon={<AlertTriangle size={18} />}
+                        loading={deleteAccountLoading}
+                      >
+                        Delete Account
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -502,6 +552,44 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {setIsDeleteModalOpen(false); setDeleteAccountEmail('')}}
+        title="Delete Account"
+        showConfirm
+        showCancel
+        confirmButtonColor="red"
+        onConfirm={handleDeleteAccount}
+        confirmDisabled={isDeleting || deleteAccountEmail !== profile?.email}
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center text-red-600 mb-4">
+            <AlertTriangle size={48} />
+          </div>
+          <p className="text-center text-gray-600">
+            Are you sure you want to delete your account? This action cannot be undone.
+            All your data, including pet profiles and booking history, will be permanently removed.
+          </p>
+
+          <Input
+            id="delete-account-input"
+            label="Enter your email to confirm"
+            type="email"
+            placeholder="your.email@example.com"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+            value={deleteAccountEmail}
+            onChange={(e) => setDeleteAccountEmail(e.target.value)}
+            required
+          />
+
+          {isDeleting && (
+            <div className="flex justify-center mt-4">
+              <PawLoading />
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
   );
 };
