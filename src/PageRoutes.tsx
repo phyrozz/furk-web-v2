@@ -8,6 +8,7 @@ import AdminPage from './components/pages/Admin/AdminPage';
 import AffiliatePage from './components/pages/Admin/AffiliatePage';
 import PromosPage from './components/pages/Admin/PromosPage';
 import RewardProductsPage from './components/pages/Admin/RewardProductsPage';
+import AdminPayoutsPage from './components/pages/Admin/Payouts/AdminPayoutsPage';
 import AffiliateDashboard from './components/pages/Affiliate/AffiliateDashboard';
 import AffiliateLoginPage from './components/pages/Affiliate/LoginPage';
 import AffiliateSignUpPage from './components/pages/Affiliate/SignupPage';
@@ -134,6 +135,11 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         <Route path="/admin/reward-products" element={
           <ProtectedRoute requiredRoles={['admin']}>
             <RewardProductsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/payouts" element={
+          <ProtectedRoute requiredRoles={['admin']}>
+            <AdminPayoutsPage />
           </ProtectedRoute>
         } />
         <Route path="/merchant/dashboard" element={

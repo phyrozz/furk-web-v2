@@ -53,7 +53,8 @@ const AdminNavbar = () => {
     { name: 'Affiliates', path: '/admin/affiliates'},
     // { name: 'Settings', path: '/admin/settings', icon: Settings },
     { name: 'Promos', path: '/admin/promos'},
-    { name: 'Reward Products', path: '/admin/reward-products'}
+    { name: 'Reward Products', path: '/admin/reward-products'},
+    { name: 'Payouts', path: '/admin/payouts'}
   ];
 
   return (

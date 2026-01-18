@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Mail, Lock, User, Phone, CheckCircle, EyeOff, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 import { Checkbox } from '../../common/Checkbox';
@@ -124,82 +126,140 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 },
+    },
+  };
+
   if (showVerification) {
     return (
-      <form onSubmit={handleVerification} className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Verify your account
-        </h2>
-
-        <p className="text-gray-600 mb-4">
-          We've sent a verification code to your email address. Please enter it below to complete your registration.
-        </p>
-
-        {error && (
-          <div className="p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        <div>
-          <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-1">
-            Verification Code
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-              <CheckCircle size={18} />
-            </div>
-            <input
-              id="verificationCode"
-              type="text"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Enter verification code"
-              required
-            />
-          </div>
-        </div>
-
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={isLoading}
+      <motion.div
+        className="w-full max-w-md"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div 
+          className="flex justify-center mb-8"
+          variants={itemVariants}
         >
-          {isLoading ? 'Verifying...' : 'Verify Account'}
-        </Button>
+          <Link to="/" className="flex items-center text-primary-500">
+            <img src="/logo_new_small.png" alt="Logo" className="h-10" />
+          </Link>
+        </motion.div>
 
-        <p className="text-sm text-center text-gray-600">
-          Didn't receive the code?{' '}
-          <button
-            type="button"
-            onClick={() => loginService.resendVerificationCode(email)}
-            className="text-primary-600 hover:text-primary-500 font-medium"
-          >
-            Resend code
-          </button>
-        </p>
-      </form>
+        <motion.div 
+          className="bg-white rounded-xl shadow-md overflow-hidden"
+          variants={itemVariants}
+        >
+          <div className="p-6">
+            <form onSubmit={handleVerification} className="space-y-6">
+              <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-2">
+                Verify your email
+              </h2>
+              <p className="text-gray-600 mb-6">
+                We've sent a verification code to {email}. Please enter it below to complete your registration.
+              </p>
+
+              {error && (
+                <div className="mb-4 p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 mb-1">
+                    Verification Code
+                  </label>
+                  <input
+                    id="verificationCode"
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Enter verification code"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  loading={isLoading}
+                >
+                  {isLoading ? 'Verifying...' : 'Verify'}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => loginService.resendVerificationCode(email)}
+                    className="text-sm font-medium text-primary-600 hover:text-primary-500"
+                    disabled={isLoading}
+                  >
+                    Resend verification code
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-6">
-        {userType === 'user' 
-          ? 'Create your Pet Owner account' 
-          : 'Create your Merchant account'}
-      </h2>
+    <motion.div
+      className="w-full max-w-md"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div 
+        className="flex justify-center mb-8"
+        variants={itemVariants}
+      >
+        <Link to="/" className="flex items-center text-primary-500">
+          <img src="/logo_new_small.png" alt="Logo" className="h-10" />
+        </Link>
+      </motion.div>
 
-      {error && (
-        <div className="p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
-          {error}
-        </div>
-      )}
+      <motion.div 
+        className="bg-white rounded-xl shadow-md overflow-hidden"
+        variants={itemVariants}
+      >
+        <div className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-5">
+              {userType === 'user' 
+                ? 'Create your Pet Owner account' 
+                : 'Create your Merchant account'}
+            </h2>
 
-      <div className="space-y-4">
+            {error && (
+              <div className="mb-4 p-3 bg-error-50 border border-error-200 text-error-600 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
 
         {referralCode && <div>
           <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-1">Referral Code</label>
@@ -351,59 +411,64 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
           </div>
         </div>
 
-        <div className="flex items-center">
-          <Checkbox
-            checked={termsAccepted}
-            onChange={(checked) => setTermsAccepted(checked)}
-            label={
-              <span className="text-sm text-gray-600">
-                I agree to Furk's{' '}
-                <a
-                  href="/terms-of-service"
-                  className="text-primary-600 hover:text-primary-500 underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Terms of Service
-                </a>
-              </span>
-            }
-            className="flex items-center space-x-2"
-          />
-        </div>
-        <div className="flex items-center">
-          <Checkbox
-            checked={dataPrivacyAccepted}
-            onChange={(checked) => setDataPrivacyAccepted(checked)}
-            label={
-              <span className="text-sm text-gray-600">
-                I agree to Furk's{' '}
-                <a
-                  href="/terms-of-service#data-privacy"
-                  className="text-primary-600 hover:text-primary-500 underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Data Privacy
-                </a>
-              </span>
-            }
-            className="flex items-center space-x-2"
-          />
+        <div className="flex flex-col items-start gap-4">
+          <div className="flex items-center h-5">
+            <Checkbox
+              checked={termsAccepted}
+              onChange={(checked) => setTermsAccepted(checked)}
+              label={
+                <span className="text-sm text-gray-600">
+                  I agree to Furk's{' '}
+                  <a
+                    href="/terms-of-service"
+                    className="text-primary-600 hover:text-primary-500 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Terms of Service
+                  </a>
+                </span>
+              }
+              className="flex items-center space-x-2"
+            />
+          </div>
+          <div>
+            <Checkbox
+              checked={dataPrivacyAccepted}
+              onChange={(checked) => setDataPrivacyAccepted(checked)}
+              label={
+                <span className="text-sm text-gray-600">
+                  I agree to Furk's{' '}
+                  <a
+                    href="/terms-of-service#data-privacy"
+                    className="text-primary-600 hover:text-primary-500 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Data Privacy
+                  </a>
+                </span>
+              }
+              className="flex items-center space-x-2"
+            />
+          </div>
         </div>
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          loading={isLoading}
-          disabled={!isFormValid()}
-        >
-          {isLoading ? 'Creating Account...' : 'Create Account'}
-        </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={isLoading}
+              disabled={!isFormValid()}
+            >
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Button>
+          </div>
+        </form>
       </div>
-    </form>
+    </motion.div>
+  </motion.div>
   );
 };
 

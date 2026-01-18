@@ -68,25 +68,25 @@ const PopularServices = () => {
   }
 
   return (
-    popularServices.length >= 8 && (<section className="py-8 md:py-12 bg-gray-50">
+    popularServices.length >= 8 && (<section className="py-12 md:py-16 lg:py-20 bg-white">
       <motion.div 
         className="container mx-auto px-4 md:px-6 lg:px-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        <h2 className="font-cursive text-3xl font-bold md:text-3xl text-center mb-4">Popular Services</h2>
-        <p className="text-xl text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+        <h2 className="font-cursive text-3xl md:text-4xl font-bold sm:text-start text-center mb-3 text-gray-900">Popular Services</h2>
+        <p className="text-lg md:text-xl text-gray-600 sm:text-start text-center mb-10">
           Discover our most sought-after pet care services
         </p>
         <div className="relative w-full">
           <motion.div 
-            className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50 to-transparent z-10"
+            className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: scrollPosition < 0.001 ? 0 : 1 }}
           />
           <motion.div 
-            className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50 to-transparent z-10"
+            className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"
             initial={{ opacity: 1 }}
             animate={{ opacity: scrollPosition > 0.999 ? 0 : 1 }}
           />
@@ -100,26 +100,32 @@ const PopularServices = () => {
               const container = e.currentTarget;
               setScrollPosition(container.scrollLeft / (container.scrollWidth - container.clientWidth));
             }}
-            className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide relative w-full"
+            className="flex overflow-x-auto space-x-5 pb-4 scrollbar-hide relative w-full"
           >
             {popularServices.length > 0 ? (
               popularServices.map((service) => (
                 <div className="py-2 px-1" key={service.id}>
                   <motion.div 
                     key={service.id} 
-                    className="flex-none w-80 bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
+                    className="flex-none w-80 bg-white rounded-xl shadow-md hover:shadow-xl overflow-hidden cursor-pointer transition-all duration-300 border border-gray-100"
                     whileHover={{ 
-                      scale: 1.02,
+                      scale: 1.03,
                       transition: { duration: 0.2 }
                     }}
                     onClick={() => navigate(`/services/${service.id}`)}
                   >
-                    <img src={service.attachment} alt={service.name} className="w-full h-48 object-cover" />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-lg mb-1 truncate">{service.name}</h3>
-                      <p className="text-sm text-gray-600 mb-2 truncate">{service.business_name}</p>
-                      <div className="flex items-center justify-between text-sm text-gray-700">
-                        <span className="text-primary-600 font-semibold">{service.furkredit_price} <span className="text-xs">Furkredits</span></span>
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={service.attachment} 
+                        alt={service.name} 
+                        className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" 
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg mb-1.5 truncate text-gray-900">{service.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3 truncate">{service.business_name}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-primary-600 font-semibold text-base">{service.furkredit_price} <span className="text-xs text-gray-500">Furkredits</span></span>
                         <div className="flex items-center gap-2">
                           <Rating
                             initialValue={service.avg_rating}
@@ -128,7 +134,7 @@ const PopularServices = () => {
                             SVGstyle={{ "display": "inline" }}
                             transition
                           />
-                          <span className="text-xs">{service.total_reviews} reviews</span>
+                          <span className="text-xs text-gray-600">{service.total_reviews} reviews</span>
                         </div>
                       </div>
                     </div>

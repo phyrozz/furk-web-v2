@@ -41,16 +41,16 @@ const WhatsNewSection = () => {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 md:py-20 lg:py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <motion.div 
-          className="text-center max-w-3xl mx-auto mb-12"
+          className="sm:text-start text-center max-w-3xl mb-14"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl font-cursive font-bold text-gray-800 mb-4">What's New at FURK</h2>
-          <p className="text-xl text-gray-600">
+          <h2 className="text-3xl md:text-4xl font-cursive font-bold text-gray-900 mb-4">What's New at FURK</h2>
+          <p className="text-lg md:text-xl text-gray-600">
             Discover our newest services and featured offerings for your beloved pets
           </p>
         </motion.div>

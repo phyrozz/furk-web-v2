@@ -45,4 +45,14 @@ export class AdminDashboardService {
         const payload: any = { application_id: applicationId, notes: notes };
         return http.post('/merchant-application/save-notes', payload);
     }
+
+    async saveBankDetails(applicationId: string, bankAccountNumber: string, bankAccountName: string, bankName: string): Promise<any> {
+        const payload: any = {
+            application_id: applicationId,
+            bank_account_number: bankAccountNumber,
+            bank_account_name: bankAccountName,
+            bank_name: bankName
+        };
+        return http.post('/merchant-application/save-bank-details', payload);
+    }
 }

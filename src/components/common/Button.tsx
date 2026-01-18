@@ -95,6 +95,10 @@ const Button: React.FC<ButtonProps> = ({
   const widthStyle = fullWidth ? 'w-full' : '';
   const disabledStyle = (disabled || loading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
+  // drop shadow for primary, secondary, accent variants
+  const shadowStyle =
+    variant === 'primary' || variant === 'secondary' || variant === 'accent' ? 'shadow-md' : '';
+
   // spinners are old school 🥹
   // const Spinner = () => (
   //   <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
@@ -124,7 +128,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyle} whitespace-nowrap ${className}`}
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyle} ${shadowStyle} whitespace-nowrap ${className}`}
       onClick={onClick}
       disabled={disabled || loading}
     >
