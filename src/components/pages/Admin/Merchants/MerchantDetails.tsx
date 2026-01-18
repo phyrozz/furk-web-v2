@@ -78,6 +78,10 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [feePercent, setFeePercent] = useState(merchant.fee_percent ?? 0);
   const [loadingSaveNotes, setLoadingSaveNotes] = useState(false);
   const [notesRefreshKey, setNotesRefreshKey] = useState(0);
+  const [bankAccountNumber, setBankAccountNumber] = useState(merchant.bank_account_number || '');
+  const [bankAccountName, setBankAccountName] = useState(merchant.bank_account_name || '');
+  const [bankName, setBankName] = useState(merchant.bank_name || '');
+  const [loadingSaveBankDetails, setLoadingSaveBankDetails] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -251,6 +255,39 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
     setFeePercent(merchant.fee_percent || 0.000);
   }, [merchant.fee_percent])
 
+  useEffect(() => {
+    setBankAccountNumber(merchant.bank_account_number || '');
+    setBankAccountName(merchant.bank_account_name || '');
+    setBankName(merchant.bank_name || '');
+  }, [merchant.bank_account_number, merchant.bank_account_name, merchant.bank_name])
+
+  const saveBankDetails = async () => {
+    if (!bankAccountNumber.trim() || !bankAccountName.trim() || !bankName.trim()) {
+      ToastService.show('Please fill in all bank details fields');
+      return;
+    }
+
+    setLoadingSaveBankDetails(true);
+    dataService.saveBankDetails(merchant.id, bankAccountNumber.trim(), bankAccountName.trim(), bankName.trim())
+      .then((res: any) => {
+        if (res?.success) {
+          merchant.bank_account_number = bankAccountNumber.trim();
+          merchant.bank_account_name = bankAccountName.trim();
+          merchant.bank_name = bankName.trim();
+          ToastService.show('Bank details saved successfully');
+        } else {
+          ToastService.show('Failed to save bank details');
+        }
+      })
+      .catch((error) => {
+        console.error('Error saving bank details:', error);
+        ToastService.show('Error saving bank details: ' + (error.message || 'Unknown error'));
+      })
+      .finally(() => {
+        setLoadingSaveBankDetails(false);
+      });
+  };
+
   return (
     <div className="bg-white rounded-lg shadow select-none">
       {/* Header */}
@@ -324,6 +361,16 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
             onClick={() => setActiveTab('agreements')}
           >
             Agreements
+          </button>
+          <button
+            className={`px-6 py-3 font-medium ${
+              activeTab === 'bank-details'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('bank-details')}
+          >
+            Bank Details
           </button>
           <button
             className={`px-6 py-3 font-medium ${
@@ -631,6 +678,95 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'bank-details' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Bank Account Information</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Review the bank details screenshot from the Documents tab and fill in the information below.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={saveBankDetails}
+                loading={loadingSaveBankDetails}
+                disabled={!bankAccountNumber.trim() || !bankAccountName.trim() || !bankName.trim()}
+                icon={<Save className="h-4 w-4" />}
+              >
+                Save Bank Details
+              </Button>
+            </div>
+
+            <div className="bg-white rounded-lg border p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Bank Account Number
+                  <span className="text-red-500"> *</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter bank account number"
+                  value={bankAccountNumber}
+                  onChange={(e) => setBankAccountNumber(e.target.value)}
+                  maxLength={50}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Bank Account Name
+                  <span className="text-red-500"> *</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter account holder name"
+                  value={bankAccountName}
+                  onChange={(e) => setBankAccountName(e.target.value)}
+                  maxLength={255}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Bank Name
+                  <span className="text-red-500"> *</span>
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="e.g., BPI, BDO, Metrobank, etc."
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  maxLength={100}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  This information will be used for processing payouts to the merchant.
+                </p>
+              </div>
+
+              {getAttachmentValue(merchant.attachments, 'bank_details') && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900 mb-2">Bank Details Screenshot Reference</p>
+                  <a
+                    href={getAttachmentValue(merchant.attachments, 'bank_details')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    <FileText size={16} />
+                    <span>View Bank Details Screenshot</span>
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}
