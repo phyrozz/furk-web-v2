@@ -7,12 +7,14 @@ import AdminNavbar from '../../common/AdminNavbar';
 import TrendChart from './Dashboard/TrendChart';
 import PetOwnersWidget from './Dashboard/PetOwnersWidget';
 import Select from '../../common/Select';
+import { Link } from 'react-router-dom';
 
 interface DashboardCard {
   title: string;
   value: string | number;
   icon: React.ReactNode;
   color: string;
+  href?: string;
 }
 
 interface AdminStats {
@@ -165,20 +167,29 @@ const AdminDashboardPage = () => {
       value: stats.users_count,
       icon: <Dog size={24} />,
       color: 'bg-primary-500',
+      href: "#pet-owners-list"
     },
     {
       title: 'Total Merchants',
       value: stats.merchants_count,
       icon: <User size={24} />,
       color: 'bg-warning-500',
+      href: "/admin/merchants"
     },
     {
       title: 'Total Affiliates',
       value: stats.affiliates_count,
       icon: <Users size={24} />,
       color: 'bg-success-500',
+      href: "/admin/affiliates"
     },
   ];
+
+  const scrollToId = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="h-screen bg-gray-50 overflow-y-auto">
@@ -193,27 +204,51 @@ const AdminDashboardPage = () => {
       {!statsLoading && <div className="container mx-auto px-4 py-8 pt-24 cursor-default">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {cards.map((card, index) => (
-            <motion.div
-              key={index}
-              className="bg-white rounded-xl shadow-sm overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${card.color} text-white p-3 rounded-lg`}>
-                    {card.icon}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">{card.title}</p>
-                    <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+          {cards.map((card, index) => {
+            const isHashLink = (card.href || '').startsWith('#');
+
+            const CardInner = (
+              <motion.div
+                className="bg-white rounded-xl shadow-sm overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`${card.color} text-white p-3 rounded-lg`}>
+                      {card.icon}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">{card.title}</p>
+                      <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+
+            if (isHashLink) {
+              const targetId = card.href === '#pet-owners-widget' ? 'pet-owners-list' : card.href!.slice(1);
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  className="block w-full text-left"
+                  onClick={() => scrollToId(targetId)}
+                >
+                  {CardInner}
+                </button>
+              );
+            }
+
+            return (
+              <Link key={index} to={card.href || ''} className="block">
+                {CardInner}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Trend Charts */}
@@ -274,7 +309,7 @@ const AdminDashboardPage = () => {
         </div>
 
         {/* Pet Owners Widget */}
-        <div className="mt-6">
+        <div id="pet-owners-list" className="mt-6">
           <PetOwnersWidget />
         </div>
       </div>}
