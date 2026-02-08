@@ -163,6 +163,12 @@ const AffiliateList: React.FC<AffiliateListProps> = ({ selectedAffiliate, onSele
               <p className="text-sm text-gray-500">
                 Submitted on: {new Date(affiliate.created_at).toLocaleDateString()}
               </p>
+              {/* <p className="text-sm text-gray-500 mt-1">
+                Merchants:{' '}
+                {affiliate.referred_merchants && affiliate.referred_merchants.length > 0
+                  ? affiliate.referred_merchants.map((merchant) => merchant.business_name).join(', ')
+                  : 'N/A'}
+              </p> */}
               <span
                 className={`inline-block px-2 py-1 mt-2 text-xs font-medium rounded-full ${
                   affiliate.application_status === 'pending'

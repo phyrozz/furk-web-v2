@@ -4,19 +4,30 @@ import { AdminDashboardService } from '../../../../services/admin/admin-dashboar
 import { MerchantApplication } from '../types';
 import { useDebounce } from 'use-debounce';
 import { useLazyLoad } from '../../../../hooks/useLazyLoad';
+import { useEffect } from 'react';
 
 interface MerchantListProps {
   selectedMerchant: MerchantApplication | null;
   onSelectMerchant: (merchant: MerchantApplication | null) => void;
   onMerchantStatusChange?: () => void;
+  initialSearchTerm?: string;
+  initialFilter?: string;
+  autoSelectMerchantId?: number;
 }
 
 const adminDashboardService = new AdminDashboardService();
 
-const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectMerchant, onMerchantStatusChange }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const MerchantList: React.FC<MerchantListProps> = ({
+  selectedMerchant,
+  onSelectMerchant,
+  onMerchantStatusChange,
+  initialSearchTerm = '',
+  initialFilter = 'pending',
+  autoSelectMerchantId
+}) => {
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [filter, setFilter] = useState('pending');
+  const [filter, setFilter] = useState(initialFilter);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const limit = 50;
@@ -65,6 +76,25 @@ const MerchantList: React.FC<MerchantListProps> = ({ selectedMerchant, onSelectM
     setRefreshKey(prev => prev + 1);
     reset();
   };
+
+  useEffect(() => {
+    setSearchTerm(initialSearchTerm);
+  }, [initialSearchTerm]);
+
+  useEffect(() => {
+    setFilter(initialFilter);
+  }, [initialFilter]);
+
+  useEffect(() => {
+    if (!autoSelectMerchantId || selectedMerchant) {
+      return;
+    }
+
+    const matchedMerchant = merchants.find((merchant) => merchant.merchant_id === autoSelectMerchantId);
+    if (matchedMerchant) {
+      onSelectMerchant(matchedMerchant);
+    }
+  }, [autoSelectMerchantId, merchants, onSelectMerchant, selectedMerchant]);
 
   // Update selected merchant if its status changes
   useCallback(() => {

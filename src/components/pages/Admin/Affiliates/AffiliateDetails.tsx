@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Check, X, ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2, Save } from 'lucide-react';
 import { ToastService } from '../../../../services/toast/toast-service';
-import { AffiliateApplication } from '../types';
+import { AffiliateApplication, ReferredMerchant } from '../types';
 import { http } from '../../../../utils/http';
 import Button from '../../../common/Button';
 import NotesList from './NotesList';
+import { useNavigate } from 'react-router-dom';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -70,6 +71,11 @@ const AffiliateDetails: React.FC<AffiliateDetailsProps> = ({ affiliate, onStatus
   const [adminNotes, setAdminNotes] = useState<string | undefined>("");
   const [loadingSaveNotes, setLoadingSaveNotes] = useState(false);
   const [notesRefreshKey, setNotesRefreshKey] = useState(0);
+  const [merchantIdInput, setMerchantIdInput] = useState('');
+  const [assignMerchantLoading, setAssignMerchantLoading] = useState(false);
+  const [deassignMerchantLoading, setDeassignMerchantLoading] = useState<number | null>(null);
+  const [referredMerchants, setReferredMerchants] = useState<ReferredMerchant[]>(affiliate.referred_merchants || []);
+  const navigate = useNavigate();
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -196,6 +202,79 @@ const saveNotes = async () => {
     setAdminNotes(affiliate.notes || "");
   }, [affiliate.notes])
 
+  useEffect(() => {
+    setReferredMerchants(affiliate.referred_merchants || []);
+  }, [affiliate.referred_merchants]);
+
+  const assignMerchant = async () => {
+    if (!merchantIdInput.trim()) {
+      ToastService.show('Please input a merchant ID');
+      return;
+    }
+
+    const merchantId = Number(merchantIdInput.trim());
+    if (!Number.isInteger(merchantId) || merchantId <= 0) {
+      ToastService.show('Merchant ID must be a valid number');
+      return;
+    }
+
+    try {
+      setAssignMerchantLoading(true);
+      const response: any = await http.post('/affiliate-application/assign-merchant', {
+        affiliate_id: affiliate.id,
+        merchant_id: merchantId
+      });
+
+      if (response?.success && response?.data?.merchant) {
+        const merchant = response.data.merchant as ReferredMerchant;
+        setReferredMerchants(prev => [merchant, ...prev.filter(m => m.merchant_id !== merchant.merchant_id)]);
+        affiliate.referred_merchants = [merchant, ...(affiliate.referred_merchants || []).filter((m) => m.merchant_id !== merchant.merchant_id)];
+        setMerchantIdInput('');
+        ToastService.show('Merchant assigned successfully');
+      } else {
+        ToastService.show('Failed to assign merchant');
+      }
+    } catch (error: any) {
+      console.error('Error assigning merchant:', error);
+      ToastService.show(error?.message || 'Error assigning merchant');
+    } finally {
+      setAssignMerchantLoading(false);
+    }
+  };
+
+  const deassignMerchant = async (merchantId: number) => {
+    try {
+      setDeassignMerchantLoading(merchantId);
+      const response: any = await http.post('/affiliate-application/deassign-merchant', {
+        affiliate_id: affiliate.id,
+        merchant_id: merchantId
+      });
+
+      if (response?.success) {
+        setReferredMerchants(prev => prev.filter(merchant => merchant.merchant_id !== merchantId));
+        affiliate.referred_merchants = (affiliate.referred_merchants || []).filter((merchant) => merchant.merchant_id !== merchantId);
+        ToastService.show('Merchant de-assigned successfully');
+      } else {
+        ToastService.show('Failed to de-assign merchant');
+      }
+    } catch (error: any) {
+      console.error('Error de-assigning merchant:', error);
+      ToastService.show(error?.message || 'Error de-assigning merchant');
+    } finally {
+      setDeassignMerchantLoading(null);
+    }
+  };
+
+  const goToMerchantDetails = (merchant: ReferredMerchant) => {
+    navigate('/admin/merchants', {
+      state: {
+        preselectMerchantId: merchant.merchant_id,
+        prefillKeyword: merchant.business_name,
+        prefillStatus: merchant.application_status
+      }
+    });
+  };
+
   return (
     <div className="bg-white rounded-lg shadow select-none">
       {/* Header */}
@@ -247,6 +326,16 @@ const saveNotes = async () => {
             onClick={() => setActiveTab('documents')}
           >
             Documents
+          </button>
+          <button
+            className={`px-6 py-3 font-medium ${
+              activeTab === 'referred-merchants'
+                ? 'md:border-b-2 border-b-0 border-t-2 md:border-t-0 border-primary-500 text-primary-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setActiveTab('referred-merchants')}
+          >
+            Referred Merchants
           </button>
           <button
             className={`px-6 py-3 font-medium ${
@@ -306,6 +395,90 @@ const saveNotes = async () => {
               name="Valid ID"
               url={getAttachmentValue(affiliate.attachments, 'id')}
             />
+          </div>
+        )}
+
+        {activeTab === 'referred-merchants' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900">Referred / Signed-up Merchants</h3>
+              <span className="text-sm text-gray-500">
+                Total: {referredMerchants.length || 0}
+              </span>
+            </div>
+
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Assign Merchant to This Affiliate</h4>
+              <div className="flex md:flex-row flex-col gap-3 items-start">
+                <input
+                  type="text"
+                  className="w-full md:w-72 p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter Merchant ID"
+                  value={merchantIdInput}
+                  onChange={(e) => setMerchantIdInput(e.target.value)}
+                  maxLength={20}
+                />
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={assignMerchant}
+                  loading={assignMerchantLoading}
+                  disabled={!merchantIdInput.trim()}
+                >
+                  Assign Merchant
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Merchant can only be assigned if it is not currently assigned to any affiliate.
+              </p>
+            </div>
+
+            {!referredMerchants || referredMerchants.length === 0 ? (
+              <div className="border rounded-lg p-6 text-center text-gray-500">
+                No merchants referred yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto border rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Joined</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {referredMerchants.map((merchant: ReferredMerchant) => (
+                      <tr key={merchant.merchant_id}>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          <button
+                            className="text-primary-600 hover:text-primary-700 hover:underline"
+                            onClick={() => goToMerchantDetails(merchant)}
+                          >
+                            {merchant.business_name}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{merchant.merchant_type}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{merchant.application_status}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">{new Date(merchant.joined_at).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => deassignMerchant(merchant.merchant_id)}
+                            loading={deassignMerchantLoading === merchant.merchant_id}
+                          >
+                            De-assign
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
