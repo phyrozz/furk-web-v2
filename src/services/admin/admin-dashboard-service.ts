@@ -55,4 +55,19 @@ export class AdminDashboardService {
         };
         return http.post('/merchant-application/save-bank-details', payload);
     }
+
+    async assignAffiliate(applicationId: string, affiliateCode: string): Promise<any> {
+        const payload: any = {
+            application_id: applicationId,
+            affiliate_code: affiliateCode
+        };
+        return http.post('/merchant-application/assign-affiliate', payload);
+    }
+
+    async deassignAffiliate(applicationId: string): Promise<any> {
+        const payload: any = {
+            application_id: applicationId
+        };
+        return http.post('/merchant-application/deassign-affiliate', payload);
+    }
 }

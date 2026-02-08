@@ -3,6 +3,7 @@ export interface MerchantApplication {
   merchant_id: number;
   business_name: string;
   merchant_type: 'BUSINESS' | 'FREELANCE';
+  affiliate_code?: string | null;
   status: 'pending' | 'suspended' | 'rejected' | 'verified' | 'unverified';
   business_types: BusinessType[] | [];
   created_at: string;

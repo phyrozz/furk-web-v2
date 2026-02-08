@@ -82,6 +82,9 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [bankAccountName, setBankAccountName] = useState(merchant.bank_account_name || '');
   const [bankName, setBankName] = useState(merchant.bank_name || '');
   const [loadingSaveBankDetails, setLoadingSaveBankDetails] = useState(false);
+  const [affiliateCodeInput, setAffiliateCodeInput] = useState(merchant.affiliate_code || '');
+  const [assignAffiliateLoading, setAssignAffiliateLoading] = useState(false);
+  const [deassignAffiliateLoading, setDeassignAffiliateLoading] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -261,6 +264,59 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
     setBankName(merchant.bank_name || '');
   }, [merchant.bank_account_number, merchant.bank_account_name, merchant.bank_name])
 
+  useEffect(() => {
+    setAffiliateCodeInput(merchant.affiliate_code || '');
+  }, [merchant.affiliate_code])
+
+  const assignAffiliate = async () => {
+    const trimmedAffiliateCode = affiliateCodeInput.trim();
+
+    if (!trimmedAffiliateCode) {
+      ToastService.show('Please input a valid Affiliate ID');
+      return;
+    }
+
+    setAssignAffiliateLoading(true);
+    dataService.assignAffiliate(merchant.id, trimmedAffiliateCode)
+      .then((res: any) => {
+        if (res?.success) {
+          merchant.affiliate_code = trimmedAffiliateCode;
+          setAffiliateCodeInput(trimmedAffiliateCode);
+          ToastService.show('Affiliate assigned successfully');
+        } else {
+          ToastService.show('Failed to assign affiliate');
+        }
+      })
+      .catch((error) => {
+        console.error('Error assigning affiliate:', error);
+        ToastService.show(error.message || 'Error assigning affiliate');
+      })
+      .finally(() => {
+        setAssignAffiliateLoading(false);
+      });
+  };
+
+  const deassignAffiliate = async () => {
+    setDeassignAffiliateLoading(true);
+    dataService.deassignAffiliate(merchant.id)
+      .then((res: any) => {
+        if (res?.success) {
+          merchant.affiliate_code = null;
+          setAffiliateCodeInput('');
+          ToastService.show('Merchant de-assigned from affiliate successfully');
+        } else {
+          ToastService.show('Failed to de-assign affiliate');
+        }
+      })
+      .catch((error) => {
+        console.error('Error de-assigning affiliate:', error);
+        ToastService.show(error.message || 'Error de-assigning affiliate');
+      })
+      .finally(() => {
+        setDeassignAffiliateLoading(false);
+      });
+  };
+
   const saveBankDetails = async () => {
     if (!bankAccountNumber.trim() || !bankAccountName.trim() || !bankName.trim()) {
       ToastService.show('Please fill in all bank details fields');
@@ -305,6 +361,7 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
             <p className="text-sm text-gray-500">Merchant ID: {merchant.merchant_id}</p>
             <p className="text-sm text-gray-500">Application ID: {merchant.id}</p>
             <p className="text-sm text-gray-500 mt-1">Type: {merchant.merchant_type}</p>
+            <p className="text-sm text-gray-500 mt-1">Affiliate ID: {merchant.affiliate_code || 'N/A'}</p>
           </div>
           <div className="text-right">
             <p className="text-gray-500 text-sm">
@@ -419,7 +476,50 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
                     )}
                   </div>
                 </div>
-                {/* Add more business details */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">
+                    Affiliate ID
+                  </label>
+                  <p className="mt-1">{merchant.affiliate_code || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 border rounded-lg p-4 bg-gray-50">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Affiliate Assignment</h4>
+                <div className="flex md:flex-row flex-col gap-3 items-start">
+                  <input
+                    type="text"
+                    className="w-full md:w-72 p-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Enter Affiliate ID"
+                    value={affiliateCodeInput}
+                    onChange={(e) => setAffiliateCodeInput(e.target.value)}
+                    disabled={!!merchant.affiliate_code}
+                    maxLength={50}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={assignAffiliate}
+                      loading={assignAffiliateLoading}
+                      disabled={!!merchant.affiliate_code || !affiliateCodeInput.trim()}
+                    >
+                      Assign
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={deassignAffiliate}
+                      loading={deassignAffiliateLoading}
+                      disabled={!merchant.affiliate_code}
+                    >
+                      De-assign
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Assignment is only allowed if merchant is currently unassigned.
+                </p>
               </div>
             </div>
           </div>
