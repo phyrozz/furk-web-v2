@@ -5,10 +5,21 @@ import { motion } from 'framer-motion';
 import AdminNavbar from '../../common/AdminNavbar';
 import { MerchantApplication } from './types';
 import { ToastService } from '../../../services/toast/toast-service';
+import { useLocation } from 'react-router-dom';
 
 const AdminPage = () => {
   const [selectedMerchant, setSelectedMerchant] = useState<MerchantApplication | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const location = useLocation();
+  const locationState = location.state as {
+    preselectMerchantId?: number;
+    prefillKeyword?: string;
+    prefillStatus?: string;
+  } | null;
+
+  const preselectMerchantId = locationState?.preselectMerchantId;
+  const prefillKeyword = locationState?.prefillKeyword || '';
+  const prefillStatus = locationState?.prefillStatus || 'pending';
   
   const handleMerchantStatusChange = useCallback(() => {
     // Increment refresh trigger to cause the merchant list to refresh
@@ -41,6 +52,9 @@ const AdminPage = () => {
                   selectedMerchant={selectedMerchant}
                   onSelectMerchant={setSelectedMerchant}
                   onMerchantStatusChange={handleMerchantStatusChange}
+                  initialSearchTerm={prefillKeyword}
+                  initialFilter={prefillStatus}
+                  autoSelectMerchantId={preselectMerchantId}
                   key={refreshTrigger} // Force re-render when refreshTrigger changes
                 />
               </div>

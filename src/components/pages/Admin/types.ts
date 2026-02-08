@@ -28,10 +28,19 @@ export interface AffiliateApplication {
   attachments: any;
   notes?: string;
   fee_percent?: number;
+  referred_merchants?: ReferredMerchant[];
 }
 
 interface BusinessType {
   id: number;
   name: string;
   description: string;
+}
+
+export interface ReferredMerchant {
+  merchant_id: number;
+  business_name: string;
+  merchant_type: 'BUSINESS' | 'FREELANCE';
+  application_status: 'pending' | 'verified' | 'unverified' | 'rejected' | 'suspended';
+  joined_at: string;
 }
