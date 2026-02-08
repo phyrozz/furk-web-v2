@@ -17,4 +17,15 @@ export class MerchantDashboardService {
 
     return http.post('/merchant-notifications/list', data);
   }
+
+  async getMerchantLocation(): Promise<any> {
+    return http.get('/merchant-profile');
+  }
+
+  async updateMerchantLocation(long: number, lat: number): Promise<any> {
+    return http.post('/merchant-profile/location', {
+      long,
+      lat
+    });
+  }
 }
