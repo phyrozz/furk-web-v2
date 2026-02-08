@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { http } from '../../../../utils/http';
 import DateUtils from '../../../../utils/date-utils';
 import PawLoading from '../../../common/PawLoading';
 import { ApplicationStatus } from '../../../../models/application_statuses';
+import LocationPicker from '../../../common/LocationPicker';
 
 interface MerchantListData {
   merchant_id: number;
@@ -12,6 +13,8 @@ interface MerchantListData {
   phone_number: string;
   business_name: string;
   merchant_type: string;
+  longitude: number | null;
+  latitude: number | null;
   application_status: ApplicationStatus;
   joined_at: string;
 }
@@ -33,6 +36,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ limit = 10, refreshTrigger 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [expandedMerchantId, setExpandedMerchantId] = useState<number | null>(null);
   
   const fetchMerchants = async (page: number) => {
     setIsLoading(true);
@@ -49,6 +53,7 @@ const MerchantList: React.FC<MerchantListProps> = ({ limit = 10, refreshTrigger 
       
       setMerchants(response.data);
       setTotalCount(response.count);
+      setExpandedMerchantId(null);
     } catch (err: any) {
       setError(err?.message || 'Failed to load merchant referrals');
       setMerchants([]);
@@ -139,44 +144,76 @@ const MerchantList: React.FC<MerchantListProps> = ({ limit = 10, refreshTrigger 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Joined</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Map</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {merchants.map((merchant) => (
-                <tr key={merchant.merchant_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{merchant.username}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{merchant.business_name || 'N/A'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      {merchant.merchant_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {merchant.phone_number}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      merchant.application_status === 'verified'
-                        ? 'bg-green-100 text-green-800'
-                        : merchant.application_status === 'unverified'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : merchant.application_status === 'rejected'
-                        ? 'bg-red-100 text-red-800'
-                        : merchant.application_status === 'suspended'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {merchant.application_status.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {DateUtils.formatTimestampString(merchant.joined_at)}
-                  </td>
-                </tr>
+                <Fragment key={merchant.merchant_id}>
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{merchant.username}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{merchant.business_name || 'N/A'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        {merchant.merchant_type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {merchant.phone_number}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        merchant.application_status === 'verified'
+                          ? 'bg-green-100 text-green-800'
+                          : merchant.application_status === 'unverified'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : merchant.application_status === 'rejected'
+                          ? 'bg-red-100 text-red-800'
+                          : merchant.application_status === 'suspended'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {merchant.application_status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {DateUtils.formatTimestampString(merchant.joined_at)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {merchant.latitude !== null && merchant.longitude !== null ? (
+                        <button
+                          onClick={() => {
+                            setExpandedMerchantId(
+                              expandedMerchantId === merchant.merchant_id ? null : merchant.merchant_id
+                            );
+                          }}
+                          className="text-primary-600 hover:text-primary-700 font-medium"
+                        >
+                          {expandedMerchantId === merchant.merchant_id ? 'Hide Map' : 'View Map'}
+                        </button>
+                      ) : (
+                        'N/A'
+                      )}
+                    </td>
+                  </tr>
+
+                  {expandedMerchantId === merchant.merchant_id && merchant.latitude !== null && merchant.longitude !== null && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 bg-gray-50">
+                        <LocationPicker
+                          initialLat={merchant.latitude}
+                          initialLng={merchant.longitude}
+                          onChange={() => {}}
+                          readonly
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

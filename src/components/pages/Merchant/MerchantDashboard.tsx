@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, DollarSign, Package, Plus, List } from 'lucide-react';
+import { Calendar, Clock, Package, Plus, List } from 'lucide-react';
 import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,8 @@ import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import { useMerchantStatus } from '../../../hooks/useMerchantStatus';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
+import LocationPicker from '../../common/LocationPicker';
+import { ToastService } from '../../../services/toast/toast-service';
 
 const merchantDashboardService = new MerchantDashboardService();
 
@@ -40,6 +42,11 @@ interface Stats {
   monthly_earnings: number;
 }
 
+interface MerchantLocation {
+  latitude: number;
+  longitude: number;
+}
+
 const MerchantDashboard = () => {
   const [stats, setStats] = useState<Stats>({
     total_bookings_count: 0,
@@ -50,6 +57,10 @@ const MerchantDashboard = () => {
     monthly_earnings: 0
   });
   const [statsLoading, setStatsLoading] = useState<boolean>(true);
+  const [locationLoading, setLocationLoading] = useState<boolean>(true);
+  const [locationSaving, setLocationSaving] = useState<boolean>(false);
+  const [merchantLocation, setMerchantLocation] = useState<MerchantLocation | null>(null);
+  const [editedLocation, setEditedLocation] = useState<MerchantLocation | null>(null);
 
   const fetchStats = async () => {
     try {
@@ -73,7 +84,60 @@ const MerchantDashboard = () => {
     }
   }, []);
 
-  const { items: recentActivities, loadMore, loading, hasMore, reset } = useLazyLoad<Activity>({
+  const fetchMerchantLocation = async () => {
+    try {
+      const response: any = await merchantDashboardService.getMerchantLocation();
+      const location = response?.data;
+
+      if (typeof location?.latitude === 'number' && typeof location?.longitude === 'number') {
+        const currentLocation = {
+          latitude: location.latitude,
+          longitude: location.longitude
+        };
+        setMerchantLocation(currentLocation);
+        setEditedLocation(currentLocation);
+      } else {
+        setMerchantLocation(null);
+        setEditedLocation({
+          latitude: 14.5995,
+          longitude: 120.9842
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch merchant location:', error);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    if (!editedLocation) {
+      return;
+    }
+
+    try {
+      setLocationSaving(true);
+      await merchantDashboardService.updateMerchantLocation(editedLocation.longitude, editedLocation.latitude);
+      setMerchantLocation(editedLocation);
+      ToastService.show('Business location updated successfully!');
+    } catch (error) {
+      console.error('Failed to update merchant location:', error);
+      ToastService.show('Failed to update business location.');
+    } finally {
+      setLocationSaving(false);
+    }
+  };
+
+  const hasLocationChanges = Boolean(
+    editedLocation &&
+    (
+      !merchantLocation ||
+      editedLocation.latitude !== merchantLocation.latitude ||
+      editedLocation.longitude !== merchantLocation.longitude
+    )
+  );
+
+  const { items: recentActivities, loadMore, loading, hasMore } = useLazyLoad<Activity>({
     fetchData: fetchRecentActivities,
     limit: 50,
     enabled: true,
@@ -93,6 +157,7 @@ const MerchantDashboard = () => {
 
   useEffect(() => {
     fetchStats();
+    fetchMerchantLocation();
   }, []);
 
   const navigate = useNavigate();
@@ -387,6 +452,39 @@ const MerchantDashboard = () => {
             lastActivityElementRef={lastActivityElementRef}
           />
           <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
+        </div>
+
+        <div className="mt-8 bg-white rounded-xl shadow-sm p-6">
+          <div className="flex md:flex-row flex-col md:items-center items-start md:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Business Location</h2>
+              <p className="text-sm text-gray-600">Drag the pin or click the map to update your business location.</p>
+            </div>
+            <Button
+              onClick={handleSaveLocation}
+              loading={locationSaving}
+              disabled={!hasLocationChanges || locationLoading || !editedLocation}
+            >
+              Save Pin Location
+            </Button>
+          </div>
+
+          {locationLoading || !editedLocation ? (
+            <div className="w-full h-60 flex items-center justify-center">
+              <PawLoading />
+            </div>
+          ) : (
+            <>
+              <LocationPicker
+                initialLat={editedLocation.latitude}
+                initialLng={editedLocation.longitude}
+                onChange={(lat, lng) => setEditedLocation({ latitude: lat, longitude: lng })}
+              />
+              <p className="mt-3 text-sm text-gray-600">
+                Lat: {editedLocation.latitude.toFixed(6)} | Lng: {editedLocation.longitude.toFixed(6)}
+              </p>
+            </>
+          )}
         </div>
       </div>}
     </div>
