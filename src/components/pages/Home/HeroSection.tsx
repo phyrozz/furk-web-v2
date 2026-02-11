@@ -33,7 +33,7 @@ const HeroSection = () => {
         style={{ 
           backgroundImage: `url(${HERO_IMAGE_URL})`,
           backgroundPosition: 'center',
-          filter: 'brightness(0.65)'
+          filter: 'brightness(0.40)'
         }}
       >
         {/* Fallback background color while image loads */}

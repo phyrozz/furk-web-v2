@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,33 +5,27 @@ const PartnerSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 md:py-20 lg:py-24 bg-primary-50">
+    <section className="py-16 md:py-20 lg:py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12">
           {/* Image Column */}
-          <motion.div 
+          <div 
             className="w-full md:w-1/2"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
           >
             <img 
               src="https://images.pexels.com/photos/6131005/pexels-photo-6131005.jpeg?auto=compress&cs=tinysrgb&w=1600" 
               alt="Veterinarian with pet" 
               className="rounded-xl shadow-xl w-full h-auto object-cover max-h-96" 
             />
-          </motion.div>
+          </div>
           
           {/* Content Column */}
-          <motion.div 
+          <div 
             className="w-full md:w-1/2"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-5">Become a FURK Partner</h2>
             <p className="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed">
-              Join the largest network of pet service providers in the Philippines and grow your business.
+              Join the network of pet service providers in the Philippines and grow your business.
             </p>
             
             <ul className="space-y-4 mb-10">
@@ -77,7 +70,7 @@ const PartnerSection = () => {
             >
               Apply to Become a Partner
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

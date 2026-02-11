@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { CheckCircle, Shield, Award, Clock } from 'lucide-react';
 
 const WhyFurkSection = () => {
@@ -25,58 +24,29 @@ const WhyFurkSection = () => {
     }
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5 }
-    }
-  };
-
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="sm:text-start text-center mx-auto w-full mb-14">
-          <motion.h2 
+          <h2 
             className="text-3xl md:text-4xl font-cursive font-bold text-gray-900 mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
           >
             Why Choose FURK
-          </motion.h2>
-          <motion.p 
+          </h2>
+          <p 
             className="text-lg md:text-xl text-gray-600"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
           >
             We're dedicated to making pet care easy, reliable, and rewarding
-          </motion.p>
+          </p>
         </div>
 
-        <motion.div 
+        <div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
         >
           {benefits.map((benefit, index) => (
-            <motion.div 
+            <div 
               key={index}
               className="bg-white rounded-xl p-6 md:p-7 text-center shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 group"
-              variants={itemVariants}
             >
               <div className="flex justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                 {benefit.icon}
@@ -87,9 +57,9 @@ const WhyFurkSection = () => {
               <p className="text-gray-600 leading-relaxed">
                 {benefit.description}
               </p>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
