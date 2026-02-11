@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import moment from 'moment';
+import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 import Button from '../../../common/Button';
 import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
 import PawLoading from '../../../common/PawLoading';
 import Badge from '../../../common/Badge';
-import { X } from 'lucide-react';
+import { Camera, QrCode, X } from 'lucide-react';
 import Modal from '../../../common/Modal';
 import ResizableRightSidebar from '../../../common/ResizableRightSidebar';
+import { ToastService } from '../../../../services/toast/toast-service';
 
 interface BookingDetailsProps {
   isOpen: boolean;
@@ -22,8 +24,6 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   bookingId,
   onUpdate,
 }) => {
-  const [height, setHeight] = useState(500);
-  const [isResizing, setIsResizing] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [startLoading, setStartLoading] = useState<boolean>(false);
   const [cancelLoading, setCancelLoading] = useState<boolean>(false);
@@ -34,38 +34,29 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [confirmStatusChange, setConfirmStatusChange] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<'confirm' | 'start' | 'cancel' | 'complete' | null>(null);
+  const [scanModalOpen, setScanModalOpen] = useState<boolean>(false);
+  const [scanLoading, setScanLoading] = useState<boolean>(false);
+  const [scanProcessing, setScanProcessing] = useState<boolean>(false);
+  const [manualQrToken, setManualQrToken] = useState<string>('');
+  const [scannerError, setScannerError] = useState<string>('');
+
+  const scannerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const scannerControlsRef = useRef<IScannerControls | null>(null);
 
   const bookingsService = new MerchantBookingsService();
 
-  const minHeight = 100;
-  const maxHeight = window.innerHeight * 0.9;
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    setIsResizing(true);
-  }, []);
-
-  const stopResizing = useCallback(() => {
-    setIsResizing(false);
-  }, []);
-
-  const resize = useCallback(
-    (e: MouseEvent) => {
-      if (isResizing) {
-        const newHeight = window.innerHeight - e.clientY;
-        setHeight(Math.min(Math.max(newHeight, minHeight), maxHeight));
-      }
-    },
-    [isResizing, minHeight, maxHeight]
-  );
+  const stopScanner = () => {
+    if (scannerControlsRef.current) {
+      scannerControlsRef.current.stop();
+      scannerControlsRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
     return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
+      stopScanner();
     };
-  }, [resize, stopResizing]);
+  }, []);
 
   useEffect(() => {
     setDataLoading(true);
@@ -78,6 +69,94 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
     };
     fetchBookingDetails();
   }, [bookingId]);
+
+  const extractQrToken = (rawValue: string) => {
+    const trimmed = (rawValue || '').trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    const prefix = 'FURK_PET_QR:';
+    if (trimmed.startsWith(prefix)) {
+      return trimmed.substring(prefix.length);
+    }
+
+    return trimmed;
+  };
+
+  const confirmByQrToken = async (rawValue: string) => {
+    if (!bookingId) return;
+
+    const qrToken = extractQrToken(rawValue);
+    if (!qrToken) {
+      setScannerError('Invalid QR data');
+      return;
+    }
+
+    try {
+      setScanLoading(true);
+      await bookingsService.scanConfirmBooking(bookingId, qrToken);
+      const updatedBooking = await bookingsService.getBookingDetails(bookingId);
+      setBookingDetails(updatedBooking.data);
+      ToastService.show('Booking confirmed via QR scan');
+      onUpdate();
+      stopScanner();
+      setScanModalOpen(false);
+      onClose();
+    } catch (error: any) {
+      const message = error?.response?.data?.error || 'Error confirming booking via QR';
+      setScannerError(message);
+      ToastService.show(message);
+    } finally {
+      setScanLoading(false);
+      setScanProcessing(false);
+    }
+  };
+
+  const startScanner = async () => {
+    try {
+      setScannerError('');
+      setScanProcessing(false);
+      setManualQrToken('');
+      stopScanner();
+
+      if (!scannerVideoRef.current) {
+        setScannerError('Scanner video element is not ready yet.');
+        return;
+      }
+
+      const qrReader = new BrowserQRCodeReader(undefined, {
+        delayBetweenScanAttempts: 200,
+      });
+
+      scannerControlsRef.current = await qrReader.decodeFromVideoDevice(
+        undefined,
+        scannerVideoRef.current,
+        async (result, error) => {
+          if (scanProcessing) return;
+
+          if (result?.getText()) {
+            setScanProcessing(true);
+            await confirmByQrToken(result.getText());
+          } else if (error && !scanProcessing) {
+            // Ignore "not found" frames while camera is scanning.
+          }
+        }
+      );
+    } catch {
+      setScannerError('Unable to access camera. Please allow camera permissions or use manual token input.');
+    }
+  };
+
+  useEffect(() => {
+    if (scanModalOpen) {
+      startScanner();
+    } else {
+      stopScanner();
+      setScannerError('');
+      setManualQrToken('');
+    }
+  }, [scanModalOpen]);
 
   const initiateAction = (action: 'confirm' | 'start' | 'cancel' | 'complete') => {
     setPendingAction(action);
@@ -108,7 +187,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
           break;
       }
       const updatedBooking = await bookingsService.getBookingDetails(bookingId);
-      setBookingDetails(updatedBooking);
+      setBookingDetails(updatedBooking.data);
       onUpdate();
       onClose();
     } catch (error) {
@@ -150,7 +229,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                         <p><strong>Status:</strong> {bookingDetails && <Badge status={bookingDetails?.status} />}</p>
                         {bookingDetails?.remarks && <p><strong>Remarks:</strong> {bookingDetails.remarks}</p>}
                       </div>
-                      
+
                       <div className="space-y-4">
                         <h3 className="text-xl font-black">Customer Information</h3>
                         <p><strong>Name:</strong> {bookingDetails?.user?.first_name} {bookingDetails?.user?.last_name}</p>
@@ -173,8 +252,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                             <p><strong>Notes:</strong> {bookingDetails?.pet?.notes || 'N/A'}</p>
                           </div>
                           {bookingDetails?.pet?.profile_image && (
-                            <img 
-                              src={bookingDetails.pet.profile_image} 
+                            <img
+                              src={bookingDetails.pet.profile_image}
                               alt={`${bookingDetails.pet.name}'s photo`}
                               className="w-32 h-32 object-cover rounded-lg cursor-pointer"
                               onClick={() => {
@@ -198,15 +277,25 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
               <div className="border-t p-4 bg-white mt-auto">
                 <div className="flex gap-2 justify-end">
                   {bookingDetails.status === 'pending' && (
-                    <Button
-                      loading={confirmLoading}
-                      disabled={dataLoading}
-                      onClick={() => initiateAction('confirm')}
-                    >
-                      Confirm Booking
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        icon={<Camera size={18} />}
+                        disabled={dataLoading}
+                        onClick={() => setScanModalOpen(true)}
+                      >
+                        Scan Owner QR
+                      </Button>
+                      <Button
+                        loading={confirmLoading}
+                        disabled={dataLoading}
+                        onClick={() => initiateAction('confirm')}
+                      >
+                        Confirm Booking
+                      </Button>
+                    </>
                   )}
-                  
+
                   {bookingDetails.status === 'confirmed' && (
                     <div className="flex flex-col gap-2">
                       <span className="text-right text-xs items-center justify-center text-red-600">Cancelling this service will refund the furkredits to the pet owner.</span>
@@ -230,7 +319,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                       </div>
                     </div>
                   )}
-                  
+
                   {bookingDetails.status === 'in_progress' && (
                     <Button
                       loading={completeLoading}
@@ -277,24 +366,64 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                 </button>
             </motion.div>
         </motion.div>
-    )}
+      )}
 
-    {confirmStatusChange && (
+      {confirmStatusChange && (
+        <Modal
+          key="confirm-modal"
+          isOpen={confirmStatusChange}
+          onClose={() => {
+            setConfirmStatusChange(false);
+            setPendingAction(null);
+          }}
+          onConfirm={handleAction}
+          showConfirm
+          showCancel
+          title="Confirm"
+        >
+          <p>Are you sure you want to change the status of this booking? This action cannot be undone.</p>
+        </Modal>
+      )}
+
       <Modal
-        key="confirm-modal"
-        isOpen={confirmStatusChange}
+        isOpen={scanModalOpen}
         onClose={() => {
-          setConfirmStatusChange(false);
-          setPendingAction(null);
+          stopScanner();
+          setScanModalOpen(false);
+          setScannerError('');
+          setManualQrToken('');
         }}
-        onConfirm={handleAction}
-        showConfirm
-        showCancel
-        title="Confirm"
+        title="Scan Pet Owner QR"
       >
-        <p>Are you sure you want to change the status of this booking? This action cannot be undone.</p>
+        <div className="flex flex-col gap-3">
+          <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
+            <video ref={scannerVideoRef} className="w-full h-64 object-cover" muted playsInline />
+          </div>
+          <p className="text-sm text-gray-500 flex items-center gap-2">
+            <QrCode size={16} />
+            Scan the owner's QR code. If camera scan is unsupported, paste the token below.
+          </p>
+          {scannerError && (
+            <p className="text-sm text-red-600">{scannerError}</p>
+          )}
+          <input
+            type="text"
+            value={manualQrToken}
+            onChange={(e) => setManualQrToken(e.target.value)}
+            placeholder="Paste QR token or payload"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+          <div className="flex justify-end">
+            <Button
+              loading={scanLoading}
+              disabled={!manualQrToken.trim()}
+              onClick={() => confirmByQrToken(manualQrToken)}
+            >
+              Confirm via Token
+            </Button>
+          </div>
+        </div>
       </Modal>
-    )}
     </div>
   );
 };

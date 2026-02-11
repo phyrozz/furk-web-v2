@@ -26,6 +26,10 @@ export class MerchantBookingsService {
     return http.post(`/merchant/booking/confirm/${id}`);
   }
 
+  async scanConfirmBooking(id: number, qrToken: string): Promise<any> {
+    return http.post(`/merchant/booking/scan-confirm/${id}`, { qr_token: qrToken });
+  }
+
   async cancelBooking(id: number): Promise<any> {
     return http.post(`/merchant/booking/cancel/${id}`, {});
   }
