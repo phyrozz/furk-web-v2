@@ -440,7 +440,6 @@ const fetchMerchantProfile = useCallback(async () => {
           initialLat={formData.lat}
           enableSearch
           searchLocations={handleLocationSearch}
-          searchPlaceholder="Search business location"
           onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,

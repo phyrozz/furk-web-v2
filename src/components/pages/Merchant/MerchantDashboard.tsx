@@ -128,6 +128,16 @@ const MerchantDashboard = () => {
     }
   };
 
+  const handleLocationSearch = async (query: string) => {
+    try {
+      const response: any = await merchantDashboardService.searchLocations(query, 6);
+      return response?.data || [];
+    } catch (error) {
+      console.error('Error searching map locations:', error);
+      return [];
+    }
+  };
+
   const hasLocationChanges = Boolean(
     editedLocation &&
     (
@@ -478,6 +488,8 @@ const MerchantDashboard = () => {
               <LocationPicker
                 initialLat={editedLocation.latitude}
                 initialLng={editedLocation.longitude}
+                enableSearch
+                searchLocations={handleLocationSearch}
                 onChange={(lat, lng) => setEditedLocation({ latitude: lat, longitude: lng })}
               />
               <p className="mt-3 text-sm text-gray-600">
