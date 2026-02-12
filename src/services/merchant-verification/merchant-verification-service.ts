@@ -1,5 +1,11 @@
 import { http } from "../../utils/http";
 
+export interface GeocodeLocationResult {
+    label: string;
+    lat: number;
+    lng: number;
+}
+
 export class MerchantVerificationService {
     async submitMerchantApplicationDetails(formData: any): Promise<any> {
         const serviceGroupIds = formData.serviceGroups.map((group: any) => group.id);
@@ -24,6 +30,13 @@ export class MerchantVerificationService {
             limit: limit,
             offset: offset,
             keyword: keyword
+        });
+    }
+
+    async searchLocations(query: string, limit: number = 5): Promise<any> {
+        return http.post('/location-search/geocode', {
+            query,
+            limit
         });
     }
   }

@@ -303,6 +303,16 @@ const fetchMerchantProfile = useCallback(async () => {
     }
   };
 
+  const handleLocationSearch = async (query: string) => {
+    try {
+      const response: any = await dataService.searchLocations(query, 6);
+      return response?.data || [];
+    } catch (error) {
+      console.error('Error searching map locations:', error);
+      return [];
+    }
+  };
+
   const handleLoadMoreServiceGroups = async () => {
     if (isLoadingServiceGroups) return;
     
@@ -428,6 +438,9 @@ const fetchMerchantProfile = useCallback(async () => {
         <LocationPicker 
           initialLng={formData.long}
           initialLat={formData.lat}
+          enableSearch
+          searchLocations={handleLocationSearch}
+          searchPlaceholder="Search business location"
           onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,
