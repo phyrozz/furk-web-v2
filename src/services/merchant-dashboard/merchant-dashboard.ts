@@ -28,4 +28,11 @@ export class MerchantDashboardService {
       lat
     });
   }
+
+  async searchLocations(query: string, limit: number = 5): Promise<any> {
+    return http.post('/location-search/geocode', {
+      query,
+      limit
+    });
+  }
 }

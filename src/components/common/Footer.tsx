@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -19,10 +19,32 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/profile.php?id=61577241581092" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-primary-400 transition-colors">
-                <Facebook size={20} />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
               </a>
               <a href="https://www.instagram.com/furk.app?igsh=NXF6NmhscjlnMmVw" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-primary-400 transition-colors">
-                <Instagram size={20} />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
               </a>
               <a href="https://www.tiktok.com/@furk.app?_r=1&_d=eahe2ma3a5ke4m&sec_uid=MS4wLjABAAAA8mASraSu8yW6gH8pMRuFCCxvHau_Y8yn5z7A_E8mT0UyIdvNY2ShRKWHR_39OHyg&share_author_id=7047577459487622145&sharer_language=en&source=h5_t&u_code=dl19a0iale42jg&timestamp=1750343448&user_id=7014023541038302210&sec_user_id=MS4wLjABAAAAKQ76qrqkAo-hgznyLU4YNinKHTXzZxrHw2dn74EQgQ7VLQrRR5pcJlARsgiOn8zo&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7517082608950707975&share_link_id=099bd5bb-3b4c-478a-bc8f-e8b8802a4623&share_app_id=1180&ugbiz_name=ACCOUNT&ug_btm=b2001%2Cb5836&social_share_type=5&enable_checksum=1" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-primary-400 transition-colors">
                 <svg 

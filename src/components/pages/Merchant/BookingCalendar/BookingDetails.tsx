@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import moment from 'moment';
 import Button from '../../../common/Button';
 import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
@@ -22,8 +22,6 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   bookingId,
   onUpdate,
 }) => {
-  const [height, setHeight] = useState(500);
-  const [isResizing, setIsResizing] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [startLoading, setStartLoading] = useState<boolean>(false);
   const [cancelLoading, setCancelLoading] = useState<boolean>(false);
@@ -36,36 +34,6 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   const [pendingAction, setPendingAction] = useState<'confirm' | 'start' | 'cancel' | 'complete' | null>(null);
 
   const bookingsService = new MerchantBookingsService();
-
-  const minHeight = 100;
-  const maxHeight = window.innerHeight * 0.9;
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    setIsResizing(true);
-  }, []);
-
-  const stopResizing = useCallback(() => {
-    setIsResizing(false);
-  }, []);
-
-  const resize = useCallback(
-    (e: MouseEvent) => {
-      if (isResizing) {
-        const newHeight = window.innerHeight - e.clientY;
-        setHeight(Math.min(Math.max(newHeight, minHeight), maxHeight));
-      }
-    },
-    [isResizing, minHeight, maxHeight]
-  );
-
-  useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
-    return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
-    };
-  }, [resize, stopResizing]);
 
   useEffect(() => {
     setDataLoading(true);
@@ -108,7 +76,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
           break;
       }
       const updatedBooking = await bookingsService.getBookingDetails(bookingId);
-      setBookingDetails(updatedBooking);
+      setBookingDetails(updatedBooking.data);
       onUpdate();
       onClose();
     } catch (error) {
@@ -150,7 +118,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                         <p><strong>Status:</strong> {bookingDetails && <Badge status={bookingDetails?.status} />}</p>
                         {bookingDetails?.remarks && <p><strong>Remarks:</strong> {bookingDetails.remarks}</p>}
                       </div>
-                      
+
                       <div className="space-y-4">
                         <h3 className="text-xl font-black">Customer Information</h3>
                         <p><strong>Name:</strong> {bookingDetails?.user?.first_name} {bookingDetails?.user?.last_name}</p>
@@ -173,8 +141,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                             <p><strong>Notes:</strong> {bookingDetails?.pet?.notes || 'N/A'}</p>
                           </div>
                           {bookingDetails?.pet?.profile_image && (
-                            <img 
-                              src={bookingDetails.pet.profile_image} 
+                            <img
+                              src={bookingDetails.pet.profile_image}
                               alt={`${bookingDetails.pet.name}'s photo`}
                               className="w-32 h-32 object-cover rounded-lg cursor-pointer"
                               onClick={() => {
@@ -206,7 +174,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                       Confirm Booking
                     </Button>
                   )}
-                  
+
                   {bookingDetails.status === 'confirmed' && (
                     <div className="flex flex-col gap-2">
                       <span className="text-right text-xs items-center justify-center text-red-600">Cancelling this service will refund the furkredits to the pet owner.</span>
@@ -230,7 +198,7 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                       </div>
                     </div>
                   )}
-                  
+
                   {bookingDetails.status === 'in_progress' && (
                     <Button
                       loading={completeLoading}
@@ -277,24 +245,25 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                 </button>
             </motion.div>
         </motion.div>
-    )}
+      )}
 
-    {confirmStatusChange && (
-      <Modal
-        key="confirm-modal"
-        isOpen={confirmStatusChange}
-        onClose={() => {
-          setConfirmStatusChange(false);
-          setPendingAction(null);
-        }}
-        onConfirm={handleAction}
-        showConfirm
-        showCancel
-        title="Confirm"
-      >
-        <p>Are you sure you want to change the status of this booking? This action cannot be undone.</p>
-      </Modal>
-    )}
+      {confirmStatusChange && (
+        <Modal
+          key="confirm-modal"
+          isOpen={confirmStatusChange}
+          onClose={() => {
+            setConfirmStatusChange(false);
+            setPendingAction(null);
+          }}
+          onConfirm={handleAction}
+          showConfirm
+          showCancel
+          title="Confirm"
+        >
+          <p>Are you sure you want to change the status of this booking? This action cannot be undone.</p>
+        </Modal>
+      )}
+
     </div>
   );
 };

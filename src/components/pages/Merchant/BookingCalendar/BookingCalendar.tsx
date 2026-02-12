@@ -7,7 +7,7 @@ import Select from '../../../common/Select';
 import MerchantNavbar from '../../../common/MerchantNavbar';
 import { motion } from 'framer-motion';
 import Button from '../../../common/Button';
-import { ChevronDownIcon, ChevronUpIcon, Lock, Unlock } from 'lucide-react';
+import { Camera, ChevronDownIcon, ChevronUpIcon, Lock, Unlock } from 'lucide-react';
 import PawLoading from '../../../common/PawLoading';
 import Input from '../../../common/Input';
 import { useDebounce } from 'use-debounce';
@@ -15,6 +15,7 @@ import BookingDetails from './BookingDetails';
 import SelectionBox from '../../../common/SelectionBox';
 import { ToastService } from '../../../../services/toast/toast-service';
 import Modal from '../../../common/Modal';
+import QrScanConfirmModal from './QrScanConfirmModal';
 
 moment.updateLocale('en', {
   week: {
@@ -84,6 +85,7 @@ const BookingCalendar: React.FC = () => {
   const [loadingDeleteClosure, setLoadingDeleteClosure] = useState<boolean>(false);
   const [isAddClosureModalOpen, setIsAddClosureModalOpen] = useState<boolean>(false);
   const [isDeleteClosureModalOpen, setIsDeleteClosureModalOpen] = useState<boolean>(false);
+  const [isQrScanModalOpen, setIsQrScanModalOpen] = useState<boolean>(false);
 
   const bookingsService = new MerchantBookingsService();
 
@@ -518,9 +520,18 @@ const BookingCalendar: React.FC = () => {
       <div className="p-6 pt-24 min-h-screen flex flex-col cursor-default container mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
-          <Button icon={isControlsCollapsed ? <ChevronDownIcon /> : <ChevronUpIcon />} onClick={() => setIsControlsCollapsed(!isControlsCollapsed)} variant='ghost'>
-            {isControlsCollapsed ? 'Show' : 'Hide'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              icon={<Camera size={18} />}
+              onClick={() => setIsQrScanModalOpen(true)}
+            >
+              Quick QR Confirm
+            </Button>
+            <Button icon={isControlsCollapsed ? <ChevronDownIcon /> : <ChevronUpIcon />} onClick={() => setIsControlsCollapsed(!isControlsCollapsed)} variant='ghost'>
+              {isControlsCollapsed ? 'Show' : 'Hide'}
+            </Button>
+          </div>
         </div>
         
         <motion.div 
@@ -707,6 +718,16 @@ const BookingCalendar: React.FC = () => {
           onUpdate={fetchBookings}
         />
       )}
+
+      <QrScanConfirmModal
+        isOpen={isQrScanModalOpen}
+        onClose={() => setIsQrScanModalOpen(false)}
+        onConfirmed={async (bookingId: number) => {
+          await fetchBookings();
+          setSelectedEvent({ id: bookingId });
+          setIsBookingDetailsOpen(true);
+        }}
+      />
     </>
   );
 };

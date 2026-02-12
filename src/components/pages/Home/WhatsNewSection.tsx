@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Scissors, Stethoscope, Home, Award } from 'lucide-react';
 import ServiceCard from '../../common/ServiceCard';
 import { useMemo, useState } from 'react';
@@ -43,25 +42,19 @@ const WhatsNewSection = () => {
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <motion.div 
+        <div 
           className="sm:text-start text-center max-w-3xl mb-14"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl md:text-4xl font-cursive font-bold text-gray-900 mb-4">What's New at FURK</h2>
           <p className="text-lg md:text-xl text-gray-600">
             Discover our newest services and featured offerings for your beloved pets
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {services.map((service, index) => (
-            <motion.div
+            <div
               key={service.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <ServiceCard
                 title={service.title}
@@ -72,7 +65,7 @@ const WhatsNewSection = () => {
                 isImageLoaded={loadedImages[service.imageUrl]}
                 onImageLoad={() => handleImageLoad(service.imageUrl)}
               />
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

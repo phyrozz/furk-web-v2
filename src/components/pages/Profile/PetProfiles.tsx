@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Save, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, QrCode } from 'lucide-react';
 import ResizableRightSidebar from '../../common/ResizableRightSidebar';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
@@ -12,9 +12,9 @@ import DateInput from '../../common/DateInput';
 import FileUploadField, { UploadedFile } from '../../common/FileUploadField';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
 import Switch from '../../common/Switch';
-import { checkImage } from '../../../utils/s3-file-utils';
 import { motion } from 'framer-motion';
 import Input from '../../common/Input';
+import Modal from '../../common/Modal';
 
 export interface PetProfile {
     id: string;
@@ -33,6 +33,8 @@ export interface PetProfile {
     created_at: string;
     modified_by: string;
     modified_at: string;
+    qr_token?: string;
+    qr_payload?: string;
 }
 
 const PetProfiles = () => {
@@ -44,6 +46,10 @@ const PetProfiles = () => {
     const [petImage, setPetImage] = useState<UploadedFile | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>("");
     const [imageModalOpen, setImageModalOpen] = useState(false);
+    const [qrModalOpen, setQrModalOpen] = useState(false);
+    const [qrPreviewLoading, setQrPreviewLoading] = useState(false);
+    const [qrPayload, setQrPayload] = useState('');
+    const [qrPetName, setQrPetName] = useState('');
     const [formData, setFormData] = useState<Partial<PetProfile>>({
         name: '',
         species: '',
@@ -80,6 +86,30 @@ const PetProfiles = () => {
         }
     };
 
+    const openQrPreview = async (pet: PetProfile) => {
+        try {
+            setQrPreviewLoading(true);
+            const response: any = await dataService.getPetQrCode(pet.id);
+            const payload = response?.data?.qr_payload || '';
+            if (!payload) {
+                ToastService.show('Unable to load QR code');
+                return;
+            }
+
+            setQrPayload(payload);
+            setQrPetName(response?.data?.pet_name || pet.name);
+            setQrModalOpen(true);
+        } catch (error: any) {
+            if (error?.response?.data?.error) {
+                ToastService.show(error.response.data.error);
+            } else {
+                ToastService.show('Error loading QR code');
+            }
+        } finally {
+            setQrPreviewLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoadingSubmit(true);
@@ -111,8 +141,14 @@ const PetProfiles = () => {
                 //     return;
                 // }
 
-                await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
+                const addResponse: any = await dataService.addPetProfile({...formData, profile_image: s3_key} as PetProfile);
                 ToastService.show('Pet profile added successfully');
+                const newPayload = addResponse?.data?.qr_payload;
+                if (newPayload) {
+                    setQrPayload(newPayload);
+                    setQrPetName(formData.name || 'Your pet');
+                    setQrModalOpen(true);
+                }
                 // Refresh pets list
                 loadPets();
             }
@@ -234,6 +270,14 @@ const PetProfiles = () => {
                                 </div>
                                 <div className="flex space-x-2">
                                     <button
+                                        onClick={() => openQrPreview(pet)}
+                                        className="text-gray-600 hover:text-primary-600"
+                                        disabled={qrPreviewLoading}
+                                        title="Show QR"
+                                    >
+                                        <QrCode size={16} />
+                                    </button>
+                                    <button
                                         onClick={() => handleEdit(pet)}
                                         className="text-gray-600 hover:text-primary-600"
                                     >
@@ -259,6 +303,25 @@ const PetProfiles = () => {
                     ))}
                 </div>
             </div>
+
+            <Modal
+                isOpen={qrModalOpen}
+                onClose={() => setQrModalOpen(false)}
+                title={`${qrPetName || 'Pet'} QR Code`}
+            >
+                <div className="flex flex-col items-center justify-center gap-3">
+                    {qrPayload && (
+                        <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(qrPayload)}`}
+                            alt={`${qrPetName || 'Pet'} QR Code`}
+                            className="w-72 h-72 rounded-lg border border-gray-200"
+                        />
+                    )}
+                    <p className="text-sm text-center text-gray-500">
+                        Present this QR code to the merchant when checking in so they can confirm your pending booking.
+                    </p>
+                </div>
+            </Modal>
 
             {imageModalOpen && (
                 <motion.div

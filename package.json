@@ -29,6 +29,8 @@
     "@types/node": "^22.15.18",
     "@types/react-textarea-autosize": "^4.3.6",
     "@types/react-toastify": "^4.0.2",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "aws-amplify": "^6.14.4",
     "axios": "^1.9.0",
     "framer-motion": "^11.0.22",

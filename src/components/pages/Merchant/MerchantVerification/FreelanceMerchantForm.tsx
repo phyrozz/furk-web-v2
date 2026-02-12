@@ -196,6 +196,16 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
     }
   };
 
+  const handleLocationSearch = async (query: string) => {
+    try {
+      const response: any = await dataService.searchLocations(query, 6);
+      return response?.data || [];
+    } catch (error) {
+      console.error('Error searching map locations:', error);
+      return [];
+    }
+  };
+
   const locationService = new LocationService();
 
   useEffect(() => {
@@ -320,14 +330,14 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
         <LocationPicker 
           initialLng={formData.long}
           initialLat={formData.lat}
-          onChange={(long, lat) => {
+          enableSearch
+          searchLocations={handleLocationSearch}
+          onChange={(lat, long) => {
             setFormData(prev => ({
               ...prev,
-              latitude: lat,
-              longitude: long
+              lat: lat,
+              long: long
             }));
-
-            console.log('Location changed:', long, lat);
           }} 
         />
       </div>}

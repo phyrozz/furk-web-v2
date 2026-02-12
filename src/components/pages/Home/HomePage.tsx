@@ -27,8 +27,7 @@ const HomePage = () => {
       <PopularServices />
       <WhatsNewSection />
       <WhyFurkSection />
-      { !loginService.isAuthenticated() && 
-      <PartnerSection />}
+      <PartnerSection />
       <Footer />
     </div>
   );
