@@ -94,7 +94,7 @@ const statusBadge = (status: string) => {
 const BookingHistory = () => {
   const service = new UserProfileService();
   const navigate = useNavigate();
-  const [loadingCancel, setLoadingCancel] = useState(false);
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
   const [isCancelConfirmDialogShow, setIsCancelConfirmDialogShow] = useState(false);
   const [selectedCancelBookingId, setSelectedCancelBookingId] = useState<string>("");
 
@@ -108,6 +108,7 @@ const BookingHistory = () => {
     loadMore,
     loading,
     hasMore,
+    reset,
   } = useLazyLoad<Booking>({
     fetchData: fetchBookings,
     limit: 10,
@@ -130,16 +131,14 @@ const BookingHistory = () => {
   );
 
   const handleCancel = async (bookingId: string) => {
-    setLoadingCancel(true);
+    setCancellingBookingId(bookingId);
     try {
       await service.cancelBooking(parseInt(bookingId));
+      await reset();
     } catch (err) {
       console.error("Cancel failed", err);
-
-      setLoadingCancel(false);
     } finally {
-      setLoadingCancel(false);
-      window.location.reload();
+      setCancellingBookingId(null);
     }
   };
 
@@ -266,7 +265,8 @@ const BookingHistory = () => {
                       setIsCancelConfirmDialogShow(true);
                       setSelectedCancelBookingId(booking.booking_id);
                     }}
-                    loading={loadingCancel}
+                    loading={cancellingBookingId === booking.booking_id}
+                    disabled={cancellingBookingId !== null}
                   >
                     Cancel
                   </Button>

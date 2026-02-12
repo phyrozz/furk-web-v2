@@ -41,6 +41,10 @@ export class UserProfileService {
         return http.post('/pets/add', petProfile);
     }
 
+    async getPetQrCode(petProfileId: string): Promise<any> {
+        return http.get(`/pets/get-qr/${petProfileId}`);
+    }
+
     async updatePetProfile(petProfile: PetProfile): Promise<any> {
         return http.post(`/pets/update/${petProfile.id}`, petProfile);
     }
