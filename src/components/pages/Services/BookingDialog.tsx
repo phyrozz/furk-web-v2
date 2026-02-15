@@ -86,11 +86,17 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
 
   const petServicesService = new PetServicesService();
 
+  const formatLocalDate = useCallback((date: Date) => moment(date).format('YYYY-MM-DD'), []);
+
   const getBusinessHoursForDate = useCallback((date: string) => {
-    const selectedDay = new Date(date).getDay();
+    const selectedDay = moment(date, 'YYYY-MM-DD').day();
     // Convert Sunday (0) to 6, and other days subtract 1 to match 0=Monday format
     const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
-    return businessHours.find(hour => hour.day_of_week === adjustedDay);
+    return businessHours.find(hour => (
+      hour.day_of_week === adjustedDay &&
+      !!hour.open_time &&
+      !!hour.close_time
+    ));
   }, [businessHours]);
 
   const getTimeConstraints = useMemo(() => {
@@ -99,7 +105,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     const businessHour = getBusinessHoursForDate(selectedDate);
     if (!businessHour) return { min: undefined, max: undefined };
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = moment().format('YYYY-MM-DD');
     const isToday = selectedDate === today;
     
     const now = new Date();
@@ -133,6 +139,29 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
 
     return { min, max };
   }, [selectedDate, getBusinessHoursForDate]);
+
+  const breakExclusionRanges = useMemo(() => {
+    if (!selectedDate) return [];
+
+    const selectedDay = moment(selectedDate, 'YYYY-MM-DD').day();
+    const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
+    const selectedDayBreaks = businessBreaks.filter((b) => b.day_of_week === adjustedDay);
+
+    return selectedDayBreaks
+      .map((b) => {
+        const [startHours, startMinutes] = b.break_start.split(':').map(Number);
+        const [endHours, endMinutes] = b.break_end.split(':').map(Number);
+
+        const start = new Date();
+        start.setHours(startHours, startMinutes, 0, 0);
+        const end = new Date();
+        end.setHours(endHours, endMinutes, 0, 0);
+
+        if (end <= start) return null;
+        return { start, end };
+      })
+      .filter((value): value is { start: Date; end: Date } => value !== null);
+  }, [selectedDate, businessBreaks]);
 
   const isFormValid = useMemo(() => {
     return selectedDate !== '' && 
@@ -418,11 +447,14 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     }
   }
 
-  const fetchClosuresAndBreaks = async () => {
+  const fetchClosuresAndBreaks = async (
+    startDate: Date = dateRange.start,
+    endDate: Date = dateRange.end
+  ) => {
     try {
       const response = await petServicesService.listClosuresAndBreaks(
-        dateRange.start,
-        dateRange.end,
+        startDate,
+        endDate,
         merchantId
       );
 
@@ -445,7 +477,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     lastDay = moment(end).add(30, 'days').toDate();
 
     setDateRange({ start: firstDay, end: lastDay });
-    fetchClosuresAndBreaks();
+    fetchClosuresAndBreaks(firstDay, lastDay);
   };
 
   const handleViewChange = (view: View) => {
@@ -546,7 +578,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       };
     }
 
-    if (moment(date).isSame(moment(selectedDate).add(1, 'day'), 'day') && isDateInBusinessHours && !isDateInClosure) {
+    if (selectedDate && moment(date).isSame(moment(selectedDate, 'YYYY-MM-DD'), 'day') && isDateInBusinessHours && !isDateInClosure) {
       style = {
         ...style,
         backgroundColor: '#e0f2fe',
@@ -602,11 +634,11 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
 
   // Only set selected date if it's not in closure and is within business hours
   if (!isDateInClosure && isDateInBusinessHours) {
-    setSelectedDate(date.toISOString().split('T')[0]);
-    console.log('selected date: ', date);
+    setSelectedDate(formatLocalDate(date));
+    setSelectedTime('');
   }
   
-}, [businessClosures, businessHours, setSelectedDate]);
+}, [businessClosures, businessHours, formatLocalDate]);
 
   return (
     <div className="z-50">
@@ -678,6 +710,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
                 minuteStep={30}
                 min={getTimeConstraints.min}
                 max={getTimeConstraints.max}
+                excludeRanges={breakExclusionRanges}
                 disabled={!selectedDate || !getBusinessHoursForDate(selectedDate)}
               />
             </div>
