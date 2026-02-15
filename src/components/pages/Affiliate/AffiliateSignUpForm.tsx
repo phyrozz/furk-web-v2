@@ -721,7 +721,7 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
                       <span className="text-sm text-gray-600">
                         I agree to Furk's{' '}
                         <a
-                          href="/terms-of-service"
+                          href="/terms-of-service?audience=affiliate"
                           className="text-primary-600 hover:text-primary-500 underline"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -741,7 +741,7 @@ const AffiliateSignUpForm = ({ onSuccess, initialEmail = '', initialPassword = '
                       <span className="text-sm text-gray-600">
                         I agree to Furk's{' '}
                         <a
-                          href="/terms-of-service#data-privacy"
+                          href="/terms-of-service?audience=affiliate#data-privacy"
                           className="text-primary-600 hover:text-primary-500 underline"
                           target="_blank"
                           rel="noopener noreferrer"
