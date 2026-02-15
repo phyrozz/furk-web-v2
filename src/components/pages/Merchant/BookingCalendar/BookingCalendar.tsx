@@ -131,6 +131,8 @@ const BookingCalendar: React.FC = () => {
       setLoading(true);
       const response: any = await bookingsService.listBookings(statusFilter, startDate, endDate, debouncedKeyword);
       const formattedEvents: BookingEvent[] = response.data.bookings.map((booking: any) => {
+        const petCount = Number(booking.pet_count || 1);
+        const petLabel = `${petCount} pet${petCount > 1 ? 's' : ''}`;
         const eventDate = booking.start_datetime || booking.booking_datetime;
         let startDateTime;
         let endDateTime;
@@ -148,7 +150,7 @@ const BookingCalendar: React.FC = () => {
         
         return {
           id: booking.id,
-          title: `${booking.service.name} - ${booking.user.first_name} ${booking.user.last_name}`,
+          title: `${booking.service.name} - ${booking.user.first_name} ${booking.user.last_name} (${petLabel})`,
           start: booking.status === 'in_progress' ? startDateTime : moment(eventDate).toDate(),
           end: moment(endDateTime).toDate(),
           status: booking.status,

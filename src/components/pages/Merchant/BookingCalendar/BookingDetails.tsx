@@ -91,6 +91,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
     }
   };
 
+  const bookingPets = bookingDetails?.pets || (bookingDetails?.pet ? [bookingDetails.pet] : []);
+
   return (
     <div className="z-50">
       {isOpen && (
@@ -128,30 +130,36 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
 
                       <div className="space-y-4">
                         <h3 className="text-xl font-black">Pet Information</h3>
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-4">
-                            <p><strong>Name:</strong> {bookingDetails?.pet?.name || 'N/A'}</p>
-                            <p><strong>Species:</strong> {bookingDetails?.pet?.species || 'N/A'}</p>
-                            <p><strong>Breed:</strong> {bookingDetails?.pet?.breed || 'N/A'}</p>
-                            <p><strong>Sex:</strong> {bookingDetails?.pet?.sex || 'N/A'}</p>
-                            <p><strong>Weight:</strong> {bookingDetails?.pet?.weight ? `${bookingDetails.pet.weight} kg` : 'N/A'}</p>
-                            <p><strong>Color:</strong> {bookingDetails?.pet?.color || 'N/A'}</p>
-                            <p><strong>Neutered?:</strong> {bookingDetails?.pet?.is_neutered ? 'Yes' : 'No'}</p>
-                            <p><strong>Birth Date:</strong> {bookingDetails?.pet?.birth_date || 'N/A'}</p>
-                            <p><strong>Notes:</strong> {bookingDetails?.pet?.notes || 'N/A'}</p>
+                        {bookingPets.map((pet: any, index: number) => (
+                          <div key={pet?.id ?? index} className="border rounded-lg p-3">
+                            <p className="font-semibold mb-2">Pet #{index + 1}</p>
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-2">
+                                <p><strong>Name:</strong> {pet?.name || 'N/A'}</p>
+                                <p><strong>Species:</strong> {pet?.species || 'N/A'}</p>
+                                <p><strong>Breed:</strong> {pet?.breed || 'N/A'}</p>
+                                <p><strong>Sex:</strong> {pet?.sex || 'N/A'}</p>
+                                <p><strong>Weight:</strong> {pet?.weight_kg ? `${pet.weight_kg} kg` : 'N/A'}</p>
+                                <p><strong>Color:</strong> {pet?.color || 'N/A'}</p>
+                                <p><strong>Neutered?:</strong> {pet?.is_neutered ? 'Yes' : 'No'}</p>
+                                <p><strong>Birth Date:</strong> {pet?.birth_date || 'N/A'}</p>
+                                <p><strong>Notes:</strong> {pet?.notes || 'N/A'}</p>
+                              </div>
+                              {pet?.profile_image && (
+                                <img
+                                  src={pet.profile_image}
+                                  alt={`${pet.name}'s photo`}
+                                  className="w-24 h-24 object-cover rounded-lg cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedImage(pet?.profile_image);
+                                    setImageModalOpen(true);
+                                  }}
+                                />
+                              )}
+                            </div>
                           </div>
-                          {bookingDetails?.pet?.profile_image && (
-                            <img
-                              src={bookingDetails.pet.profile_image}
-                              alt={`${bookingDetails.pet.name}'s photo`}
-                              className="w-32 h-32 object-cover rounded-lg cursor-pointer"
-                              onClick={() => {
-                                setSelectedImage(bookingDetails?.pet?.profile_image);
-                                setImageModalOpen(true);
-                              }}
-                            />
-                          )}
-                        </div>
+                        ))}
+                        {bookingPets.length === 0 && <p>No pets linked to this booking.</p>}
                       </div>
                     </div>
                   </div>

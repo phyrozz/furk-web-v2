@@ -31,6 +31,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
   const [showVerification, setShowVerification] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [dataPrivacyAccepted, setDataPrivacyAccepted] = useState(false);
+  const termsAudience = userType === 'merchant' ? 'merchant' : 'pet-owner';
 
   const isFormValid = () => {
     return (
@@ -420,7 +421,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
                 <span className="text-sm text-gray-600">
                   I agree to Furk's{' '}
                   <a
-                    href="/terms-of-service"
+                    href={`/terms-of-service?audience=${termsAudience}`}
                     className="text-primary-600 hover:text-primary-500 underline"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -440,7 +441,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ userType, onSuccessfulSignUp, r
                 <span className="text-sm text-gray-600">
                   I agree to Furk's{' '}
                   <a
-                    href="/terms-of-service#data-privacy"
+                    href={`/terms-of-service?audience=${termsAudience}#data-privacy`}
                     className="text-primary-600 hover:text-primary-500 underline"
                     target="_blank"
                     rel="noopener noreferrer"

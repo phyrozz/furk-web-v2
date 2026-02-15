@@ -10,6 +10,7 @@ interface TimeInputProps {
   minuteStep?: number;
   min?: Date;
   max?: Date;
+  excludeRanges?: Array<{ start: Date; end: Date }>;
   disabled?: boolean;
 }
 
@@ -21,6 +22,7 @@ const TimeInput = ({
   minuteStep = 15,
   min,
   max,
+  excludeRanges = [],
   disabled = false
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,6 +83,8 @@ const TimeInput = ({
       date.setHours(hours, mins, 0, 0);
       if (min && date < min) continue;
       if (max && date > max) continue;
+      const isExcluded = excludeRanges.some(({ start, end }) => date >= start && date < end);
+      if (isExcluded) continue;
       slots.push(date);
     }
     

@@ -4,10 +4,9 @@ import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
 import { ToastService } from '../../../services/toast/toast-service';
 // import Select from '../../common/Select';
-import DateInput from '../../common/DateInput';
 import TimeInput from '../../common/TimeInput';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
-import Autocomplete from '../../common/Autocomplete';
+import MultipleAutocomplete from '../../common/MultipleAutocomplete';
 import { BusinessHour } from './ServiceDetails';
 import SuccessDialog from '../../common/SuccessDialog';
 import Input from '../../common/Input';
@@ -63,7 +62,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
-  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+  const [selectedPets, setSelectedPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(false);
   const [couponApplyLoading, setCouponApplyLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,12 +84,20 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const [currentView, setCurrentView] = useState<View>('month');
 
   const petServicesService = new PetServicesService();
+  const petCountForPricing = selectedPets.length > 0 ? selectedPets.length : 1;
+  const computedBookingAmount = amount * petCountForPricing;
+
+  const formatLocalDate = useCallback((date: Date) => moment(date).format('YYYY-MM-DD'), []);
 
   const getBusinessHoursForDate = useCallback((date: string) => {
-    const selectedDay = new Date(date).getDay();
+    const selectedDay = moment(date, 'YYYY-MM-DD').day();
     // Convert Sunday (0) to 6, and other days subtract 1 to match 0=Monday format
     const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
-    return businessHours.find(hour => hour.day_of_week === adjustedDay);
+    return businessHours.find(hour => (
+      hour.day_of_week === adjustedDay &&
+      !!hour.open_time &&
+      !!hour.close_time
+    ));
   }, [businessHours]);
 
   const getTimeConstraints = useMemo(() => {
@@ -99,7 +106,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     const businessHour = getBusinessHoursForDate(selectedDate);
     if (!businessHour) return { min: undefined, max: undefined };
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = moment().format('YYYY-MM-DD');
     const isToday = selectedDate === today;
     
     const now = new Date();
@@ -134,11 +141,34 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     return { min, max };
   }, [selectedDate, getBusinessHoursForDate]);
 
+  const breakExclusionRanges = useMemo(() => {
+    if (!selectedDate) return [];
+
+    const selectedDay = moment(selectedDate, 'YYYY-MM-DD').day();
+    const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
+    const selectedDayBreaks = businessBreaks.filter((b) => b.day_of_week === adjustedDay);
+
+    return selectedDayBreaks
+      .map((b) => {
+        const [startHours, startMinutes] = b.break_start.split(':').map(Number);
+        const [endHours, endMinutes] = b.break_end.split(':').map(Number);
+
+        const start = new Date();
+        start.setHours(startHours, startMinutes, 0, 0);
+        const end = new Date();
+        end.setHours(endHours, endMinutes, 0, 0);
+
+        if (end <= start) return null;
+        return { start, end };
+      })
+      .filter((value): value is { start: Date; end: Date } => value !== null);
+  }, [selectedDate, businessBreaks]);
+
   const isFormValid = useMemo(() => {
     return selectedDate !== '' && 
            selectedTime !== '' && 
-           selectedPet !== null;
-  }, [selectedDate, selectedTime, selectedPet]);
+           selectedPets.length > 0;
+  }, [selectedDate, selectedTime, selectedPets]);
 
   const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
     try {
@@ -164,12 +194,18 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     if (!isOpen) {
       setSelectedDate('');
       setSelectedTime('');
-      setSelectedPet(null);
+      setSelectedPets([]);
       setError(null);
       setSearchQuery('');
     }
     fetchClosuresAndBreaks();
   }, [isOpen]);
+
+  useEffect(() => {
+    // Coupons are validated against the computed total, so reset when pet count changes.
+    setSubtotal([]);
+    setCouponCode('');
+  }, [selectedPets.length]);
 
   const searchItems = useCallback(async (query: string) => {
     setSearchQuery(query);
@@ -180,8 +216,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     setError(null);
     setLoading(true);
 
-    if (!selectedPet) {
-      setError('Please select a pet.');
+    if (selectedPets.length === 0) {
+      setError('Please select at least one pet.');
       setLoading(false);
       return;
     }
@@ -192,7 +228,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       const response = await petServicesService.createBooking({
         service_id: serviceId,
         booking_datetime: bookingDateTime.toISOString(),
-        pet_ids: [selectedPet.id],
+        pet_ids: selectedPets.map((pet) => pet.id),
         coupon_codes: subtotal.map(item => item.code)
       });
 
@@ -229,7 +265,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const onBookingDialogClose = () => {
     setSelectedDate('');
     setSelectedTime('');
-    setSelectedPet(null);
+    setSelectedPets([]);
     setError(null);
     setSearchQuery('');
     setCouponCode('');
@@ -250,7 +286,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     }
 
     // Also, when the grand total is already 0, never accept any coupons
-    const currentTotal = amount + (subtotal.reduce((acc, item) => acc + (item.amount || 0), 0));
+    const currentTotal = computedBookingAmount + (subtotal.reduce((acc, item) => acc + (item.amount || 0), 0));
     if (currentTotal <= 0) {
       setError('Cannot apply coupon when total amount is already 0');
       setCouponApplyLoading(false);
@@ -273,18 +309,18 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       let discountAmount = 0;
 
       if (response.data.discount_type === 'percent') {
-        discountAmount = amount * (response.data.discount_value * 0.01);
+        discountAmount = computedBookingAmount * (response.data.discount_value * 0.01);
       } else if (response.data.discount_type === 'fixed') {
         discountAmount = response.data.discount_value;
       }
 
       const newSubtotal = [...subtotal, { code: response.data.code, description: `Coupon (${response.data.code})`, amount: -discountAmount }];
-      const newTotal = amount + newSubtotal.reduce((acc, item) => acc + (item.amount || 0), 0);
+      const newTotal = computedBookingAmount + newSubtotal.reduce((acc, item) => acc + (item.amount || 0), 0);
       
       setSubtotal(newSubtotal);
       if (newTotal < 0) {
         // Adjust the last coupon amount to make total exactly 0
-        const adjustedAmount = -(amount + subtotal.reduce((acc, item) => acc + (item.amount || 0), 0));
+        const adjustedAmount = -(computedBookingAmount + subtotal.reduce((acc, item) => acc + (item.amount || 0), 0));
         setSubtotal([...subtotal, { code: response.data.code, description: `Coupon (${response.data.code})`, amount: adjustedAmount }]);
       }
       setError(null);
@@ -418,11 +454,14 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     }
   }
 
-  const fetchClosuresAndBreaks = async () => {
+  const fetchClosuresAndBreaks = async (
+    startDate: Date = dateRange.start,
+    endDate: Date = dateRange.end
+  ) => {
     try {
       const response = await petServicesService.listClosuresAndBreaks(
-        dateRange.start,
-        dateRange.end,
+        startDate,
+        endDate,
         merchantId
       );
 
@@ -445,7 +484,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     lastDay = moment(end).add(30, 'days').toDate();
 
     setDateRange({ start: firstDay, end: lastDay });
-    fetchClosuresAndBreaks();
+    fetchClosuresAndBreaks(firstDay, lastDay);
   };
 
   const handleViewChange = (view: View) => {
@@ -546,7 +585,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       };
     }
 
-    if (moment(date).isSame(moment(selectedDate).add(1, 'day'), 'day') && isDateInBusinessHours && !isDateInClosure) {
+    if (selectedDate && moment(date).isSame(moment(selectedDate, 'YYYY-MM-DD'), 'day') && isDateInBusinessHours && !isDateInClosure) {
       style = {
         ...style,
         backgroundColor: '#e0f2fe',
@@ -602,11 +641,11 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
 
   // Only set selected date if it's not in closure and is within business hours
   if (!isDateInClosure && isDateInBusinessHours) {
-    setSelectedDate(date.toISOString().split('T')[0]);
-    console.log('selected date: ', date);
+    setSelectedDate(formatLocalDate(date));
+    setSelectedTime('');
   }
   
-}, [businessClosures, businessHours, setSelectedDate]);
+}, [businessClosures, businessHours, formatLocalDate]);
 
   return (
     <div className="z-50">
@@ -678,24 +717,26 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
                 minuteStep={30}
                 min={getTimeConstraints.min}
                 max={getTimeConstraints.max}
+                excludeRanges={breakExclusionRanges}
                 disabled={!selectedDate || !getBusinessHoursForDate(selectedDate)}
               />
             </div>
 
             {isOpen && (
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700">Pet</label>
-                <Autocomplete
+                <label className="block text-sm font-medium text-gray-700">Pets</label>
+                <MultipleAutocomplete
                   options={pets}
-                  value={selectedPet}
-                  onChange={setSelectedPet}
+                  values={selectedPets}
+                  onChange={setSelectedPets}
                   getOptionLabel={(pet) => pet.name}
-                  placeholder="Select your pet"
+                  placeholder="Select one or more pets"
                   className="mt-1"
                   onLoadMore={loadMore}
                   onSearch={searchItems}
                   isLoading={loadingPets}
                   hasMore={hasMore}
+                  maxSelections={100}
                 />
               </div>
             )}
@@ -749,9 +790,13 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-700">Booking Amount</span>
                 <span className="text-lg font-bold text-primary-600">
-                  {Number(amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                  {Number(computedBookingAmount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   <span className="text-xs font-normal"> Furkredits</span>
                 </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Pets Selected</span>
+                <span className="text-gray-700">{selectedPets.length}</span>
               </div>
               
               {subtotal.map((item, index) => (
@@ -769,7 +814,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
               <div className="flex justify-between items-center border-t pt-2 mt-2">
                 <span className="text-sm font-medium text-gray-700">Total Amount</span>
                 <span className="text-lg font-bold text-primary-600">
-                  {(amount + (subtotal.reduce((acc, item) => acc + (item.amount || 0), 0)))
+                  {(computedBookingAmount + (subtotal.reduce((acc, item) => acc + (item.amount || 0), 0)))
                     .toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   <span className="text-xs font-normal"> Furkredits</span>
                 </span>
