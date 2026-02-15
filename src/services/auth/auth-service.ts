@@ -90,6 +90,14 @@ export class LoginService {
 
   public async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
+      // Ensure each login attempt starts from a clean client auth state
+      // This prevents stale Cognito identity mappings from a previous failed role login
+      try {
+        await signOut();
+      } catch {
+        // No active session to sign out from
+      }
+
       // Login to Cognito
       const cognitoUser = await signIn({
         username: credentials.email,
@@ -151,6 +159,11 @@ export class LoginService {
       
       return response.data;
     } catch (error: any) {
+      try {
+        await signOut();
+      } catch {
+        // Best-effort cleanup only
+      }
       throw this.handleCognitoError(error);
     }
   }
