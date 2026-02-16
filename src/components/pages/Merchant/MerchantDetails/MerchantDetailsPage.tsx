@@ -23,7 +23,7 @@ interface MerchantDetails {
   longitude: number;
   latitude: number;
   overall_rating: number;
-  exterior_photo: string;
+  exterior_photo?: string;
 }
 
 const MerchantDetailsPage = () => {
@@ -132,7 +132,7 @@ const MerchantDetailsPage = () => {
         </div>
         <div className="h-[400px] rounded-xl overflow-hidden">
           <img
-            src={merchant.exterior_photo}
+            src={merchant.exterior_photo || '/logo_new_small.png'}
             alt={merchant.business_name}
             className="w-full h-full object-cover"
           />
