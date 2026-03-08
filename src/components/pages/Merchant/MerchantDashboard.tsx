@@ -14,8 +14,50 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
 import LocationPicker from '../../common/LocationPicker';
 import { ToastService } from '../../../services/toast/toast-service';
+import GuidedTour, { TourStep } from '../../common/GuidedTour';
 
 const merchantDashboardService = new MerchantDashboardService();
+
+const tourSteps: TourStep[] = [
+  {
+    targetId: 'quick-action-list-new-service',
+    title: 'Add New Service',
+    description: 'Click here to add a new pet service to your listings. You can define categories, pricing, and details.',
+    videoFileName: 'list-service.webp'
+  },
+  {
+    targetId: 'quick-action-manage-services',
+    title: 'Manage Your Services',
+    description: 'Here you can view, edit, or remove your existing services and categories.',
+    videoFileName: 'manage-services.webp'
+  },
+  {
+    targetId: 'quick-action-view-bookings',
+    title: 'View All Bookings',
+    description: 'Access your full booking calendar to see upcoming and past appointments.',
+    videoFileName: 'view-bookings.webp'
+  },
+  {
+    targetId: 'kpi-cards-container',
+    title: 'Your Performance at a Glance',
+    description: 'Monitor your total bookings, pending requests, and monthly earnings right here.',
+  },
+  {
+    targetId: 'recent-activities-container',
+    title: 'Recent Activity',
+    description: 'Stay updated with the latest actions, including new booking requests and status updates.',
+  },
+  {
+    targetId: 'todays-schedule-container',
+    title: "Today's Schedule",
+    description: 'Check your appointments for today and manage them as they happen.',
+  },
+  {
+    targetId: 'business-location-container',
+    title: 'Business Location',
+    description: 'Ensure your business location is accurate so pet owners can find you easily on the map.',
+  }
+];
 
 interface DashboardCard {
   title: string;
@@ -61,6 +103,29 @@ const MerchantDashboard = () => {
   const [locationSaving, setLocationSaving] = useState<boolean>(false);
   const [merchantLocation, setMerchantLocation] = useState<MerchantLocation | null>(null);
   const [editedLocation, setEditedLocation] = useState<MerchantLocation | null>(null);
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+  const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
+
+  const { status, hasBusinessHours } = useMerchantStatus();
+
+  useEffect(() => {
+    if (status !== null && hasBusinessHours !== null && !statsLoading) {
+      // Filter tour steps based on current merchant status
+      const filteredSteps = tourSteps.filter(step => {
+        if (step.targetId.startsWith('quick-action-') && status === 'unverified') {
+          return false;
+        }
+        return true;
+      });
+      setActiveTourSteps(filteredSteps);
+      
+      const timer = setTimeout(() => {
+        setIsTourOpen(true);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [status, hasBusinessHours, statsLoading]);
 
   const fetchStats = async () => {
     try {
@@ -217,8 +282,6 @@ const MerchantDashboard = () => {
       onClick: () => navigate('/merchant/bookings'),
     },
   ];
-
-  const { status, hasBusinessHours } = useMerchantStatus();
 
   return (
       <div className="h-screen bg-gray-50 overflow-y-auto">
@@ -413,6 +476,7 @@ const MerchantDashboard = () => {
             {quickActions.map((action, index) => (
               <Button
                 key={index}
+                id={`quick-action-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
                 variant="outline"
                 size="lg"
                 onClick={action.onClick}
@@ -430,7 +494,7 @@ const MerchantDashboard = () => {
         </div>}
 
         {/* KPI Cards */}
-        {!statsLoading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {!statsLoading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="kpi-cards-container">
           {cards.map((card, index) => (
             <motion.div
               key={index}
@@ -464,7 +528,7 @@ const MerchantDashboard = () => {
           <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
         </div>
 
-        <div className="mt-8 bg-white rounded-xl shadow-sm p-6">
+        <div className="mt-8 bg-white rounded-xl shadow-sm p-6" id="business-location-container">
           <div className="flex md:flex-row flex-col md:items-center items-start md:justify-between gap-4 mb-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">Business Location</h2>
@@ -499,6 +563,12 @@ const MerchantDashboard = () => {
           )}
         </div>
       </div>}
+      <GuidedTour
+        isOpen={isTourOpen && activeTourSteps.length > 0}
+        steps={activeTourSteps}
+        onClose={() => setIsTourOpen(false)}
+        onFinish={() => setIsTourOpen(false)}
+      />
     </div>
   );
 };

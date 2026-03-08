@@ -38,6 +38,7 @@ import ServiceDetails from './components/pages/Services/ServiceDetails';
 import ServicesPage from './components/pages/Services/ServicesPage';
 import SignUpPage from './components/pages/SignUp/SignUpPage';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
+import HelpPage from './components/pages/Help/HelpPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
@@ -103,6 +104,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
                 <Route path="/rewards" element={<RewardsPage />} />
                 <Route path="/services/:id" element={<ServiceDetails />} />
                 <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
+                <Route path="/help" element={<HelpPage />} />
               </Routes>
             </main>
           </>
