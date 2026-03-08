@@ -20,6 +20,16 @@ const merchantDashboardService = new MerchantDashboardService();
 
 const tourSteps: TourStep[] = [
   {
+    targetId: 'btn-complete-verification',
+    title: 'Complete Verification',
+    description: 'The first step is to get your business verified. You will need to upload some documents to get started.',
+  },
+  {
+    targetId: 'btn-set-business-hours',
+    title: 'Set Business Hours',
+    description: 'Let pet owners know when you are open for business. Setting your hours is required before you can list services.',
+  },
+  {
     targetId: 'quick-action-list-new-service',
     title: 'Add New Service',
     description: 'Click here to add a new pet service to your listings. You can define categories, pricing, and details.',
@@ -109,23 +119,39 @@ const MerchantDashboard = () => {
   const { status, hasBusinessHours } = useMerchantStatus();
 
   useEffect(() => {
-    if (status !== null && hasBusinessHours !== null && !statsLoading) {
-      // Filter tour steps based on current merchant status
-      const filteredSteps = tourSteps.filter(step => {
-        if (step.targetId.startsWith('quick-action-') && status === 'unverified') {
-          return false;
-        }
-        return true;
-      });
-      setActiveTourSteps(filteredSteps);
-      
-      const timer = setTimeout(() => {
-        setIsTourOpen(true);
-      }, 500);
+    // Only show tour if not already seen
+    const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
+    if (tourSeen === 'true') return;
 
-      return () => clearTimeout(timer);
+    if (status !== null && hasBusinessHours !== null && !statsLoading) {
+      // Filter tour steps based on current merchant status and UI state
+      const filteredSteps = tourSteps.filter(step => {
+        const element = document.getElementById(step.targetId);
+        // Only include steps where the target element is currently in the DOM
+        return !!element;
+      });
+
+      if (filteredSteps.length > 0) {
+        setActiveTourSteps(filteredSteps);
+        
+        const timer = setTimeout(() => {
+          setIsTourOpen(true);
+        }, 1000); // Increased delay to ensure DOM is fully settled
+
+        return () => clearTimeout(timer);
+      }
     }
   }, [status, hasBusinessHours, statsLoading]);
+
+  const handleTourClose = () => {
+    setIsTourOpen(false);
+    localStorage.setItem('furk_merchant_tour_seen', 'true');
+  };
+
+  const handleTourFinish = () => {
+    setIsTourOpen(false);
+    localStorage.setItem('furk_merchant_tour_seen', 'true');
+  };
 
   const fetchStats = async () => {
     try {
@@ -375,6 +401,7 @@ const MerchantDashboard = () => {
               </div>
               <div className="flex flex-col justify-center items-end">
                 <Button
+                  id="btn-complete-verification"
                   size="lg"
                   onClick={() => navigate('/merchant/verify')}
                 >
@@ -454,6 +481,7 @@ const MerchantDashboard = () => {
               </div>
               <div className="flex flex-col justify-center md:items-end items-center">
                 <Button
+                  id="btn-set-business-hours"
                   size="lg"
                   onClick={() => navigate('/merchant/business-hours')}
                   disabled={status === 'unverified'}
@@ -566,8 +594,8 @@ const MerchantDashboard = () => {
       <GuidedTour
         isOpen={isTourOpen && activeTourSteps.length > 0}
         steps={activeTourSteps}
-        onClose={() => setIsTourOpen(false)}
-        onFinish={() => setIsTourOpen(false)}
+        onClose={handleTourClose}
+        onFinish={handleTourFinish}
       />
     </div>
   );
