@@ -266,6 +266,8 @@ export class LoginService {
       // If successful, clear the tour flag so the new merchant sees it
       if (responseData.role_name === 'merchant') {
         localStorage.removeItem('furk_merchant_tour_seen');
+      } else if (responseData.role_name === 'pet-owner') {
+        localStorage.removeItem('furk_pet_owner_tour_seen');
       }
   
       return {
