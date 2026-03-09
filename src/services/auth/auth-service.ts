@@ -268,6 +268,8 @@ export class LoginService {
         localStorage.removeItem('furk_merchant_tour_seen');
       } else if (responseData.role_name === 'pet-owner') {
         localStorage.removeItem('furk_pet_owner_tour_seen');
+      } else if (responseData.role_name === 'affiliate') {
+        localStorage.removeItem('furk_affiliate_tour_seen');
       }
   
       return {

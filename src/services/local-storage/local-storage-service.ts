@@ -51,12 +51,16 @@ export class LocalStorageService {
   clearAll(): void {
     const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
     const petOwnerTourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
+    const affiliateTourSeen = localStorage.getItem('furk_affiliate_tour_seen');
     localStorage.clear();
     if (tourSeen) {
       localStorage.setItem('furk_merchant_tour_seen', tourSeen);
     }
     if (petOwnerTourSeen) {
       localStorage.setItem('furk_pet_owner_tour_seen', petOwnerTourSeen);
+    }
+    if (affiliateTourSeen) {
+      localStorage.setItem('furk_affiliate_tour_seen', affiliateTourSeen);
     }
   }
 }

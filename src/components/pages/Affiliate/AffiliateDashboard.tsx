@@ -7,6 +7,7 @@ import { http } from '../../../utils/http';
 import PawLoading from '../../common/PawLoading';
 import MerchantList from './Dashboard/MerchantList';
 import BookingHistoryList from './Dashboard/BookingHistoryList';
+import GuidedTour, { TourStep } from '../../common/GuidedTour';
 
 interface AffiliateData {
   id: string;
@@ -25,6 +26,36 @@ const AffiliateDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
+
+  const tourSteps: TourStep[] = [
+    {
+      targetId: 'affiliate-referral-link-btn',
+      title: 'Your Referral Link',
+      description: 'Share this link with potential merchants. When they sign up using your link, they will be counted as your referral.',
+    },
+    {
+      targetId: 'affiliate-id-card',
+      title: 'Affiliate ID',
+      description: 'This is your unique affiliate code. You can also share this directly with merchants.',
+    },
+    {
+      targetId: 'affiliate-stats-merchants',
+      title: 'Merchant Stats',
+      description: 'Track how many merchants have signed up using your link and their current verification status.',
+    },
+    {
+      targetId: 'affiliate-stats-earnings',
+      title: 'Total Earnings',
+      description: 'Monitor your commission earnings from the bookings made through your referred merchants.',
+    },
+    {
+      targetId: 'affiliate-tab-merchants',
+      title: 'Manage Referrals',
+      description: 'View the detailed list of merchants you have referred and their individual performance.',
+    }
+  ];
 
   useEffect(() => {
     const fetchAffiliateData = async () => {
@@ -39,6 +70,22 @@ const AffiliateDashboard = () => {
 
     fetchAffiliateData();
   }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const tourSeen = localStorage.getItem('furk_affiliate_tour_seen');
+      if (tourSeen !== 'true') {
+        const timer = setTimeout(() => {
+          const filteredSteps = tourSteps.filter(step => !!document.getElementById(step.targetId));
+          if (filteredSteps.length > 0) {
+            setActiveTourSteps(filteredSteps);
+            setIsTourOpen(true);
+          }
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading]);
 
   const copyToClipboard = () => {
     if (affiliateData?.affiliate_code) {
@@ -118,6 +165,7 @@ const AffiliateDashboard = () => {
           className="mt-4 md:mt-0"
         >
           <Button
+            id="affiliate-referral-link-btn"
             variant="primary"
             size="md"
             onClick={copyReferralLink}
@@ -131,6 +179,7 @@ const AffiliateDashboard = () => {
 
       {/* Affiliate ID Card */}
       <motion.div
+        id="affiliate-id-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -169,6 +218,7 @@ const AffiliateDashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <motion.div
+          id="affiliate-stats-merchants"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -185,6 +235,7 @@ const AffiliateDashboard = () => {
         </motion.div>
 
         <motion.div
+          id="affiliate-stats-earnings"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -211,6 +262,7 @@ const AffiliateDashboard = () => {
             Overview
           </button>
           <button
+            id="affiliate-tab-merchants"
             className={`px-6 py-3 font-medium ${activeTab === 'referrals' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
             onClick={() => {
               setActiveTab('referrals');
@@ -289,6 +341,19 @@ const AffiliateDashboard = () => {
           )}
         </div>
       </div>
+
+      <GuidedTour
+        isOpen={isTourOpen && activeTourSteps.length > 0}
+        steps={activeTourSteps}
+        onClose={() => {
+          setIsTourOpen(false);
+          localStorage.setItem('furk_affiliate_tour_seen', 'true');
+        }}
+        onFinish={() => {
+          setIsTourOpen(false);
+          localStorage.setItem('furk_affiliate_tour_seen', 'true');
+        }}
+      />
 
       {/* Marketing Materials */}
       {/* <motion.div
