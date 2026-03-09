@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 import { refreshAuthTokens } from 'aws-amplify/auth/cognito';
+import { LocalStorageService } from '../../../services/local-storage/local-storage-service';
 
 interface LoginFormProps {
   userType: 'user' | 'merchant' | 'admin';
@@ -17,6 +18,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const localStorageService = new LocalStorageService();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +59,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
       if (response.data?.role) {
         onSuccessfulLogin();
       } else {
-        localStorage.clear();
+        // localStorage.clear();
+        localStorageService.clearAll();
         setError('Login failed. Please try again.');
       }
     } catch (err: any) {

@@ -21,7 +21,7 @@ interface RecentActivitiesProps {
 
 export const RecentActivities = ({ recentActivity, loading, hasMore, lastActivityElementRef }: RecentActivitiesProps) => {
   return (
-    <div className="lg:col-span-2">
+    <div className="lg:col-span-2" id="recent-activities-container">
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-cursive font-semibold text-gray-800">Recent Activity</h2>

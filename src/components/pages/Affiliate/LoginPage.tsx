@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
+import { LocalStorageService } from '../../../services/local-storage/local-storage-service';
 
 const AffiliateLoginPage = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,8 @@ const AffiliateLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const localStorageService = new LocalStorageService();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -58,7 +61,8 @@ const AffiliateLoginPage = () => {
       if (response.data?.role) {
         navigate('/affiliate/dashboard'); // This would be the affiliate dashboard
       } else {
-        localStorage.clear();
+        // localStorage.clear();
+        localStorageService.clearAll();
         setError('Login failed. Please try again.');
       }
     } catch (err: any) {

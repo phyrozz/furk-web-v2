@@ -15,6 +15,7 @@ import { ToastService } from '../toast/toast-service';
 import { roleMapping } from '../../utils/role-mapping';
 import { http } from '../../utils/http';
 import { jwtDecode } from 'jwt-decode';
+import { LocalStorageService } from '../local-storage/local-storage-service';
 
 Amplify.configure({
   Auth: {
@@ -69,6 +70,7 @@ interface AuthError {
 export class LoginService {
   private static instance: LoginService;
   private baseUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  private localStorageService: LocalStorageService = new LocalStorageService();
 
   private constructor() {}
 
@@ -97,6 +99,9 @@ export class LoginService {
       } catch {
         // No active session to sign out from
       }
+      
+      // Clear session data but keep tour flag
+      this.localStorageService.clearAll();
 
       // Login to Cognito
       const cognitoUser = await signIn({
@@ -196,8 +201,8 @@ export class LoginService {
       // Sign out from Cognito
       await signOut();
       
-      // Clear all tokens
-      localStorage.clear();
+      // Clear session data but keep tour flag
+      this.localStorageService.clearAll();
     } catch (error) {
       throw this.handleCognitoError(error);
     }
@@ -256,6 +261,15 @@ export class LoginService {
 
       if (responseData.role_name !== credentials.userType) {
         throw new Error('User type mismatch');
+      }
+
+      // If successful, clear the tour flag so the new merchant sees it
+      if (responseData.role_name === 'merchant') {
+        localStorage.removeItem('furk_merchant_tour_seen');
+      } else if (responseData.role_name === 'pet-owner') {
+        localStorage.removeItem('furk_pet_owner_tour_seen');
+      } else if (responseData.role_name === 'affiliate') {
+        localStorage.removeItem('furk_affiliate_tour_seen');
       }
   
       return {
@@ -329,7 +343,7 @@ export class LoginService {
             await this.logout();
             ToastService.show('Your session has expired. Please login again.');
           } else {
-            localStorage.clear();
+            this.localStorageService.clearAll();
             ToastService.show('Session expired. Please login again.');
           }
           return false;
@@ -392,7 +406,8 @@ export class LoginService {
     // ].includes(authError.code)) {
     //   localStorage.clear();
     // }
-    localStorage.clear();
+    // localStorage.clear();
+    this.localStorageService.clearAll();
 
     switch (authError.code) {
       case 'NotAuthorizedException':
