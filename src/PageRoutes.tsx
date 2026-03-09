@@ -33,10 +33,12 @@ import PaymentSuccessPage from './components/pages/Payment/PaymentSuccessPage';
 import ProfilePage from './components/pages/Profile/ProfilePage';
 import ResetPasswordPage from './components/pages/ResetPassword/ResetPasswordPage';
 import RewardsPage from './components/pages/Rewards/RewardsPage';
+import MerchantsPage from './components/pages/Merchants/MerchantsPage';
 import ServiceDetails from './components/pages/Services/ServiceDetails';
 import ServicesPage from './components/pages/Services/ServicesPage';
 import SignUpPage from './components/pages/SignUp/SignUpPage';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
+import HelpPage from './components/pages/Help/HelpPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
@@ -98,9 +100,11 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
                 } />
 
                 <Route path="/services" element={<ServicesPage />} />
+                <Route path="/merchants" element={<MerchantsPage />} />
                 <Route path="/rewards" element={<RewardsPage />} />
                 <Route path="/services/:id" element={<ServiceDetails />} />
                 <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
+                <Route path="/help" element={<HelpPage />} />
               </Routes>
             </main>
           </>

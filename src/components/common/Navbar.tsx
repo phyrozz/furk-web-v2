@@ -80,6 +80,7 @@ const Navbar = () => {
   const [navItems, setNavItems] = useState([
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
+    { name: 'Merchants', path: '/merchants' },
     { name: 'Rewards', path: '/rewards' },
   ]);
   const location = useLocation();

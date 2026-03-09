@@ -17,6 +17,7 @@ interface ButtonProps {
   icon?: React.ReactNode;
   fullWidth?: boolean;
   loading?: boolean;
+  id?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -31,6 +32,7 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   fullWidth = false,
   loading = false,
+  id,
 }) => {
   const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center';
   
@@ -127,6 +129,7 @@ const Button: React.FC<ButtonProps> = ({
   
   return (
     <button
+      id={id}
       type={type}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyle} ${shadowStyle} whitespace-nowrap ${className}`}
       onClick={onClick}

@@ -21,6 +21,7 @@ import { formatAmount } from '../../../utils/currency-utils';
 
 import Modal from '../../common/Modal';
 import Input from '../../common/Input';
+import GuidedTour, { TourStep } from '../../common/GuidedTour';
 
 export interface UserProfile {
   id: number;
@@ -58,11 +59,36 @@ const ProfilePage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteAccountEmail, setDeleteAccountEmail] = useState('');
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
 
   const dataService = new UserProfileService();
   const navigate  = useNavigate();
 
   const { isMobile } = useScreenSize();
+
+  const tourSteps: TourStep[] = [
+    {
+      targetId: 'user-wallet-container',
+      title: 'Your Wallet',
+      description: 'View your Furkredits and Furkoins balance here. You can also top up your wallet to pay for services easily.',
+    },
+    {
+      targetId: 'nav-tab-pets',
+      title: 'Pet Profiles',
+      description: 'Add and manage your furry friends here. Keep their information up to date for better service matching.',
+    },
+    {
+      targetId: 'nav-tab-history',
+      title: 'Booking History',
+      description: 'Keep track of all your past and upcoming appointments with pet service providers.',
+    },
+    {
+      targetId: 'nav-tab-rewards',
+      title: 'Reward Tiers',
+      description: 'Check your current tier and see what rewards you can unlock by using Furk services.',
+    }
+  ];
 
   const fetchUserWallet = useCallback(async () => {
     try {
@@ -86,6 +112,19 @@ const ProfilePage = () => {
     };
     // Dont run API fetchings concurrently. Wait all to finish before showing the page.
     loadData();
+
+    // Check if tour should be shown
+    const tourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
+    if (tourSeen !== 'true') {
+      const timer = setTimeout(() => {
+        const filteredSteps = tourSteps.filter(step => !!document.getElementById(step.targetId));
+        if (filteredSteps.length > 0) {
+          setActiveTourSteps(filteredSteps);
+          setIsTourOpen(true);
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -335,7 +374,7 @@ const ProfilePage = () => {
                       </span>
                     </div>
                   )}
-                  {userWallet && <div className="flex flex-row gap-5 items-center mt-3">
+                  {userWallet && <div className="flex flex-row gap-5 items-center mt-3" id="user-wallet-container">
                     <div className="">
                       <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
                       <span className="text-gray-500 text-sm"> Furkredits</span>
@@ -365,6 +404,7 @@ const ProfilePage = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                id={`nav-tab-${tab.id}`}
                 className={`flex items-center px-6 py-3 text-sm font-medium whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'text-primary-600 border-b-2 border-primary-500'
@@ -590,6 +630,19 @@ const ProfilePage = () => {
           )}
         </div>
       </Modal>
+
+      <GuidedTour
+        isOpen={isTourOpen && activeTourSteps.length > 0}
+        steps={activeTourSteps}
+        onClose={() => {
+          setIsTourOpen(false);
+          localStorage.setItem('furk_pet_owner_tour_seen', 'true');
+        }}
+        onFinish={() => {
+          setIsTourOpen(false);
+          localStorage.setItem('furk_pet_owner_tour_seen', 'true');
+        }}
+      />
     </>
   );
 };
