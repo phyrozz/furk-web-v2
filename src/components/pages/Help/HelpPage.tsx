@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import TutorialVideoModal from '../../common/TutorialVideoModal';
 import { HelpCircle, Play } from 'lucide-react';
 import HelpFaq from './HelpFaq';
+import { motion } from 'framer-motion';
 
 const HelpPage = () => {
   const [selectedTutorial, setSelectedTutorial] = useState<{
@@ -25,22 +26,48 @@ const HelpPage = () => {
     },
   ];
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.12 },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 mt-16">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 mt-16 select-none">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
+        <motion.div
+          className="text-center mb-12"
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.5 }}
+        >
           <HelpCircle className="mx-auto h-12 w-12 text-primary-500 mb-4" />
           <h1 className="text-4xl font-cursive font-bold text-gray-900 mb-2">Help & Tutorials</h1>
           <p className="text-lg text-gray-600">
             Find answers to common questions and watch video tutorials to get the most out of FURK.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {tutorials.map((tutorial) => (
-            <div
+            <motion.div
               key={tutorial.id}
               className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-gray-100"
+              variants={fadeUp}
+              transition={{ duration: 0.4 }}
             >
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{tutorial.title}</h3>
@@ -53,9 +80,9 @@ const HelpPage = () => {
                   Watch Tutorial
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {selectedTutorial && (
           <TutorialVideoModal
@@ -67,7 +94,14 @@ const HelpPage = () => {
           />
         )}
 
-        <HelpFaq />
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <HelpFaq />
+        </motion.div>
       </div>
     </div>
   );

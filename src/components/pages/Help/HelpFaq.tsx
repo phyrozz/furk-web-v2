@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type FaqAudience = 'pet_owner' | 'merchant' | 'affiliate';
 
@@ -98,11 +99,11 @@ const HelpFaq = () => {
           answer:
             'Open your Bookings page to view requests. You can accept, reschedule, or cancel with a reason. Clear communication helps avoid disputes and improves your rating.',
         },
-        {
-          question: 'Can I set cancellation or rescheduling policies?',
-          answer:
-            'Yes. Define your policy in your settings so pet owners see your rules before booking. This helps reduce last-minute changes and sets expectations.',
-        },
+        // {
+        //   question: 'Can I set cancellation or rescheduling policies?',
+        //   answer:
+        //     'Yes. Define your policy in your settings so pet owners see your rules before booking. This helps reduce last-minute changes and sets expectations.',
+        // },
         {
           question: 'How do I promote my services on FURK?',
           answer:
@@ -150,17 +151,30 @@ const HelpFaq = () => {
           answer:
             'If a merchant does not complete verification or is rejected, the referral will not qualify for commission. You can still refer other merchants using your link.',
         },
-        {
-          question: 'Do you provide marketing materials?',
-          answer:
-            'Yes. Use the messaging and promotional assets provided in your affiliate resources. If you need specific materials, contact support.',
-        },
+        // {
+        //   question: 'Do you provide marketing materials?',
+        //   answer:
+        //     'Yes. Use the messaging and promotional assets provided in your affiliate resources. If you need specific materials, contact support.',
+        // },
       ],
     }),
     []
   );
 
   const items = faqs[activeAudience];
+
+  const listVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0 },
+  };
 
   return (
     <section className="mt-12">
@@ -190,33 +204,55 @@ const HelpFaq = () => {
           </div>
         </div>
 
-        <div className="space-y-3">
-          {items.map((item, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <div key={item.question} className="border border-gray-200 rounded-xl">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between px-5 py-4 text-left"
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  aria-expanded={isOpen}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeAudience}
+            className="space-y-3"
+            variants={listVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={{ duration: 0.25 }}
+          >
+            {items.map((item, index) => {
+              const isOpen = openIndex === index;
+              return (
+                <motion.div
+                  key={item.question}
+                  className="border border-gray-200 rounded-xl"
+                  variants={itemVariants}
                 >
-                  <span className="text-gray-900 font-medium">{item.question}</span>
-                  <ChevronDown
-                    className={`h-5 w-5 text-gray-500 transition-transform ${
-                      isOpen ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-4 text-gray-600">
-                    {item.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-5 py-4 text-left"
+                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="text-gray-900 font-medium">{item.question}</span>
+                    <ChevronDown
+                      className={`h-5 w-5 text-gray-500 transition-transform ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        className="px-5 pb-4 text-gray-600 overflow-hidden"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {item.answer}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );
