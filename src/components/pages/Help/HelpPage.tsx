@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TutorialVideoModal from '../../common/TutorialVideoModal';
 import { HelpCircle, Play } from 'lucide-react';
+import HelpFaq from './HelpFaq';
 
 const HelpPage = () => {
   const [selectedTutorial, setSelectedTutorial] = useState<{
@@ -65,6 +66,8 @@ const HelpPage = () => {
             description={selectedTutorial.description}
           />
         )}
+
+        <HelpFaq />
       </div>
     </div>
   );

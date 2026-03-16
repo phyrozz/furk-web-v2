@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { HelpCircle, LogOut } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 
 const AffiliateNavbar = () => {
@@ -46,13 +46,22 @@ const AffiliateNavbar = () => {
             <img src="/logo_new_small.png" alt="Logo" className="h-8" />
           </Link>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center px-4 py-2 text-gray-700 hover:text-primary-500 transition-colors"
-          >
-            <LogOut size={16} className="mr-2" />
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/help"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
+              aria-label="Help"
+            >
+              <HelpCircle size={20} />
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-4 py-2 text-gray-700 hover:text-primary-500 transition-colors"
+            >
+              <LogOut size={16} className="mr-2" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </nav>
