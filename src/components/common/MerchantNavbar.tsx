@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { PawPrint as Paw, Menu, X, LogOut, User, Package, FileText, Bell, Calendar, DollarSign } from 'lucide-react';
+import { PawPrint as Paw, Menu, X, LogOut, User, Package, FileText, Bell, Calendar, DollarSign, HelpCircle } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -92,6 +92,13 @@ const MerchantNavbar = () => {
                 <span>{item.name}</span>
               </Link>
             ))}
+            <Link
+              to="/help"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
+              aria-label="Help"
+            >
+              <HelpCircle size={20} />
+            </Link>
             <div className="relative">
               <motion.button
                 onClick={(e) => {
@@ -177,6 +184,16 @@ const MerchantNavbar = () => {
                 <span>{item.name}</span>
               </Link>
             ))}
+            <Link
+              to="/help"
+              className={`flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
+              }`}
+              onClick={closeMenu}
+            >
+              <HelpCircle size={16} className="mr-2" />
+              Help
+            </Link>
             <Link
               to="/merchant/profile"
               className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"

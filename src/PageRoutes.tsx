@@ -3,6 +3,9 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { loginService } from './services/auth/auth-service';
 import MiniChatWidget from './components/pages/Chat/MiniChatWidget';
 import Navbar from './components/common/Navbar';
+import MerchantNavbar from './components/common/MerchantNavbar';
+import AdminNavbar from './components/common/AdminNavbar';
+import AffiliateNavbar from './components/common/AffiliateNavbar';
 import AdminDashboardPage from './components/pages/Admin/AdminDashboardPage';
 import AdminPage from './components/pages/Admin/AdminPage';
 import AffiliatePage from './components/pages/Admin/AffiliatePage';
@@ -50,6 +53,23 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
   const isChatPage =
     location.pathname === '/chat' || location.pathname === '/merchant/chat';
 
+  const renderTopNavbar = () => {
+    if (!isAuthenticated) {
+      return <Navbar isAuthenticated={isAuthenticated} userRole={userRole} />;
+    }
+
+    switch (userRole) {
+      case 'merchant':
+        return <MerchantNavbar />;
+      case 'admin':
+        return <AdminNavbar />;
+      case 'affiliate':
+        return <AffiliateNavbar />;
+      default:
+        return <Navbar isAuthenticated={isAuthenticated} userRole={userRole} />;
+    }
+  };
+
   return (
     <>
       <Routes>
@@ -91,7 +111,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         {/* Main Routes */}
         <Route path="/*" element={
           <>
-            <Navbar />
+            {renderTopNavbar()}
             <main className="flex-grow">
               <Routes>
                 {/* redirect logic for root */}

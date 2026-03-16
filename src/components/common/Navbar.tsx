@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Shield, LayoutDashboard, Bell } from 'lucide-react';
+import { Menu, X, LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 import { useLazyLoad } from '../../hooks/useLazyLoad';
@@ -25,12 +25,17 @@ interface Notification {
   modified_at: string;
 }
 
-const Navbar = () => {
+interface NavbarProps {
+  isAuthenticated?: boolean;
+  userRole?: string | null;
+}
+
+const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isAuth, setIsAuth] = useState(false);
+  const [isAuth, setIsAuth] = useState(isAuthenticated ?? false);
   const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { tooltipState, setTooltipState } = useGuideTooltip();
@@ -124,7 +129,24 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const resolvedRole = userRole ?? loginService.getUserRole();
+
   useEffect(() => {
+    if (typeof isAuthenticated !== 'undefined') {
+      setIsAuth(isAuthenticated);
+      setNavItems(prevItems => {
+        const hasHome = prevItems.some(item => item.name === 'Home');
+        if (isAuthenticated) {
+          return prevItems.filter(item => item.name !== 'Home');
+        }
+        if (!hasHome) {
+          return [{ name: 'Home', path: '/' }, ...prevItems];
+        }
+        return prevItems;
+      });
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const authenticated = await loginService.isAuthenticated();
@@ -139,7 +161,7 @@ const Navbar = () => {
     };
     
     checkAuth();
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuth) {
@@ -216,6 +238,15 @@ const Navbar = () => {
             )}
             {isAuth ? (
               <>
+                <Tooltip content="Help" position="bottom">
+                  <Link
+                    to="/help"
+                    className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
+                    aria-label="Help"
+                  >
+                    <HelpCircle size={20} />
+                  </Link>
+                </Tooltip>
                 <Tooltip content="Notifications" position='bottom'>
                   <motion.button
                     onClick={toggleNotifications}
@@ -228,12 +259,12 @@ const Navbar = () => {
                   </motion.button>
                 </Tooltip>
                 <div className="relative flex flex-row gap-1">
-                  {isLoading && loginService.getUserRole() === 'user' && (
+                  {isLoading && resolvedRole === 'user' && (
                     <div className="flex items-center justify-center w-10 h-10 overflow-clip">
                       <PawLoading size={32} bounce={false} />
                     </div>
                   )}
-                  {!isLoading && loginService.getUserRole() === 'user' && (
+                  {!isLoading && resolvedRole === 'user' && (
                     <GuideTip 
                       content="Welcome to Furk! Let's get started by topping up your balance to access our services"
                       position='bottom' 
@@ -283,7 +314,7 @@ const Navbar = () => {
                         transition={{ duration: 0.2 }}
                         className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
                       >
-                        {loginService.getUserRole() === 'merchant' && (
+                        {resolvedRole === 'merchant' && (
                           <Link
                             to="/merchant/dashboard"
                             className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -293,7 +324,7 @@ const Navbar = () => {
                             Dashboard
                           </Link>
                         )}
-                        {loginService.getUserRole() === 'admin' && (
+                        {resolvedRole === 'admin' && (
                           <Link
                             to="/admin/merchants"
                             className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -304,8 +335,8 @@ const Navbar = () => {
                           </Link>
                         )}
                         {/* Condition here looks messy at the moment. Will implement role matrix handling */}
-                        {['user', 'merchant'].includes(loginService.getUserRole() || '') && <Link
-                          to={loginService.getUserRole() === 'user' ? "/profile" : "/merchant/profile"}
+                        {['user', 'merchant'].includes(resolvedRole || '') && <Link
+                          to={resolvedRole === 'user' ? "/profile" : "/merchant/profile"}
                           className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100"
                           onClick={() => setShowProfileMenu(false)}
                         >
@@ -328,17 +359,28 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to="/login"
-                  className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              <>
+                <Tooltip content="Help" position="bottom">
+                  <Link
+                    to="/help"
+                    className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"
+                    aria-label="Help"
+                  >
+                    <HelpCircle size={20} />
+                  </Link>
+                </Tooltip>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  Login / Register
-                </Link>
-              </motion.div>
+                  <Link
+                    to="/login"
+                    className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                  >
+                    Login / Register
+                  </Link>
+                </motion.div>
+              </>
             )}
           </div>
 
@@ -385,6 +427,16 @@ const Navbar = () => {
             )}
             {isAuth ? (
               <>
+                <Link
+                  to="/help"
+                  className={`flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                    location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
+                  }`}
+                  onClick={closeMenu}
+                >
+                  <HelpCircle size={16} className="mr-2" />
+                  Help
+                </Link>
                 <button
                   onClick={toggleNotifications}
                   className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
@@ -392,7 +444,7 @@ const Navbar = () => {
                   <Bell size={16} className="mr-2" />
                   Notifications
                 </button>
-                {loginService.getUserRole() === 'merchant' && (
+                {resolvedRole === 'merchant' && (
                   <Link
                     to="/merchant/dashboard"
                     className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
@@ -402,7 +454,7 @@ const Navbar = () => {
                     Dashboard
                   </Link>
                 )}
-                {loginService.getUserRole() === 'admin' && (
+                {resolvedRole === 'admin' && (
                   <Link
                     to="/admin/merchants"
                     className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
@@ -412,14 +464,16 @@ const Navbar = () => {
                     Dashboard
                   </Link>
                 )}
-                <Link
-                  to="/profile"
-                  className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
-                  onClick={closeMenu}
-                >
-                  <User size={16} className="mr-2" />
-                  Profile
-                </Link>
+                {resolvedRole === 'user' && (
+                  <Link
+                    to="/profile"
+                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                    onClick={closeMenu}
+                  >
+                    <User size={16} className="mr-2" />
+                    Profile
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     handleLogout();
@@ -441,13 +495,25 @@ const Navbar = () => {
                 </Link>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-center"
-                onClick={closeMenu}
-              >
-                Login / Register
-              </Link>
+              <>
+                <Link
+                  to="/help"
+                  className={`flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                    location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
+                  }`}
+                  onClick={closeMenu}
+                >
+                  <HelpCircle size={16} className="mr-2" />
+                  Help
+                </Link>
+                <Link
+                  to="/login"
+                  className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-center"
+                  onClick={closeMenu}
+                >
+                  Login / Register
+                </Link>
+              </>
             )}
           </div>
         </div>
