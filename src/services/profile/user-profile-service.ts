@@ -11,6 +11,18 @@ export class UserProfileService {
         return http.put('/pet-owner-profile', userDetails);
     }
 
+    async generateProfileImageUploadUrl(contentType: string): Promise<any> {
+        return http.post('/pet-owner-profile/profile-image/upload-url', {
+            content_type: contentType
+        });
+    }
+
+    async updateProfileImage(profileImageKey: string): Promise<any> {
+        return http.put('/pet-owner-profile/profile-image', {
+            profile_image_key: profileImageKey
+        });
+    }
+
     async listBookingHistory(limit: number, offset: number): Promise<any> {
         return http.post('/pet-owner-profile/list-bookings', {
             limit: limit,
