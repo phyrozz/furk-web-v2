@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, ChangeEvent } from 'react';
+import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award, AlertTriangle, Camera } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -22,6 +22,8 @@ import { formatAmount } from '../../../utils/currency-utils';
 import Modal from '../../common/Modal';
 import Input from '../../common/Input';
 import GuidedTour, { TourStep } from '../../common/GuidedTour';
+import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
+import ProfileImageUploadModal from './ProfileImageUploadModal';
 
 export interface UserProfile {
   id: number;
@@ -61,9 +63,16 @@ const ProfilePage = () => {
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isProfileImageModalOpen, setIsProfileImageModalOpen] = useState(false);
+  const [profileImageModalStep, setProfileImageModalStep] = useState<'uploading' | 'applying'>('uploading');
+  const [selectedProfileImageName, setSelectedProfileImageName] = useState('');
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   const dataService = new UserProfileService();
+  const uploadService = new S3UploadService();
   const navigate  = useNavigate();
+  const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
   const { isMobile } = useScreenSize();
 
@@ -141,6 +150,8 @@ const ProfilePage = () => {
       setProfile(response.data);
     } catch (error) {
       console.error('Error fetching user details:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +187,59 @@ const ProfilePage = () => {
     }
   }
 
+  const handleProfileImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      ToastService.show('Please select an image file');
+      if (profileImageInputRef.current) profileImageInputRef.current.value = '';
+      return;
+    }
+
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      ToastService.show('Image must be 5MB or smaller');
+      if (profileImageInputRef.current) profileImageInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      setProfileImageModalStep('uploading');
+      setSelectedProfileImageName(file.name);
+      setIsProfileImageModalOpen(true);
+
+      const uploadResponse: any = await dataService.generateProfileImageUploadUrl(file.type);
+      const uploadUrl = uploadResponse?.data?.upload_url;
+      const key = uploadResponse?.data?.key;
+
+      if (!uploadUrl || !key) {
+        ToastService.show('Failed to prepare upload. Please try again.');
+        return;
+      }
+
+      await uploadService.uploadToS3ByPresignedUrl(uploadUrl, file);
+      setProfileImageModalStep('applying');
+      await dataService.updateProfileImage(key);
+      ToastService.show('Profile photo updated successfully');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await getUserDetails();
+    } catch (error: any) {
+      console.error('Error uploading profile image:', error);
+      if (error?.response?.data?.error) {
+        ToastService.show(error.response.data.error);
+      } else {
+        ToastService.show('Failed to upload profile photo');
+      }
+    } finally {
+      setIsUploadingImage(false);
+      setIsProfileImageModalOpen(false);
+      setSelectedProfileImageName('');
+      if (profileImageInputRef.current) profileImageInputRef.current.value = '';
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!profile?.id) return;
     setIsDeleteModalOpen(false);
@@ -208,6 +272,12 @@ const ProfilePage = () => {
       </div>
     );
   }
+  
+  const profileImageUrl = profile?.image_url
+    ? (profile.image_url.startsWith('http')
+      ? profile.image_url
+      : `${cdnUrl}/${profile.image_url.replace(/^\/+/, '')}`)
+    : null;
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -338,16 +408,34 @@ const ProfilePage = () => {
                 className="w-24 h-24 rounded-full border-4 border-primary-100"
               /> */}
               <div className="flex items-center">
-                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-primary-100">
-                  {profile?.image_url ? (
-                    <img 
-                      src={profile.image_url} 
-                      alt={`${profile.first_name}'s avatar`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User size={40} className="text-gray-400" />
-                  )}
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-primary-100">
+                    {loading ? (
+                      <PawLoading size={40} bounce={false} />
+                    ) : (
+                      <img 
+                        src={profileImageUrl ?? "/default_profile.png"} 
+                        alt={`${profile?.first_name}'s avatar`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    </div>
+                  <button
+                    type="button"
+                    onClick={() => profileImageInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                    className="absolute -bottom-2 -right-2 bg-primary-600 text-white rounded-full p-2 shadow-sm hover:bg-primary-700 disabled:opacity-60"
+                    title="Change profile photo"
+                  >
+                    <Camera size={16} />
+                  </button>
+                  <input
+                    ref={profileImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfileImageChange}
+                  />
                 </div>
                 <div className="ml-6">
                   <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
@@ -592,6 +680,17 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <ProfileImageUploadModal
+        isOpen={isProfileImageModalOpen}
+        onClose={() => {
+          if (!isUploadingImage) {
+            setIsProfileImageModalOpen(false);
+          }
+        }}
+        fileName={selectedProfileImageName}
+        step={profileImageModalStep}
+      />
 
       <Modal
         isOpen={isDeleteModalOpen}

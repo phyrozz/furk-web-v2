@@ -14,6 +14,7 @@ import Button from './Button';
 import { Tooltip } from './Tooltip';
 import { useGuideTooltip } from '../../providers/GuideTooltip';
 import GuideTip from './GuideTooltip';
+import { UserProfileService } from '../../services/profile/user-profile-service';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -30,6 +31,10 @@ interface NavbarProps {
   userRole?: string | null;
 }
 
+interface NavbarProfile {
+  image_url?: string;
+}
+
 const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -38,7 +43,11 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [isAuth, setIsAuth] = useState(isAuthenticated ?? false);
   const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProfileImageLoading, setIsProfileImageLoading] = useState(true);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('/default_profile.png');
   const { tooltipState, setTooltipState } = useGuideTooltip();
+  const userProfileService = new UserProfileService();
+  const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
   const fetchNotifications = useCallback(async (limit: number, offset: number) => {
     try {
@@ -62,6 +71,31 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
       setIsLoading(false);
     }
   }, []);
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      setIsProfileImageLoading(true);
+      const response = await userProfileService.getUserDetails();
+      const profile = response.data as NavbarProfile;
+
+      if (!profile?.image_url) {
+        setProfileImageUrl('/default_profile.png');
+        return;
+      }
+
+      if (profile.image_url.startsWith('http')) {
+        setProfileImageUrl(profile.image_url);
+        return;
+      }
+
+      setProfileImageUrl(`${cdnUrl}/${profile.image_url.replace(/^\/+/, '')}`);
+    } catch (error) {
+      console.error('Failed to fetch profile image:', error);
+      setProfileImageUrl('/default_profile.png');
+    } finally {
+      setIsProfileImageLoading(false);
+    }
+  }, [cdnUrl]);
 
   const { items: notifications, loadMore, loading, hasMore } = useLazyLoad<Notification>({
     fetchData: fetchNotifications,
@@ -166,8 +200,9 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   useEffect(() => {
     if (isAuth) {
       fetchUserWallet();
+      fetchUserProfile();
     }
-  }, [isAuth, fetchUserWallet]);
+  }, [isAuth, fetchUserWallet, fetchUserProfile]);
 
   const renderNotifications = () => (
     <div className="space-y-2">
@@ -292,12 +327,23 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
                   <motion.button
                     onClick={toggleProfileMenu}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors"
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600 hover:bg-primary-200 transition-colors overflow-hidden"
                     aria-label="Profile menu"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <User size={20} />
+                    {isProfileImageLoading ? (
+                      <div className="flex items-center justify-center w-full h-full">
+                        <PawLoading size={26} bounce={false} />
+                      </div>
+                    ) : (
+                      <img
+                        src={profileImageUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={() => setProfileImageUrl('/default_profile.png')}
+                      />
+                    )}
                   </motion.button>
                   
                   {/* Profile Dropdown Menu */}
