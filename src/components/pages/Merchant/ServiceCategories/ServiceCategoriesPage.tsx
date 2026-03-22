@@ -17,16 +17,16 @@ const ServiceCategoriesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 pt-24 select-none">
+    <div className="bg-gray-50 m-6 lg:mt-6 mt-20 lg:pl-72 select-none">
       <MerchantNavbar />
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Service Categories</h1>
+            <h1 className="font-bold font-cursive text-2xl text-gray-900">Service Categories</h1>
             <p className="text-gray-600">Manage your service categories for your business</p>
           </div>
 

@@ -85,11 +85,11 @@ const SetBreakHoursPage: React.FC = () => {
   };
 
   return (
-    <div className="sm:px-0 px-4 pb-6 select-none">
+    <div className="sm:px-0 px-4 pb-6 select-none lg:pl-80">
       <MerchantNavbar />
-      <div className="container mx-auto flex flex-row justify-start items-center gap-4 mt-24 mb-4">
+      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4">
         <Button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/merchant/profile')}
           className="flex items-center gap-2"
           variant='outline'
         >
@@ -103,7 +103,7 @@ const SetBreakHoursPage: React.FC = () => {
         <PawLoading />
       </div>}
 
-      {!isLoading && <div className="container mx-auto p-8 bg-white rounded-xl shadow overflow-auto">
+      {!isLoading && <div className="w-full p-8 bg-white rounded-xl shadow overflow-auto">
         <div className="space-y-4">
           {daysOfWeek.map((day) => {
             const dayBreaks = breaks.filter(b => b.day_of_week === day.id);

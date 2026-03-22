@@ -143,7 +143,7 @@ const SetBusinessHoursPage: React.FC = () => {
       await dataService.updateMerchantBusinessHours(hoursToSave);
       ToastService.show('Business hours updated successfully!');
       localStorageService.setHasBusinessHours(true);
-      navigate(-1);
+      navigate('/merchant/profile');
     } catch (error) {
       console.error('Failed to save business hours:', error);
       ToastService.show('Failed to save business hours.');
@@ -153,11 +153,11 @@ const SetBusinessHoursPage: React.FC = () => {
   };
 
   return (
-    <div className="sm:px-0 px-4">
+    <div className="px-4 lg:pl-80 pt-16 lg:pt-0">
       <MerchantNavbar />
-      <div className="container mx-auto flex flex-row justify-start items-center gap-4 mt-24 mb-4">
+      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4">
         <Button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/merchant/profile')}
           className="flex items-center gap-2"
           variant="outline"
         >
@@ -174,7 +174,7 @@ const SetBusinessHoursPage: React.FC = () => {
       )}
 
       {!isLoading && (
-        <div className="container mx-auto p-8 bg-white rounded-xl shadow overflow-auto">
+        <div className="w-full p-8 bg-white rounded-xl shadow overflow-auto">
           <div className="space-y-4">
             {daysOfWeek.map(day => {
               const current = businessHours.find(h => h.day_of_week === day.id);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint, CalendarX } from 'lucide-react';
+import { User, History, Heart, Save, PawPrint, CalendarX } from 'lucide-react';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
@@ -145,6 +145,61 @@ const MerchantProfilePage = () => {
     { id: 'break-hours', label: 'Break Hours', icon: CalendarX },
   ];
 
+  const profileSidebar = (
+    <aside className="w-full lg:w-72 shrink-0">
+      <div className="rounded-2xl bg-white shadow-sm border border-gray-100 overflow-hidden md:sticky md:top-24">
+        <div className="p-5 border-b border-gray-100">
+          <p className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Profile Sections</p>
+          <p className="mt-2 text-lg font-cursive font-semibold text-gray-800">
+            {profile?.merchant_type || 'Merchant'}
+          </p>
+        </div>
+
+        <nav className="p-3 space-y-1">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                className={`flex w-full items-center rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <tab.icon size={18} className={`mr-3 ${isActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* <div className="border-t border-gray-100 p-4">
+          <Button
+            variant="outline"
+            className="w-full justify-center border-gray-200 text-gray-700 hover:bg-gray-50"
+            icon={<Save size={18} className="opacity-0" />}
+            onClick={() => {
+              if (activeTab === 'profile') {
+                setIsEdit(prev => !prev);
+                if (!isEdit && profile) {
+                  setEditFormData({ ...profile });
+                }
+              } else if (activeTab === 'business-hours') {
+                navigate('/merchant/business-hours');
+              } else if (activeTab === 'break-hours') {
+                navigate('/merchant/break-hours');
+              }
+            }}
+          >
+            {activeTab === 'profile' ? (isEdit ? 'Cancel Edit' : 'Edit Profile') : 'Edit Section'}
+          </Button>
+        </div> */}
+      </div>
+    </aside>
+  );
+
   const editForm = (
     <>
       <form onSubmit={handleUserDetailsSave}>
@@ -256,9 +311,9 @@ const MerchantProfilePage = () => {
   );
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none">
+    <div className="pt-16 lg:pt-6 min-h-screen bg-gray-50 select-none lg:pl-72">
       <MerchantNavbar />
-      <div className="flex flex-col container mx-auto px-4 py-6 h-full box-border">
+      <div className="w-full px-4 py-6 lg:px-6 lg:px-8 box-border">
         {/* Profile Header */}
         {(!isMobile || activeTab == 'profile' ) && <div className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm">
           <div className="relative h-36 sm:h-72 bg-gray-100">
@@ -278,42 +333,37 @@ const MerchantProfilePage = () => {
                   {profile?.address}, {profile?.city}, {profile?.province}, {profile?.barangay}
                 </div>
               </div>
-              <div className="self-start sm:self-end">
-                <Button
-                  variant="outline"
-                  className="border-0 bg-white/90 text-gray-900 hover:bg-white"
-                  icon={<LogOut size={18} />}
-                  onClick={handleLogout}
-                  loading={signOutLoading}
-                >
-                  Sign Out
-                </Button>
-              </div>
             </div>
           </div>
         </div>}
 
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 mb-8 w-full overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`flex items-center px-6 py-3 text-sm font-medium whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'text-primary-600 border-b-2 border-primary-500'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <tab.icon size={18} className="mr-2" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-2">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  className={`flex items-center rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                    isActive
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-white text-gray-600 border border-gray-200'
+                  }`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <tab.icon size={16} className="mr-2" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 bg-white rounded-xl shadow-sm h-full overflow-y-hidden">
-          {activeTab === 'profile' && (
+          <div className="hidden md:block">
+            {profileSidebar}
+          </div>
+
+          <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm overflow-hidden">
+            {activeTab === 'profile' && (
             <div className="space-y-6 h-full overflow-y-hidden">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Profile</h2>
@@ -358,9 +408,9 @@ const MerchantProfilePage = () => {
                 )}
               </div>
             </div>
-          )}
+            )}
 
-          {activeTab === 'business-hours' && (
+            {activeTab === 'business-hours' && (
             <div className="space-y-6 h-full overflow-y-hidden">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Business Hours</h2>
@@ -445,9 +495,9 @@ const MerchantProfilePage = () => {
                 )}
               </div>
             </div>
-          )}
+            )}
 
-          {activeTab === 'break-hours' && (
+            {activeTab === 'break-hours' && (
             <div className="space-y-6 h-full overflow-y-hidden pb-20">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Break Hours</h2>
@@ -507,7 +557,8 @@ const MerchantProfilePage = () => {
                 )}
               </div>
             </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

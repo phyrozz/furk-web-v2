@@ -3,8 +3,12 @@ import TutorialVideoModal from '../../common/TutorialVideoModal';
 import { HelpCircle, Play } from 'lucide-react';
 import HelpFaq from './HelpFaq';
 import { motion } from 'framer-motion';
+import TopNavbarPageShell from '../../common/TopNavbarPageShell';
+import MerchantNavbar from '../../common/MerchantNavbar';
+import { loginService } from '../../../services/auth/auth-service';
 
 const HelpPage = () => {
+  const isMerchant = loginService.getUserRole() === 'merchant';
   const [selectedTutorial, setSelectedTutorial] = useState<{
     title: string;
     videoUrl: string;
@@ -39,8 +43,8 @@ const HelpPage = () => {
     },
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 mt-16 select-none">
+  const content = (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <motion.div
           className="text-center mb-12"
@@ -104,6 +108,23 @@ const HelpPage = () => {
         </motion.div>
       </div>
     </div>
+  );
+
+  if (isMerchant) {
+    return (
+      <>
+        <MerchantNavbar />
+        <div className="min-h-screen bg-gray-50 select-none lg:pl-72 pt-16 lg:pt-0">
+          {content}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <TopNavbarPageShell className="select-none">
+      {content}
+    </TopNavbarPageShell>
   );
 };
 
