@@ -18,6 +18,7 @@ export interface MerchantProfile {
   city?: string;
   province?: string;
   barangay?: string;
+  exterior_photo?: string;
   business_hours?: BusinessHours[];
   break_hours?: BreakHours[];
 }
@@ -257,33 +258,38 @@ const MerchantProfilePage = () => {
   return (
     <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none">
       <MerchantNavbar />
-      <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
+      <div className="flex flex-col container mx-auto px-4 py-6 h-full box-border">
         {/* Profile Header */}
-        {(!isMobile || activeTab == 'profile' ) && <div className="bg-white rounded-xl shadow-sm mb-8">
-          <div className="flex sm:flex-row flex-col sm:items-center items-start gap-2 w-full overflow-x-auto p-6">
-            {/* <img
-              src={profile?.avatar}
-              alt={profile?.username}
-              className="w-24 h-24 rounded-full border-4 border-primary-100"
-            /> */}
-            <div className="ml-6">
-              <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.business_name}</h1>
-              <p className="text-gray-600">{profile?.merchant_type}</p>
-              <div className="flex items-center mt-2 text-sm text-gray-500">
-                <span>{profile?.address}, {profile?.city}, {profile?.province}, {profile?.barangay}</span>
-                {/* <span className="mx-2">•</span>
-                <span>{profile?.location}</span> */}
+        {(!isMobile || activeTab == 'profile' ) && <div className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="relative h-36 sm:h-72 bg-gray-100">
+            <img
+              src={profile?.exterior_photo || '/logo_new_small.png'}
+              alt={profile?.business_name || 'Merchant cover photo'}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
+          </div>
+          <div className="absolute inset-0 flex items-end">
+            <div className="flex w-full flex-col gap-3 p-4 sm:p-6 sm:flex-row sm:items-end">
+              <div className="min-w-0 flex-1 text-white">
+                <h1 className="truncate text-2xl sm:text-3xl font-cursive font-bold">{profile?.business_name}</h1>
+                <p className="mt-1 text-sm sm:text-base text-white/90">{profile?.merchant_type}</p>
+                <div className="mt-1 line-clamp-2 text-xs sm:text-sm text-white/80">
+                  {profile?.address}, {profile?.city}, {profile?.province}, {profile?.barangay}
+                </div>
+              </div>
+              <div className="self-start sm:self-end">
+                <Button
+                  variant="outline"
+                  className="border-0 bg-white/90 text-gray-900 hover:bg-white"
+                  icon={<LogOut size={18} />}
+                  onClick={handleLogout}
+                  loading={signOutLoading}
+                >
+                  Sign Out
+                </Button>
               </div>
             </div>
-            <Button
-              variant="outline"
-              className="ml-auto"
-              icon={<LogOut size={18} />}
-              onClick={handleLogout}
-              loading={signOutLoading}
-            >
-              Sign Out
-            </Button>
           </div>
         </div>}
 
