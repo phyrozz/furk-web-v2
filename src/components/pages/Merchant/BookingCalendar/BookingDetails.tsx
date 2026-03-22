@@ -8,6 +8,7 @@ import Badge from '../../../common/Badge';
 import { X } from 'lucide-react';
 import Modal from '../../../common/Modal';
 import ResizableRightSidebar from '../../../common/ResizableRightSidebar';
+import DateUtils from '../../../../utils/date-utils';
 
 interface BookingDetailsProps {
   isOpen: boolean;
@@ -34,6 +35,25 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
   const [pendingAction, setPendingAction] = useState<'confirm' | 'start' | 'cancel' | 'complete' | null>(null);
 
   const bookingsService = new MerchantBookingsService();
+
+  const getServiceDurationText = () => {
+    if (typeof bookingDetails?.service_duration_minutes === 'number') {
+      return DateUtils.formatDuration(bookingDetails.service_duration_minutes);
+    }
+
+    if (bookingDetails?.start_datetime && bookingDetails?.end_datetime) {
+      const start = moment(bookingDetails.start_datetime);
+      const end = moment(bookingDetails.end_datetime);
+      const durationMinutes = Math.max(end.diff(start, 'minutes'), 0);
+      return DateUtils.formatDuration(durationMinutes);
+    }
+
+    if (bookingDetails?.service_duration_text) {
+      return bookingDetails.service_duration_text;
+    }
+
+    return null;
+  };
 
   useEffect(() => {
     setDataLoading(true);
@@ -116,6 +136,9 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
                             <p><strong>Start:</strong> {moment(bookingDetails?.start_datetime).format('MMMM Do YYYY, h:mm a')}</p>
                             <p><strong>End:</strong> {bookingDetails?.end_datetime ? moment(bookingDetails.end_datetime).format('MMMM Do YYYY, h:mm a') : 'Service Ongoing'}</p>
                           </>
+                        )}
+                        {bookingDetails?.status === 'completed' && (
+                          <p><strong>Service Duration:</strong> {getServiceDurationText() || 'N/A'}</p>
                         )}
                         <p><strong>Status:</strong> {bookingDetails && <Badge status={bookingDetails?.status} />}</p>
                         {bookingDetails?.remarks && <p><strong>Remarks:</strong> {bookingDetails.remarks}</p>}

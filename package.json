@@ -9,6 +9,7 @@
     "dev": "vite --mode staging",
     "production": "vite --mode production",
     "build": "vite build --mode production",
+    "build:dev": "vite build --mode dev",
     "dev:3000": "vite --port 3000",
     "dev:4000": "vite --port 4000"
   },
