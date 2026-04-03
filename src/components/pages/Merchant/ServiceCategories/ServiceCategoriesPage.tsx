@@ -17,7 +17,7 @@ const ServiceCategoriesPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 m-6 lg:mt-6 mt-20 lg:pl-72 select-none">
+    <div className="bg-gray-50 m-6 lg:mt-6 mt-20 select-none lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       <div className="w-full">
         <motion.div

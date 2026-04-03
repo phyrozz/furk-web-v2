@@ -311,7 +311,7 @@ const MerchantProfilePage = () => {
   );
 
   return (
-    <div className="pt-16 lg:pt-6 min-h-screen bg-gray-50 select-none lg:pl-72">
+    <div className="pt-16 lg:pt-6 min-h-screen bg-gray-50 select-none lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       <div className="w-full px-4 py-6 lg:px-6 lg:px-8 box-border">
         {/* Profile Header */}

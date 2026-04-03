@@ -153,9 +153,9 @@ const SetBusinessHoursPage: React.FC = () => {
   };
 
   return (
-    <div className="px-4 lg:pl-80 pt-16 lg:pt-0">
+    <div className="px-4 pt-16 lg:pt-0 lg:pl-[var(--merchant-navbar-width,18rem)] lg:pr-6">
       <MerchantNavbar />
-      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4">
+      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4 lg:pl-0">
         <Button
           onClick={() => navigate('/merchant/profile')}
           className="flex items-center gap-2"

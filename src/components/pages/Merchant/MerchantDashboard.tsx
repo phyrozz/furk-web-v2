@@ -310,7 +310,7 @@ const MerchantDashboard = () => {
   ];
 
   return (
-      <div className="bg-gray-50 overflow-y-auto lg:mt-0 mt-20 lg:pl-72">
+      <div className="bg-gray-50 overflow-y-auto lg:mt-0 mt-20 lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
 
       {(status === null || hasBusinessHours === null) && 

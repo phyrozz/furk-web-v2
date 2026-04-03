@@ -25,7 +25,7 @@ export default function ChatPage() {
     return (
       <>
         <MerchantNavbar />
-        <div className="min-h-screen bg-gray-100 select-none lg:pl-72 pt-16 lg:pt-0">
+        <div className="min-h-screen bg-gray-100 select-none pt-16 lg:pt-0 lg:pl-[var(--merchant-navbar-width,18rem)]">
           <div className="flex h-[calc(100vh-5rem)] lg:h-[calc(100vh-1.5rem)] bg-gray-100 overflow-hidden">
             <motion.div
               initial={{ x: -100, opacity: 0 }}

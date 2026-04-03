@@ -180,7 +180,7 @@ const AddService = () => {
   // }, [useMerchantCategories]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 lg:pt-0 h-screen overflow-y-hidden flex flex-col cursor-default lg:pl-80">
+    <div className="min-h-screen bg-gray-50 pt-16 lg:pt-0 h-screen overflow-y-hidden flex flex-col cursor-default lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       <div className="w-full max-w-2xl p-8 lg:px-6 lg:px-8 flex flex-col overflow-y-hidden">
         <div className="mb-8">

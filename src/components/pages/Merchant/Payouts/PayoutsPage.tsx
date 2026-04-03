@@ -65,7 +65,7 @@ const PayoutsPage: React.FC<PayoutsPageProps> = () => {
   };
 
   return (
-    <div className="lg:pt-0 pt-10 bg-gray-50 flex flex-col h-screen overflow-y-hidden cursor-default lg:pl-72">
+    <div className="lg:pt-0 pt-10 bg-gray-50 flex flex-col h-screen overflow-y-hidden cursor-default lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -126,7 +126,7 @@ const EditService = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 h-screen overflow-y-hidden flex flex-col cursor-default md:pl-72">
+    <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 h-screen overflow-y-hidden flex flex-col cursor-default lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       {pageLoading && <div className="flex justify-center items-center h-full">
         <PawLoading />

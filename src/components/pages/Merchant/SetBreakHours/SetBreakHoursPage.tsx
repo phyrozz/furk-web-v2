@@ -85,9 +85,9 @@ const SetBreakHoursPage: React.FC = () => {
   };
 
   return (
-    <div className="sm:px-0 px-4 pb-6 select-none lg:pl-80">
+    <div className="sm:px-0 px-4 pb-6 select-none lg:pl-[var(--merchant-navbar-width,18rem)] lg:pr-6">
       <MerchantNavbar />
-      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4">
+      <div className="w-full flex flex-row justify-start items-center gap-4 mt-8 lg:mt-6 mb-4 lg:pl-0">
         <Button
           onClick={() => navigate('/merchant/profile')}
           className="flex items-center gap-2"

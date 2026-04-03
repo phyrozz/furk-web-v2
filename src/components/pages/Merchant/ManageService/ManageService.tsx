@@ -78,7 +78,7 @@ const ManageService = () => {
   return (
     <>
       <MerchantNavbar />
-      <div className="bg-gray-50 m-6 lg:mt-6 mt-20 lg:pl-72">
+      <div className="bg-gray-50 m-6 lg:mt-6 mt-20 lg:pl-[var(--merchant-navbar-width,18rem)]">
         <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

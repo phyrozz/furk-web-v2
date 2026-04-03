@@ -454,7 +454,7 @@ const fetchMerchantProfile = useCallback(async () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 cursor-default flex flex-col md:pl-72">
+      <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 cursor-default flex flex-col lg:pl-[var(--merchant-navbar-width,18rem)]">
         <MerchantNavbar />
         <div className="flex-1 flex justify-center items-center">
           <PawLoading />
@@ -464,7 +464,7 @@ const fetchMerchantProfile = useCallback(async () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 cursor-default md:pl-72">
+    <div className="min-h-screen bg-gray-50 pt-16 md:pt-6 cursor-default lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
       <div className="w-full px-4 md:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">

@@ -519,7 +519,7 @@ const BookingCalendar: React.FC = () => {
         </div>
       </Modal>
       
-      <div className="p-6 min-h-screen flex flex-col cursor-default w-full lg:pl-80 pl-6 lg:pt-6 pt-20">
+      <div className="p-6 min-h-screen flex flex-col cursor-default w-full lg:pt-6 pt-20 lg:pl-[calc(var(--merchant-navbar-width,18rem)+1.5rem)]">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
           <div className="flex items-center gap-2">
