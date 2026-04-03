@@ -6,6 +6,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   value: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
+  wrapperClassName?: string;
   placeholder?: string;
 }
 
@@ -15,6 +16,7 @@ const Input: React.FC<InputProps> = ({
   value,
   onChange,
   className = "",
+  wrapperClassName = "",
   placeholder = "",
   ...rest
 }) => {
@@ -22,7 +24,7 @@ const Input: React.FC<InputProps> = ({
   const combinedClasses = `${defaultClasses} ${className}`.trim();
 
   return (
-    <div className="mb-4">
+    <div className={wrapperClassName || "mb-4"}>
       {label && (
         <label htmlFor={id} className="block text-gray-700 text-sm font-bold mb-2">
           {label}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { loginService } from './services/auth/auth-service';
 import MiniChatWidget from './components/pages/Chat/MiniChatWidget';
 import Navbar from './components/common/Navbar';
@@ -49,6 +49,8 @@ import EditService from './components/pages/Merchant/EditService/EditService';
 
 function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
   const location = useLocation();
+  const merchantStatus = localStorage.getItem('merchantStatus');
+  const canAccessMerchantProfile = merchantStatus && merchantStatus !== 'unverified';
 
   const isChatPage =
     location.pathname === '/chat' || location.pathname === '/merchant/chat';
@@ -198,7 +200,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         } />
         <Route path='/merchant/profile' element={
           <ProtectedRoute requiredRoles={['merchant']}>
-            <MerchantProfilePage />
+            {canAccessMerchantProfile ? <MerchantProfilePage /> : <Navigate to="/merchant/verify" replace />}
           </ProtectedRoute>
         } />
         <Route path='/merchant/payouts' element={

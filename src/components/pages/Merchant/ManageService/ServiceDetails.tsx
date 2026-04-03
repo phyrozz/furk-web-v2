@@ -142,6 +142,15 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ service, onStatusChange
             <p className="text-sm text-gray-500">Category: {service.service_category_name}</p>
           </div>
         </div>
+        <div className="mt-2">
+          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+            service.requires_pet === false
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-emerald-100 text-emerald-700'
+          }`}>
+            {service.requires_pet === false ? 'Uses Pet Owner QR' : 'Requires Pet QR'}
+          </span>
+        </div>
         {service.payout_per_completion && (
           <p className="text-sm text-green-600 font-bold mt-1">
             Per-Completion Payout
@@ -210,6 +219,12 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({ service, onStatusChange
                     Description
                   </label>
                   <p className="mt-1">{service.description}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">
+                    QR Mode
+                  </label>
+                  <p className="mt-1">{service.requires_pet === false ? 'Pet owner QR' : 'Pet QR'}</p>
                 </div>
               </div>
             </div>

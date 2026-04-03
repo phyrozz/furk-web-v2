@@ -519,7 +519,7 @@ const BookingCalendar: React.FC = () => {
         </div>
       </Modal>
       
-      <div className="p-6 pt-24 min-h-screen flex flex-col cursor-default container mx-auto">
+      <div className="p-6 min-h-screen flex flex-col cursor-default w-full lg:pt-6 pt-20 lg:pl-[calc(var(--merchant-navbar-width,18rem)+1.5rem)]">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-cursive font-bold">Bookings</h1>
           <div className="flex items-center gap-2">
@@ -543,8 +543,8 @@ const BookingCalendar: React.FC = () => {
           }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 space-y-4 md:space-y-0">
-            <div className="flex sm:flex-row flex-col items-center gap-2">
+          <div className="flex flex-col gap-4 mb-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 flex-1">
               <Select
                 options={statusOptions}
                 value={{ value: statusFilter, label: statusOptions.find(opt => opt.value === statusFilter)?.label }}
@@ -554,13 +554,15 @@ const BookingCalendar: React.FC = () => {
                   }
                 }}
                 getOptionLabel={(option: { value: string; label: string | undefined; }) => option.label || ''}
+                className="w-full sm:w-44"
               />
               <Input 
                 id="search"
                 placeholder="Search..."
                 value={keyword}
                 onChange={handleSearch}
-                className="w-full mt-4"
+                className="w-full h-11"
+                wrapperClassName="mb-0 w-full sm:min-w-[260px] flex-1"
               />
               <div className="group relative inline-block self-center">
                 <svg
@@ -578,32 +580,32 @@ const BookingCalendar: React.FC = () => {
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-2 lg:flex md:items-center gap-2 lg:space-x-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 xl:justify-end xl:max-w-[45%]">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-yellow-300" />
                 <span className="text-xs md:text-sm">Pending</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-blue-300" />
                 <span className="text-xs md:text-sm">Confirmed</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-purple-300" />
                 <span className="text-xs md:text-sm">In Progress</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-green-300" />
                 <span className="text-xs md:text-sm">Completed</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-red-300" />
                 <span className="text-xs md:text-sm">Cancelled</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-orange-300" />
                 <span className="text-xs md:text-sm">Cancelled by user</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="w-4 h-4 rounded-full bg-[#a1a1a1]" />
                 <span className="text-xs md:text-sm">Closed</span>
               </div>

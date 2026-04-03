@@ -41,7 +41,6 @@ interface PetOwnerDetails {
   is_active: boolean;
   furkredits_balance: number;
   furkoins_balance: number;
-  reward_credits_balance: number;
   reward_tier_name: string;
   pet_count: number;
   total_transactions: number;
@@ -583,12 +582,6 @@ const PetOwnersWidget = forwardRef<PetOwnersWidgetRef>((props, ref) => {
                         Furkoins:{' '}
                         <span className="font-semibold">
                           {formatFurkAmount(ownerDetails.furkoins_balance, 'furkoins')}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-700">
-                        Reward Credits:{' '}
-                        <span className="font-semibold">
-                          {formatFurkAmount(ownerDetails.reward_credits_balance, 'furkredits')}
                         </span>
                       </div>
                     </div>

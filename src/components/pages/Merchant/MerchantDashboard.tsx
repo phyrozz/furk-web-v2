@@ -310,16 +310,16 @@ const MerchantDashboard = () => {
   ];
 
   return (
-      <div className="h-screen bg-gray-50 overflow-y-auto">
+      <div className="bg-gray-50 overflow-y-auto lg:mt-0 mt-20 lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
 
       {(status === null || hasBusinessHours === null) && 
-        <div className="w-full h-full overflow-hidden flex flex-1 items-center justify-center">
+        <div className="w-full h-screen overflow-hidden flex flex-1 items-center justify-center">
           <PawLoading />
         </div>
       }
 
-      {(status !== null && hasBusinessHours !== null) && <div className="container mx-auto px-4 py-8 pt-24 cursor-default">
+      {(status !== null && hasBusinessHours !== null) && <div className="w-full px-4 py-8 pt-8 md:pt-6 md:px-6 lg:px-8 cursor-default">
         {(status === 'unverified' || !hasBusinessHours) && (
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
             <h1 className="text-2xl font-bold text-primary-800 mb-3">

@@ -27,6 +27,7 @@ interface BookingDialogProps {
   onClose: () => void;
   onSuccess: () => void;
   serviceId: number;
+  requiresPet: boolean;
   businessHours: BusinessHour[];
   bookingAmount: string;
   merchantId: number;
@@ -50,7 +51,7 @@ interface Pet {
 //   { id: 4, code: 'maya', displayName: 'Maya' },
 // ];
 
-const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, businessHours, bookingAmount, merchantId }) => {
+const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, requiresPet, businessHours, bookingAmount, merchantId }) => {
   const currentMonth = useMemo(() => {
     const now = new Date();
     return {
@@ -167,8 +168,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const isFormValid = useMemo(() => {
     return selectedDate !== '' && 
            selectedTime !== '' && 
-           selectedPets.length > 0;
-  }, [selectedDate, selectedTime, selectedPets]);
+           (requiresPet ? selectedPets.length > 0 : true);
+  }, [selectedDate, selectedTime, selectedPets, requiresPet]);
 
   const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
     try {
@@ -186,7 +187,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const { items: pets, loading: loadingPets, hasMore, loadMore } = useLazyLoad<Pet>({
     fetchData: fetchPets,
     keyword: searchQuery,
-    enabled: isOpen,
+    enabled: isOpen && requiresPet,
   });
 
   useEffect(() => {
@@ -199,7 +200,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       setSearchQuery('');
     }
     fetchClosuresAndBreaks();
-  }, [isOpen]);
+  }, [isOpen, requiresPet]);
 
   useEffect(() => {
     // Coupons are validated against the computed total, so reset when pet count changes.
@@ -216,7 +217,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     setError(null);
     setLoading(true);
 
-    if (selectedPets.length === 0) {
+    if (requiresPet && selectedPets.length === 0) {
       setError('Please select at least one pet.');
       setLoading(false);
       return;
@@ -228,7 +229,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       const response = await petServicesService.createBooking({
         service_id: serviceId,
         booking_datetime: bookingDateTime.toISOString(),
-        pet_ids: selectedPets.map((pet) => pet.id),
+        pet_ids: requiresPet ? selectedPets.map((pet) => pet.id) : [],
         coupon_codes: subtotal.map(item => item.code)
       });
 
@@ -722,7 +723,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
               />
             </div>
 
-            {isOpen && (
+            {isOpen && (requiresPet ? (
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Pets</label>
                 <MultipleAutocomplete
@@ -739,7 +740,11 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
                   maxSelections={100}
                 />
               </div>
-            )}
+            ) : (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                This service does not require a pet to be selected. Your pet owner QR will be used for confirmation.
+              </div>
+            ))}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Coupon code</label>
@@ -796,7 +801,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600">Pets Selected</span>
-                <span className="text-gray-700">{selectedPets.length}</span>
+                <span className="text-gray-700">{requiresPet ? selectedPets.length : 'N/A'}</span>
               </div>
               
               {subtotal.map((item, index) => (

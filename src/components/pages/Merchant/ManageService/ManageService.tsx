@@ -16,7 +16,7 @@ const ManageService = () => {
   const [leftPaneCols, setLeftPaneCols] = useState(DEFAULT_LEFT_PANE_WIDTH);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   const handleServiceStatusChange = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
@@ -26,7 +26,7 @@ const ManageService = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -78,8 +78,8 @@ const ManageService = () => {
   return (
     <>
       <MerchantNavbar />
-      <div className="min-h-screen bg-gray-50 p-6 pt-24">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-gray-50 m-6 lg:mt-6 mt-20 lg:pl-[var(--merchant-navbar-width,18rem)]">
+        <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

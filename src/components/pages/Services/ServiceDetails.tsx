@@ -22,6 +22,7 @@ interface ServiceDetail {
   name: string;
   description: string;
   service_category_name: string;
+  requires_pet?: boolean;
   price: string;
   furkredit_price: number;
   merchant_id: number;
@@ -194,6 +195,7 @@ const ServiceDetails = () => {
         onClose={handleBookingDialogClose}
         onSuccess={handleBookingDialogSuccess}
         serviceId={service.id}
+        requiresPet={service.requires_pet !== false}
         businessHours={service.business_hours}
         bookingAmount={String(service.furkredit_price)}
         merchantId={service.merchant_id}
@@ -243,6 +245,15 @@ const ServiceDetails = () => {
                     {service.service_category_name}
                   </span>
                 </motion.div>
+                <div>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                    service.requires_pet === false
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {service.requires_pet === false ? 'Pet owner QR service' : 'Pet required'}
+                  </span>
+                </div>
                 <motion.div 
                   whileHover={{ x: 5 }}
                   className="flex items-end gap-2"

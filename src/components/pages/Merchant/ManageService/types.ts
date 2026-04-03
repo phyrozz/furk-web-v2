@@ -9,4 +9,5 @@ export interface Service {
   category: string;
   attachments: string[];
   payout_per_completion: boolean;
+  requires_pet?: boolean;
 }
