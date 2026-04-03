@@ -19,7 +19,8 @@ export class AddServiceService {
             description: formData.description.trim(),
             price: formData.price,
             duration: formData.duration,
-            payout_per_completion: formData.payoutPerCompletion
+            payout_per_completion: formData.payoutPerCompletion,
+            requires_pet: formData.requiresPet
         };
 
         return http.post('/merchant-service/insert', data);

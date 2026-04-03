@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, ChangeEvent } from 'react';
-import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award, AlertTriangle, Camera } from 'lucide-react';
+import { User, History, Heart, LogOut, Save, PawPrint, Wallet, PlusCircle, Award, AlertTriangle, Camera, QrCode } from 'lucide-react';
 import Button from '../../common/Button';
 import { UserProfileService } from '../../../services/profile/user-profile-service';
 import Navbar from '../../common/Navbar';
@@ -45,6 +45,8 @@ export interface UserProfile {
   tier_icon_key?: string | null;
   tier_color_code?: string | null;
   tier_assigned_at?: string | null;
+  pet_owner_qr_token?: string | null;
+  pet_owner_qr_payload?: string | null;
 }
 
 const ProfilePage = () => {
@@ -67,6 +69,7 @@ const ProfilePage = () => {
   const [isProfileImageModalOpen, setIsProfileImageModalOpen] = useState(false);
   const [profileImageModalStep, setProfileImageModalStep] = useState<'uploading' | 'applying'>('uploading');
   const [selectedProfileImageName, setSelectedProfileImageName] = useState('');
+  const [isOwnerQrModalOpen, setIsOwnerQrModalOpen] = useState(false);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   const dataService = new UserProfileService();
@@ -278,6 +281,7 @@ const ProfilePage = () => {
       ? profile.image_url
       : `${cdnUrl}/${profile.image_url.replace(/^\/+/, '')}`)
     : null;
+  const ownerQrPayload = profile?.pet_owner_qr_payload || profile?.pet_owner_qr_token || '';
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -472,6 +476,9 @@ const ProfilePage = () => {
                       <span className="text-gray-500 text-sm"> Furkoins</span>
                     </div>
                     <Button variant="ghost" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
+                    <Button variant="ghost" icon={<QrCode />} onClick={() => setIsOwnerQrModalOpen(true)} disabled={!ownerQrPayload}>
+                      My QR
+                    </Button>
                   </div>}
                 </div>
               </div>
@@ -554,6 +561,24 @@ const ProfilePage = () => {
                           value={profile?.phone_number ?? ''}
                           readOnly
                         />
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                          <div>
+                            <h3 className="text-sm font-semibold text-gray-800">Pet Owner QR</h3>
+                            <p className="text-sm text-gray-500">
+                              Show this QR for services that do not require a pet during check-in.
+                            </p>
+                          </div>
+                          <Button
+                            variant="primary"
+                            icon={<QrCode size={18} />}
+                            onClick={() => setIsOwnerQrModalOpen(true)}
+                            disabled={!ownerQrPayload}
+                          >
+                            Open QR
+                          </Button>
+                        </div>
                       </div>
                       {/* <div>
                         <label className="block text-sm font-medium text-gray-700">Location</label>
@@ -691,6 +716,29 @@ const ProfilePage = () => {
         fileName={selectedProfileImageName}
         step={profileImageModalStep}
       />
+
+      <Modal
+        isOpen={isOwnerQrModalOpen}
+        onClose={() => setIsOwnerQrModalOpen(false)}
+        title="Pet Owner QR Code"
+      >
+        <div className="flex flex-col items-center justify-center gap-3">
+          {ownerQrPayload ? (
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ownerQrPayload)}`}
+              alt="Pet Owner QR Code"
+              className="w-72 h-72 rounded-lg border border-gray-200"
+            />
+          ) : (
+            <div className="w-72 h-72 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-500 text-sm text-center px-4">
+              Unable to load your QR code right now.
+            </div>
+          )}
+          <p className="text-sm text-center text-gray-500">
+            Present this QR code to the merchant for services that do not require a pet to be selected.
+          </p>
+        </div>
+      </Modal>
 
       <Modal
         isOpen={isDeleteModalOpen}

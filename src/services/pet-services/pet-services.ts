@@ -58,7 +58,7 @@ export class PetServicesService {
     async createBooking(data: {
         service_id: number;
         booking_datetime: string;
-        pet_ids: number[];
+        pet_ids?: number[];
         coupon_codes?: string[];
     }): Promise<any> {
         return http.post('/booking', data);

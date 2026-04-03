@@ -35,7 +35,8 @@ const AddService = () => {
     price: 0,
     images: [],
     duration: null,
-    payoutPerCompletion: false
+    payoutPerCompletion: false,
+    requiresPet: true
   });
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -306,6 +307,21 @@ const AddService = () => {
               <span className="text-red-500">*</span>
             </label>
           </div>
+
+          <div className="flex gap-2 justify-start items-center">
+            <Switch
+              isOn={formData.requiresPet ? true : false}
+              handleToggle={() => setFormData({ ...formData, requiresPet: !formData.requiresPet })}
+            />
+            <label className="flex items-center space-x-2 text-sm font-bold text-gray-700 gap-1">    
+              Require pet for fulfillment
+              <span className="text-red-500">*</span>
+            </label>
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Turn this off for services like breeding or orphanage support where the pet may not need to be present during check-in.
+          </p>
 
           <FileUploadField
             label="Service Images"

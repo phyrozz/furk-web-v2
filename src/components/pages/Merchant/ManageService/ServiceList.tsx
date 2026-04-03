@@ -122,6 +122,15 @@ const ServiceList: React.FC<ServiceListProps> = ({ selectedService, onSelectServ
                   <div className="text-sm text-gray-600">
                     {service.service_category_name || 'No category'}
                   </div>
+                  <div className="mt-1 text-xs">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${
+                      service.requires_pet === false
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {service.requires_pet === false ? 'Pet owner QR' : 'Pet QR'}
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right text-sm">
                   <span className="font-medium text-gray-900">

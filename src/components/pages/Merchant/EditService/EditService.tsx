@@ -26,6 +26,7 @@ const EditService = () => {
     price: 0,
     duration: null,
     payout_per_completion: false,
+    requires_pet: true,
     category: {
       id: 0,
       name: '',
@@ -55,7 +56,8 @@ const EditService = () => {
             description: data.description,
             price: data.price,
             duration: data.duration,
-            payout_per_completion: data.payout_per_completion
+            payout_per_completion: data.payout_per_completion,
+            requires_pet: data.requires_pet ?? true
           });
           setPageLoading(false);
         })
@@ -229,6 +231,21 @@ const EditService = () => {
               <span className="text-red-500">*</span>
             </label>
           </div>
+
+          <div className="flex gap-2 justify-start items-center">
+            <Switch
+              isOn={formData.requires_pet ? true : false}
+              handleToggle={() => setFormData({ ...formData, requires_pet: !formData.requires_pet })}
+            />
+            <label className="flex items-center space-x-2 text-sm font-bold text-gray-700 gap-1">    
+              Require pet for fulfillment
+              <span className="text-red-500">*</span>
+            </label>
+          </div>
+
+          <p className="text-sm text-gray-500">
+            Disable this for services that should use the pet owner QR instead of a pet QR.
+          </p>
 
           {/* <FileUploadField
             label="Service Images"

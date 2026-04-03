@@ -44,9 +44,11 @@ const QrScanConfirmModal: React.FC<QrScanConfirmModalProps> = ({
     const trimmed = (rawValue || '').trim();
     if (!trimmed) return '';
 
-    const prefix = 'FURK_PET_QR:';
-    if (trimmed.startsWith(prefix)) {
-      return trimmed.substring(prefix.length);
+    const prefixes = ['FURK_PET_QR:', 'FURK_PET_OWNER_QR:'];
+    for (const prefix of prefixes) {
+      if (trimmed.startsWith(prefix)) {
+        return trimmed.substring(prefix.length);
+      }
     }
 
     return trimmed;
@@ -131,7 +133,7 @@ const QrScanConfirmModal: React.FC<QrScanConfirmModalProps> = ({
         setManualQrToken('');
         onClose();
       }}
-      title="Scan Pet Owner QR"
+      title="Scan Booking QR"
     >
       <div className="flex flex-col gap-3">
         <div className="rounded-lg overflow-hidden border border-gray-200 bg-black">
@@ -139,7 +141,7 @@ const QrScanConfirmModal: React.FC<QrScanConfirmModalProps> = ({
         </div>
         <p className="text-sm text-gray-500 flex items-center gap-2">
           <QrCode size={16} />
-          Scan the pet owner's QR code to auto-confirm their pending booking.
+          Scan either the pet QR or pet owner QR, depending on the service requirement.
         </p>
         {scannerError && (
           <p className="text-sm text-red-600">{scannerError}</p>
