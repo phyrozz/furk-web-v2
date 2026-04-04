@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MerchantDetailsService } from '../../../../services/merchant-details/merchant-details';
 import ServicesList from './ServicesList';
 import LocationPicker from '../../../common/LocationPicker';
 import PawLoading from '../../../common/PawLoading';
 import ShareDialog from '../../../common/ShareDialog';
-import { Share2 } from 'lucide-react';
+import { MessageCircle, Share2 } from 'lucide-react';
 import Button from '../../../common/Button';
+import { loginService } from '../../../../services/auth/auth-service';
+import { ToastService } from '../../../../services/toast/toast-service';
 
 interface MerchantDetails {
   id: string;
@@ -31,6 +33,10 @@ const MerchantDetailsPage = () => {
   const [merchant, setMerchant] = useState<MerchantDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isUser, setIsUser] = useState(false);
+  const [startingConversation, setStartingConversation] = useState(false);
+  const navigate = useNavigate();
 
   const merchantService = new MerchantDetailsService();
 
@@ -50,7 +56,51 @@ const MerchantDetailsPage = () => {
     };
 
     fetchMerchantDetails();
+
+    const fetchAuthState = async () => {
+      try {
+        const authenticated = await loginService.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        setIsUser(loginService.getUserRole() === 'user');
+      } catch (error) {
+        console.error('Error fetching auth state:', error);
+      }
+    };
+
+    fetchAuthState();
   }, [id]);
+
+  const handleStartConversation = async () => {
+    if (!merchant?.id) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    if (!isUser) {
+      ToastService.show('Only pet owners can start merchant conversations.');
+      return;
+    }
+
+    try {
+      setStartingConversation(true);
+      const response = await merchantService.startConversation(merchant.id);
+      navigate(`/chat/${response.data.id}`, {
+        replace: true,
+        state: {
+          conversation: response.data,
+        },
+      });
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      ToastService.show('Failed to open merchant conversation.');
+    } finally {
+      setStartingConversation(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -154,6 +204,17 @@ const MerchantDetailsPage = () => {
           <p className="text-gray-600">
             <span className="font-medium text-gray-900">Phone:</span> {merchant.phone_number}
           </p>
+        </div>
+        <div className="mt-6">
+          <Button
+            variant="ghost"
+            className="w-full sm:w-auto"
+            icon={<MessageCircle size={18} />}
+            onClick={handleStartConversation}
+            loading={startingConversation}
+          >
+            {isAuthenticated ? 'Message Merchant' : 'Sign in to Message'}
+          </Button>
         </div>
       </motion.div>
 

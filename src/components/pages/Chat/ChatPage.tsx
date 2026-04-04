@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import ChatSidebar from "./ChatSidebar";
 import ChatWindow from "./ChatWindow";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TopNavbarPageShell from "../../common/TopNavbarPageShell";
 import MerchantNavbar from "../../common/MerchantNavbar";
 import { loginService } from "../../../services/auth/auth-service";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { MerchantDetailsService } from "../../../services/merchant-details/merchant-details";
 
 interface Conversation {
   id: number;
@@ -18,8 +20,56 @@ interface Conversation {
 }
 
 export default function ChatPage() {
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { conversationId } = useParams<{ conversationId?: string }>();
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(
+    () => (location.state as { conversation?: Conversation } | null)?.conversation ?? null
+  );
   const isMerchant = loginService.getUserRole() === 'merchant';
+  const merchantDetailsService = new MerchantDetailsService();
+  const chatBasePath = isMerchant ? '/merchant/chat' : '/chat';
+
+  useEffect(() => {
+    const conversation = (location.state as { conversation?: Conversation } | null)?.conversation;
+    setSelectedConversation(conversation ?? null);
+  }, [location.state]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadConversation = async () => {
+      if (!conversationId) return;
+
+      try {
+        const response = await merchantDetailsService.getConversation(conversationId);
+        if (!active) return;
+        setSelectedConversation(response.data);
+      } catch (error) {
+        console.error("Failed to load conversation:", error);
+      }
+    };
+
+    loadConversation();
+
+    return () => {
+      active = false;
+    };
+  }, [conversationId, location.state]);
+
+  const handleSelectConversation = (conversation: Conversation | null) => {
+    setSelectedConversation(conversation);
+
+    if (!conversation) {
+      navigate(chatBasePath, { replace: true });
+      return;
+    }
+
+    navigate(`${chatBasePath}/${conversation.id}`, {
+      replace: true,
+      state: { conversation },
+    });
+  };
 
   if (isMerchant) {
     return (
@@ -33,7 +83,7 @@ export default function ChatPage() {
               transition={{ duration: 0.4 }}
               className="w-1/4 min-w-[280px] border-r border-gray-200 bg-white"
             >
-              <ChatSidebar onSelectConversation={setSelectedConversation} />
+              <ChatSidebar onSelectConversation={handleSelectConversation} />
             </motion.div>
 
             <motion.div
@@ -65,7 +115,7 @@ export default function ChatPage() {
           transition={{ duration: 0.4 }}
           className="w-1/4 min-w-[280px] border-r border-gray-200 bg-white"
         >
-          <ChatSidebar onSelectConversation={setSelectedConversation} />
+          <ChatSidebar onSelectConversation={handleSelectConversation} />
         </motion.div>
 
         <motion.div

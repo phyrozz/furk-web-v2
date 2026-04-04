@@ -17,6 +17,7 @@ interface Conversation {
   pet_owner_id: number;
   merchant_id: number;
   merchant_user_id: number;
+  display_name?: string;
   first_name?: string;
   last_name?: string;
   business_name: string;
@@ -43,9 +44,25 @@ interface Data {
   role_name: string;
 }
 
+const formatMessageTime = (timestamp: string) => {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+};
+
 export default function ChatWindow({ conversation }: { conversation: Conversation }) {
+  const userRole = loginService.getUserRole();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(
+    userRole === "merchant" ? conversation.merchant_user_id : conversation.pet_owner_id
+  );
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -55,6 +72,8 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
 
   const limit = 50;
   const navigate = useNavigate();
+  const resolvedCurrentUserId =
+    currentUserId ?? (userRole === "merchant" ? conversation.merchant_user_id : conversation.pet_owner_id);
 
   /** Fetch paginated messages */
   const fetchMessages = async (offset: number, prepend = false) => {
@@ -98,9 +117,9 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
   useEffect(() => {
     setMessages([]);
     setHasMore(true);
-    setCurrentUserId(null);
+    setCurrentUserId(userRole === "merchant" ? conversation.merchant_user_id : conversation.pet_owner_id);
     fetchMessages(0);
-  }, [conversation.id]);
+  }, [conversation.id, conversation.merchant_user_id, conversation.pet_owner_id, userRole]);
 
   /** Auto-scroll to bottom on new message */
   useEffect(() => {
@@ -174,7 +193,7 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
     setMessages(prev => [...prev, {
       id: Date.now(), // temp id
       conversation_id: conversation.id,
-      sender_id: currentUserId!,
+      sender_id: resolvedCurrentUserId,
       recipient_id: conversation.merchant_id,
       content: text,
       attachment_url: null,
@@ -231,21 +250,25 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
     }
   };
 
+  const conversationTitle =
+    conversation.display_name?.trim() ||
+    conversation.business_name ||
+    [conversation.first_name, conversation.last_name].filter(Boolean).join(" ").trim() ||
+    "Conversation";
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-white">
-        {conversation.first_name || conversation.last_name ? (
-          <span className="font-semibold text-left">
-            {conversation.first_name} {conversation.last_name}
-          </span>
-        ) : (
+        {conversation.business_name ? (
           <button
             onClick={() => navigate(`/merchants/${conversation.merchant_id}`)}
             className="font-semibold hover:text-primary-600 hover:underline transition-all text-left bg-transparent border-none p-0 cursor-pointer"
           >
-            {conversation.business_name}
+            {conversationTitle}
           </button>
+        ) : (
+          <span className="font-semibold text-left">{conversationTitle}</span>
         )}
 
         {/* Report button */}
@@ -278,12 +301,9 @@ export default function ChatWindow({ conversation }: { conversation: Conversatio
           .map((m) => (
             <MessageBubble
               key={m.id}
-              isMine={m.sender_id === currentUserId}
+              isMine={m.sender_id === resolvedCurrentUserId}
               text={m.content}
-              time={new Date(m.created_at).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              time={formatMessageTime(m.created_at)}
               richContent={m.rich_content ?? null}
             />
           ))}

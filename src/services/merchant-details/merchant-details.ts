@@ -14,4 +14,14 @@ export class MerchantDetailsService {
 
     return http.publicPost(`/merchant-details/${merchantId}/services`, data);
   }
+
+  async startConversation(merchantId: string): Promise<any> {
+    return http.post('/merchant-chat/start-conversation', {
+      merchant_id: Number(merchantId)
+    });
+  }
+
+  async getConversation(conversationId: string): Promise<any> {
+    return http.get(`/merchant-chat/get-conversation/${conversationId}`);
+  }
 }
