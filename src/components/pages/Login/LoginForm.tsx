@@ -3,8 +3,10 @@ import { Mail, Lock, EyeOff, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
+import type { LoginResponse } from '../../../services/auth/auth-service';
 import { refreshAuthTokens } from 'aws-amplify/auth/cognito';
 import { LocalStorageService } from '../../../services/local-storage/local-storage-service';
+import NewPasswordChallengeForm from './NewPasswordChallengeForm';
 
 interface LoginFormProps {
   userType: 'user' | 'merchant' | 'admin';
@@ -17,6 +19,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [requiresNewPassword, setRequiresNewPassword] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
   const navigate = useNavigate();
 
   const localStorageService = new LocalStorageService();
@@ -43,7 +47,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
       });
 
       if (response.message === 'New password required') {
-        setIsLoading(false);
+        setPendingEmail(email);
+        setRequiresNewPassword(true);
         return;
       }
 
@@ -70,12 +75,43 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
     }
   };
 
+  const handleNewPasswordComplete = async (response: LoginResponse) => {
+    if (response.data?.role) {
+      onSuccessfulLogin();
+    } else {
+      localStorageService.clearAll();
+      setError('Login failed. Please try again.');
+    }
+  };
+
+  const handleCancelNewPassword = async () => {
+    try {
+      await loginService.logout();
+    } catch {
+      // Best-effort cleanup only
+    }
+
+    setRequiresNewPassword(false);
+    setPendingEmail('');
+    setPassword('');
+    setError('');
+  };
+
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
     navigate('/reset-password', { state: { userType } });
   };
 
   return (
+    requiresNewPassword ? (
+      <NewPasswordChallengeForm
+        compact
+        userType={userType}
+        email={pendingEmail || email}
+        onCancel={handleCancelNewPassword}
+        onCompleted={handleNewPasswordComplete}
+      />
+    ) : (
     <form onSubmit={handleSubmit}>
       <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-6">
         {userType === 'user' 
@@ -171,6 +207,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, onSuccessfulLogin }) =>
         </Button>
       </div>
     </form>
+    )
   );
 };
 

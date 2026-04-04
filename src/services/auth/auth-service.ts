@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Amplify } from 'aws-amplify';
 import { 
   signIn, 
+  confirmSignIn,
   signOut, 
   fetchAuthSession, 
   signUp, 
@@ -33,6 +34,11 @@ interface LoginCredentials {
   password: string;
 }
 
+interface CompleteNewPasswordCredentials {
+  userType: 'user' |'merchant' | 'admin' | 'affiliate';
+  newPassword: string;
+}
+
 interface SignUpCredentials {
   email: string | undefined;
   phone: string | undefined;
@@ -48,7 +54,7 @@ interface SignUpResponse {
   message?: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   data?: any;
   token?: string;
   role?: 'user' | 'merchant' | 'admin';
@@ -125,44 +131,7 @@ export class LoginService {
         }
       }
 
-      const session = await fetchAuthSession({ forceRefresh: true });
-
-      const tokens = {
-        accessToken: session.tokens?.accessToken.toString() || '',
-        idToken: session.tokens?.idToken?.toString() || '',
-        refreshToken: ''
-      };
-
-      // get the username from the access token
-      // const username = session.tokens?.accessToken.payload.username;
-      // console.log('Username:', username);
-
-      // Login to backend API
-      const response = await axios.get<LoginResponse>(
-        `${this.baseUrl}/login`,
-        {
-          headers: {
-            Authorization: `${tokens.idToken}`
-          }
-        }
-      );
-
-      const responseData = response.data.data;
-
-      if (responseData.role !== credentials.userType && !(responseData.role === 'admin' && credentials.userType === 'user')) {
-        throw new Error('User type mismatch');
-      }
-      
-      // Store tokens and role name in localStorage
-      localStorage.setItem('token', responseData.token!);
-      localStorage.setItem('cognitoAccessToken', tokens.accessToken);
-      localStorage.setItem('cognitoIdToken', tokens.idToken);
-      // localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
-      localStorage.setItem('roleName', responseData.role!);
-      localStorage.setItem('merchantStatus', responseData.merchant_status!);
-      localStorage.setItem('hasBusinessHours', responseData.has_business_hours!);
-      
-      return response.data;
+      return await this.finalizeLogin(credentials.userType);
     } catch (error: any) {
       try {
         await signOut();
@@ -171,6 +140,66 @@ export class LoginService {
       }
       throw this.handleCognitoError(error);
     }
+  }
+
+  public async completeNewPassword(credentials: CompleteNewPasswordCredentials): Promise<LoginResponse> {
+    try {
+      const cognitoUser = await confirmSignIn({
+        challengeResponse: credentials.newPassword
+      });
+
+      if (cognitoUser.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        return {
+          message: 'New password required'
+        };
+      }
+
+      return await this.finalizeLogin(credentials.userType);
+    } catch (error: any) {
+      try {
+        await signOut();
+      } catch {
+        // Best-effort cleanup only
+      }
+      throw this.handleCognitoError(error);
+    }
+  }
+
+  private async finalizeLogin(userType: LoginCredentials['userType']): Promise<LoginResponse> {
+    const session = await fetchAuthSession({ forceRefresh: true });
+
+    const tokens = {
+      accessToken: session.tokens?.accessToken.toString() || '',
+      idToken: session.tokens?.idToken?.toString() || '',
+      refreshToken: ''
+    };
+
+    // Login to backend API
+    const response = await axios.get<LoginResponse>(
+      `${this.baseUrl}/login`,
+      {
+        headers: {
+          Authorization: `${tokens.idToken}`
+        }
+      }
+    );
+
+    const responseData = response.data.data;
+
+    if (responseData.role !== userType && !(responseData.role === 'admin' && userType === 'user')) {
+      throw new Error('User type mismatch');
+    }
+    
+    // Store tokens and role name in localStorage
+    localStorage.setItem('token', responseData.token!);
+    localStorage.setItem('cognitoAccessToken', tokens.accessToken);
+    localStorage.setItem('cognitoIdToken', tokens.idToken);
+    // localStorage.setItem('cognitoRefreshToken', tokens.refreshToken);
+    localStorage.setItem('roleName', responseData.role!);
+    localStorage.setItem('merchantStatus', responseData.merchant_status!);
+    localStorage.setItem('hasBusinessHours', responseData.has_business_hours!);
+    
+    return response.data;
   }
 
   public async sendResetPasswordCode(username: string): Promise<LoginResponse> {

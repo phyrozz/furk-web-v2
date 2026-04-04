@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
+import type { LoginResponse } from '../../../services/auth/auth-service';
 import { LocalStorageService } from '../../../services/local-storage/local-storage-service';
+import NewPasswordChallengeForm from '../Login/NewPasswordChallengeForm';
 
 const AffiliateLoginPage = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +14,8 @@ const AffiliateLoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [requiresNewPassword, setRequiresNewPassword] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
   const navigate = useNavigate();
 
   const localStorageService = new LocalStorageService();
@@ -49,7 +53,8 @@ const AffiliateLoginPage = () => {
       });
 
       if (response.message === 'New password required') {
-        setIsLoading(false);
+        setPendingEmail(email);
+        setRequiresNewPassword(true);
         return;
       }
 
@@ -70,6 +75,28 @@ const AffiliateLoginPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNewPasswordComplete = async (response: LoginResponse) => {
+    if (response.data?.role) {
+      navigate('/affiliate/dashboard');
+    } else {
+      localStorageService.clearAll();
+      setError('Login failed. Please try again.');
+    }
+  };
+
+  const handleCancelNewPassword = async () => {
+    try {
+      await loginService.logout();
+    } catch {
+      // Best-effort cleanup only
+    }
+
+    setRequiresNewPassword(false);
+    setPendingEmail('');
+    setPassword('');
+    setError('');
   };
 
   return (
@@ -123,6 +150,15 @@ const AffiliateLoginPage = () => {
             variants={itemVariants}
           >
             <div className="p-6">
+              {requiresNewPassword ? (
+                <NewPasswordChallengeForm
+                  compact
+                  userType="affiliate"
+                  email={pendingEmail || email}
+                  onCancel={handleCancelNewPassword}
+                  onCompleted={handleNewPasswordComplete}
+                />
+              ) : (
               <form onSubmit={handleSubmit}>
                 <h2 className="text-2xl font-cursive font-bold text-gray-800 mb-6">
                   Sign in to your Affiliate account
@@ -206,6 +242,7 @@ const AffiliateLoginPage = () => {
                   </Button>
                 </div>
               </form>
+              )}
             </div>
           </motion.div>
 
