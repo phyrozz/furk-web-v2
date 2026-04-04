@@ -4,8 +4,8 @@ import PopularServices from './PopularServices';
 import WhatsNewSection from './WhatsNewSection';
 import WhyFurkSection from './WhyFurkSection';
 import PartnerSection from './PartnerSection';
-import { loginService } from '../../../services/auth/auth-service';
 import Footer from '../../common/Footer';
+import HiddenPreviewDrawer from './HiddenPreviewDrawer';
 
 const HomePage = () => {
   useEffect(() => {
@@ -29,6 +29,7 @@ const HomePage = () => {
       <WhyFurkSection />
       <PartnerSection />
       <Footer />
+      <HiddenPreviewDrawer />
     </div>
   );
 };
