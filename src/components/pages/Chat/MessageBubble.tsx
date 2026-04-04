@@ -15,13 +15,6 @@ interface Props {
   richContent?: RichContent | null;
 }
 
-function toAmPm(time: string): string {
-  const [h, m] = time.split(":").map(Number);
-  const suffix = h >= 12 ? "PM" : "AM";
-  const hour = h % 12 || 12;
-  return `${hour}:${m.toString().padStart(2, "0")} ${suffix}`;
-}
-
 export default function MessageBubble({ isMine, text, time, richContent }: Props) {
   const renderRichContent = (content: RichContent) => {
     switch (content.type) {
@@ -74,7 +67,7 @@ export default function MessageBubble({ isMine, text, time, richContent }: Props
             isMine && !isServiceCard ? "text-gray-200" : "text-gray-400"
           }`}
         >
-          {toAmPm(time)}
+          {time}
         </span>
       </div>
     </motion.div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Star, Phone, Mail, Tag, Heart, Share2 } from 'lucide-react';
+import { MapPin, Star, Phone, Mail, Tag, Heart, Share2, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -16,6 +16,7 @@ import ShareDialog from '../../common/ShareDialog';
 import { Rating } from 'react-simple-star-rating';
 import DateUtils from '../../../utils/date-utils';
 import LocationPicker from '../../common/LocationPicker';
+import { MerchantDetailsService } from '../../../services/merchant-details/merchant-details';
 
 interface ServiceDetail {
   id: number;
@@ -62,8 +63,10 @@ const ServiceDetails = () => {
   const [hasBooked, setHasBooked] = useState<boolean>(false);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState<boolean>(false);
   const [showShareDialog, setShowShareDialog] = useState<boolean>(false);
+  const [startingConversation, setStartingConversation] = useState<boolean>(false);
   const navigate = useNavigate();
   const reviewsRef = useRef<ReviewsListRef>(null);
+  const merchantDetailsService = new MerchantDetailsService();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -176,6 +179,38 @@ const ServiceDetails = () => {
 
   const onReviewSubmit = () => {
     reviewsRef.current?.reset(); // Trigger refresh of reviews
+  };
+
+  const handleStartConversation = async () => {
+    if (!service?.merchant_id) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    if (isNotUser) {
+      ToastService.show('Only pet owners can start merchant conversations.');
+      return;
+    }
+
+    try {
+      setStartingConversation(true);
+      const response = await merchantDetailsService.startConversation(String(service.merchant_id));
+      navigate(`/chat/${response.data.id}`, {
+        replace: true,
+        state: {
+          conversation: response.data,
+        },
+      });
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      ToastService.show('Failed to open merchant conversation.');
+    } finally {
+      setStartingConversation(false);
+    }
   };
 
   const isReviewable = () => {
@@ -399,6 +434,16 @@ const ServiceDetails = () => {
                     </Button>
                   </motion.div>
                 )}
+
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
+                  icon={<MessageCircle size={18} />}
+                  onClick={handleStartConversation}
+                  loading={startingConversation}
+                >
+                  {isAuthenticated ? 'Message Merchant' : 'Sign in to Message'}
+                </Button>
               </div>
             </motion.div>
 

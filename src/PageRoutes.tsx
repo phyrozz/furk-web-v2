@@ -53,7 +53,10 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
   const canAccessMerchantProfile = merchantStatus && merchantStatus !== 'unverified';
 
   const isChatPage =
-    location.pathname === '/chat' || location.pathname === '/merchant/chat';
+    location.pathname === '/chat' ||
+    location.pathname.startsWith('/chat/') ||
+    location.pathname === '/merchant/chat' ||
+    location.pathname.startsWith('/merchant/chat/');
 
   const renderTopNavbar = () => {
     if (!isAuthenticated) {
@@ -258,7 +261,17 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
             <ChatPage />
           </ProtectedRoute>
         } />
+        <Route path="/chat/:conversationId" element={
+          <ProtectedRoute requiredRoles={['user']}>
+            <ChatPage />
+          </ProtectedRoute>
+        } />
         <Route path="/merchant/chat" element={
+          <ProtectedRoute requiredRoles={['merchant']}>
+            <ChatPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/merchant/chat/:conversationId" element={
           <ProtectedRoute requiredRoles={['merchant']}>
             <ChatPage />
           </ProtectedRoute>
