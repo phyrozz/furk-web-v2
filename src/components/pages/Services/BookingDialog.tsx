@@ -717,6 +717,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
                 minuteStep={30}
                 min={getTimeConstraints.min}
                 max={getTimeConstraints.max}
+                maxExclusive
                 excludeRanges={breakExclusionRanges}
                 disabled={!selectedDate || !getBusinessHoursForDate(selectedDate)}
               />
