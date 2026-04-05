@@ -1,9 +1,64 @@
 class DateUtils {
+    static getDayLabel(dayIndex: number): string {
+        return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dayIndex] || 'Unknown';
+    }
+
+    static getBusinessDayIndex(date: Date): number {
+        return (date.getDay() + 6) % 7;
+    }
+
+    static formatTimeString(time: string): string {
+        if (!time) return 'N/A';
+
+        const [hoursStr, minutesStr] = time.split(':');
+        const hours = Number(hoursStr);
+        const minutes = Number(minutesStr);
+        if (Number.isNaN(hours) || Number.isNaN(minutes)) return time;
+
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+    }
+
+    static formatDateString(dateValue: string): string {
+        if (!dateValue) return 'N/A';
+
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return dateValue;
+
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    }
+
+    static formatDateTimeString(timestamp: string): string {
+        if (!timestamp) return 'N/A';
+
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return timestamp;
+
+        return date.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+    }
+
     static formatTimestampString(timestamp: string): string {
         const date = new Date(timestamp);
         const options: Intl.DateTimeFormatOptions = {
             year: 'numeric',
-            month: 'long',
+            month: 'short',
             day: 'numeric',
             hour: 'numeric',
             minute: 'numeric',
@@ -30,7 +85,7 @@ class DateUtils {
         const date = new Date(timestamp);
         const options: Intl.DateTimeFormatOptions = {
             year: 'numeric',
-            month: 'long',
+            month: 'short',
             day: 'numeric',
         };
 

@@ -92,7 +92,6 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
 
   const getBusinessHoursForDate = useCallback((date: string) => {
     const selectedDay = moment(date, 'YYYY-MM-DD').day();
-    // Convert Sunday (0) to 6, and other days subtract 1 to match 0=Monday format
     const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
     return businessHours.find(hour => (
       hour.day_of_week === adjustedDay &&

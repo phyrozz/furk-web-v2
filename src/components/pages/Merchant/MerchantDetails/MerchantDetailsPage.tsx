@@ -10,6 +10,7 @@ import { MessageCircle, Share2 } from 'lucide-react';
 import Button from '../../../common/Button';
 import { loginService } from '../../../../services/auth/auth-service';
 import { ToastService } from '../../../../services/toast/toast-service';
+import DateUtils from '../../../../utils/date-utils';
 
 interface MerchantDetails {
   id: string;
@@ -26,6 +27,29 @@ interface MerchantDetails {
   latitude: number;
   overall_rating: number;
   exterior_photo?: string;
+  business_hours?: BusinessHour[];
+  break_hours?: BreakHour[];
+  closures?: ClosureWindow[];
+}
+
+interface BusinessHour {
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
+}
+
+interface BreakHour {
+  day_of_week: number;
+  break_start: string;
+  break_end: string;
+  label?: string;
+}
+
+interface ClosureWindow {
+  id: number;
+  start_datetime: string;
+  end_datetime: string;
+  reason?: string | null;
 }
 
 const MerchantDetailsPage = () => {
@@ -117,6 +141,16 @@ const MerchantDetailsPage = () => {
       </div>
     );
   }
+
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const businessHours = merchant.business_hours || [];
+  const breakHours = merchant.break_hours || [];
+  const closures = merchant.closures || [];
+  const now = new Date();
+  const upcomingClosures = closures.filter((closure) => {
+    const endDate = new Date(closure.end_datetime);
+    return endDate >= now;
+  });
 
   return (
     <>
@@ -216,6 +250,69 @@ const MerchantDetailsPage = () => {
             {isAuthenticated ? 'Message Merchant' : 'Sign in to Message'}
           </Button>
         </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="bg-white rounded-xl shadow-md p-6"
+      >
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Business Schedule</h2>
+
+        {businessHours.length > 0 ? (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">Business Hours</h3>
+              <div className="space-y-2">
+                {businessHours.map((hour, index) => (
+                  <div key={`${hour.day_of_week}-${index}`} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                    <span className="font-medium text-gray-700">{dayLabels[hour.day_of_week] || `Day ${hour.day_of_week}`}</span>
+                    <span className="text-gray-600">
+                      {DateUtils.formatTimeString(hour.open_time)} - {DateUtils.formatTimeString(hour.close_time)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {breakHours.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">Break Hours</h3>
+                <div className="space-y-2">
+                  {breakHours.map((breakHour, index) => (
+                    <div key={`${breakHour.day_of_week}-${index}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm">
+                      <span className="font-medium text-amber-900">
+                        {breakHour.label || 'Break'} - {dayLabels[breakHour.day_of_week] || `Day ${breakHour.day_of_week}`}
+                      </span>
+                      <span className="text-amber-800">
+                        {DateUtils.formatTimeString(breakHour.break_start)} - {DateUtils.formatTimeString(breakHour.break_end)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {upcomingClosures.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">Upcoming Closures</h3>
+                <div className="space-y-2">
+                  {upcomingClosures.map((closure) => (
+                    <div key={closure.id} className="rounded-lg bg-rose-50 px-3 py-2 text-sm">
+                      <div className="font-medium text-rose-900">
+                        {DateUtils.formatDateTimeString(closure.start_datetime)} - {DateUtils.formatDateTimeString(closure.end_datetime)}
+                      </div>
+                      {closure.reason && <div className="text-rose-700 mt-1">{closure.reason}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No business hours have been set yet.</p>
+        )}
       </motion.div>
 
       {/* Services Section */}
