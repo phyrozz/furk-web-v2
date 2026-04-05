@@ -1,0 +1,14 @@
+﻿service: furk-web-ui
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, 'prod'}
+  region: ap-southeast-1
+  bucketName: ${ssm:/furk/${self:custom.stage}/web-bucket-name}
+  distributionId: ${ssm:/furk/${self:custom.stage}/web-distribution-id}
+
+provider:
+  name: aws
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+  profile: furk-${self:custom.stage}
