@@ -302,7 +302,7 @@ const ServiceDetails = () => {
       };
     }
 
-    if (nowTime < todaysHours.open_time || nowTime > todaysHours.close_time) {
+    if (nowTime < todaysHours!.open_time || nowTime > todaysHours!.close_time) {
       return {
         is_open: false,
         status: 'closed' as const,
@@ -546,7 +546,7 @@ const ServiceDetails = () => {
                         <p className="text-sm leading-5">{businessStatus.notice}</p>
                         {businessStatus.business_hours_today && businessStatus.status === 'open' && (
                           <p className="text-xs mt-1 opacity-80">
-                            Today: {businessStatus.business_hours_today.open_time} - {businessStatus.business_hours_today.close_time}
+                            Today: {formatTime(businessStatus.business_hours_today.open_time)} - {formatTime(businessStatus.business_hours_today.close_time)}
                           </p>
                         )}
                         {businessStatus.closure_reason && (
@@ -649,14 +649,23 @@ const ServiceDetails = () => {
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold mb-3">Break Hours</h3>
                     <div className="space-y-2">
-                      {breakHours.map((breakHour) => (
-                        <div key={`${breakHour.id}-${breakHour.day_of_week}-${breakHour.break_start}-${breakHour.break_end}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm">
-                          <span className="font-medium text-amber-900">{breakHour.label || 'Break'} - {dayLabels[breakHour.day_of_week] || `Day ${breakHour.day_of_week}`}</span>
-                          <span className="text-amber-800">
-                            {formatTime(breakHour.break_start)} - {formatTime(breakHour.break_end)}
-                          </span>
-                        </div>
-                      ))}
+                      {breakHours
+                        .filter((breakHour) => (
+                          breakHour.day_of_week !== null &&
+                          breakHour.day_of_week !== undefined &&
+                          breakHour.break_start &&
+                          breakHour.break_end
+                        ))
+                        .map((breakHour) => (
+                          <div key={`${breakHour.id}-${breakHour.day_of_week}-${breakHour.break_start}-${breakHour.break_end}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm">
+                            <span className="font-medium text-amber-900">
+                              {breakHour.label || 'Break'} - {DateUtils.getDayLabel(breakHour.day_of_week)}
+                            </span>
+                            <span className="text-amber-800">
+                              {formatTime(breakHour.break_start)} - {formatTime(breakHour.break_end)}
+                            </span>
+                          </div>
+                        ))}
                     </div>
                   </div>
                 )}
