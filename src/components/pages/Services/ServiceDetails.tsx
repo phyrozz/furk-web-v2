@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { MapPin, Star, Phone, Mail, Tag, Heart, Share2, MessageCircle } from 'lucide-react';
+import { MapPin, Star, Phone, Mail, Tag, Heart, Share2, MessageCircle, Clock3, AlertTriangle, Sun, Coffee } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -34,6 +34,8 @@ interface ServiceDetail {
   average_rating: number;
   attachments: string[];
   business_hours: BusinessHour[];
+  break_hours?: BreakHour[];
+  closures?: ClosureWindow[];
   hasBooked: boolean;
   has_reviewed: boolean;
   last_completed_timestamp: string | null;
@@ -41,6 +43,7 @@ interface ServiceDetail {
   duration?: number;
   latitude?: number;
   longitude?: number;
+  business_status?: BusinessStatus;
 }
 
 export interface BusinessHour {
@@ -48,6 +51,36 @@ export interface BusinessHour {
   day_of_week: number;
   open_time: string;
   close_time: string;
+}
+
+interface BreakHour {
+  id: number;
+  day_of_week: number;
+  break_start: string;
+  break_end: string;
+  label: string;
+}
+
+interface ClosureWindow {
+  id: number;
+  start_datetime: string;
+  end_datetime: string;
+  reason?: string | null;
+}
+
+interface BusinessStatus {
+  is_open: boolean;
+  status: 'open' | 'closed' | 'break' | 'closure';
+  notice: string;
+  upcoming_notice?: string | null;
+  closure_reason?: string | null;
+  closure_until?: string | null;
+  break_label?: string | null;
+  break_until?: string | null;
+  business_hours_today?: {
+    open_time: string;
+    close_time: string;
+  };
 }
 
 const ServiceDetails = () => {
@@ -223,6 +256,115 @@ const ServiceDetails = () => {
     return lastCompletedDate >= oneWeekAgo;
   }
 
+  function formatTime(value: string) {
+    return DateUtils.formatTimeString(value);
+  }
+
+  const businessHours = service.business_hours || [];
+  const breakHours = service.break_hours || [];
+  const closures = service.closures || [];
+  const upcomingClosures = closures.filter((closure) => new Date(closure.end_datetime) >= new Date());
+  const businessStatus = service.business_status || (() => {
+    const now = new Date();
+    const today = DateUtils.getBusinessDayIndex(now);
+    const nowTime = now.toTimeString().slice(0, 8);
+    const todaysHours = businessHours.find((hour) => hour.day_of_week === today);
+    const hasOperatingHoursToday = Boolean(
+      todaysHours &&
+      todaysHours.open_time &&
+      todaysHours.close_time
+    );
+    const activeClosure = upcomingClosures.find((closure) => {
+      const start = new Date(closure.start_datetime);
+      const end = new Date(closure.end_datetime);
+      return start <= now && now <= end;
+    });
+
+    if (activeClosure) {
+      return {
+        is_open: false,
+        status: 'closure' as const,
+        notice: 'Business is temporarily closed today.',
+        closure_reason: activeClosure.reason || null,
+        closure_until: activeClosure.end_datetime,
+        upcoming_notice: activeClosure.reason
+          ? `Closure notice: ${activeClosure.reason}`
+          : 'Business is closed today due to a temporary closure.',
+      };
+    }
+
+    if (!hasOperatingHoursToday) {
+      return {
+        is_open: false,
+        status: 'closed' as const,
+        notice: 'Business is closed today.',
+        business_hours_today: undefined,
+      };
+    }
+
+    if (nowTime < todaysHours.open_time || nowTime > todaysHours.close_time) {
+      return {
+        is_open: false,
+        status: 'closed' as const,
+        notice: todaysHours
+          ? `Business is closed today. Open from ${formatTime(todaysHours.open_time)} to ${formatTime(todaysHours.close_time)}.`
+          : 'Business is closed today.',
+        business_hours_today: todaysHours
+          ? { open_time: todaysHours.open_time, close_time: todaysHours.close_time }
+          : undefined,
+      };
+    }
+
+    const activeBreak = breakHours.find(
+      (breakHour) =>
+        breakHour.day_of_week === today &&
+        breakHour.break_start <= nowTime &&
+        nowTime <= breakHour.break_end
+    );
+
+    if (activeBreak) {
+      return {
+        is_open: false,
+        status: 'break' as const,
+        notice: `Business is on break today until ${formatTime(activeBreak.break_end)}.`,
+        break_label: activeBreak.label,
+        break_until: activeBreak.break_end,
+      };
+    }
+
+    const upcomingBreak = breakHours.find(
+      (breakHour) => breakHour.day_of_week === today && breakHour.break_start > nowTime
+    );
+
+    return {
+      is_open: true,
+      status: 'open' as const,
+      notice: 'Business is open now.',
+      business_hours_today: todaysHours
+        ? { open_time: todaysHours.open_time, close_time: todaysHours.close_time }
+        : undefined,
+      upcoming_notice: upcomingBreak
+        ? `Upcoming break at ${formatTime(upcomingBreak.break_start)}${upcomingBreak.break_end ? ` until ${formatTime(upcomingBreak.break_end)}` : ''}.`
+        : undefined,
+    };
+  })();
+  const statusStyles = {
+    open: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    closed: 'bg-slate-50 text-slate-800 border-slate-200',
+    break: 'bg-amber-50 text-amber-900 border-amber-200',
+    closure: 'bg-rose-50 text-rose-900 border-rose-200',
+  }[businessStatus?.status || 'closed'];
+
+  const statusIcon = {
+    open: <Sun size={18} className="text-emerald-600" />,
+    closed: <Clock3 size={18} className="text-slate-600" />,
+    break: <Coffee size={18} className="text-amber-600" />,
+    closure: <AlertTriangle size={18} className="text-rose-600" />,
+  }[businessStatus?.status || 'closed'];
+
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const hasBusinessHoursToday = businessHours.some((hour) => hour.day_of_week === DateUtils.getBusinessDayIndex(new Date()));
+
   return (
     <>
       <BookingDialog
@@ -393,6 +535,34 @@ const ServiceDetails = () => {
             >
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
                 <h2 className="text-2xl font-semibold mb-4">Contact</h2>
+                {businessStatus && (
+                  <div className={`mb-5 rounded-xl border px-4 py-3 ${statusStyles}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5">{statusIcon}</div>
+                      <div className="min-w-0">
+                        <p className="font-semibold capitalize">
+                          {businessStatus.status === 'closure' ? 'Temporarily closed' : businessStatus.status}
+                        </p>
+                        <p className="text-sm leading-5">{businessStatus.notice}</p>
+                        {businessStatus.business_hours_today && businessStatus.status === 'open' && (
+                          <p className="text-xs mt-1 opacity-80">
+                            Today: {businessStatus.business_hours_today.open_time} - {businessStatus.business_hours_today.close_time}
+                          </p>
+                        )}
+                        {businessStatus.closure_reason && (
+                          <p className="text-xs mt-1 opacity-80">
+                            Reason: {businessStatus.closure_reason}
+                          </p>
+                        )}
+                        {businessStatus.upcoming_notice && (
+                          <p className="text-xs mt-1 font-medium">
+                            {businessStatus.upcoming_notice}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-4">
                   <motion.div 
                     whileHover={{ x: 5 }}
@@ -409,41 +579,106 @@ const ServiceDetails = () => {
                     <a href={`mailto:${service.email}`}>{service.email}</a>
                   </motion.div>
                 </div>
-                {isAuthenticated ? (
-                  isNotUser ? (
-                    <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
-                  ) : hasBooked ? (
-                    <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
+
+                <div className="mt-6 space-y-3">
+                  {isAuthenticated ? (
+                    isNotUser ? (
+                      <WarningContainer message="You are not a user. Please login/sign up as pet owner to book." />
+                    ) : hasBooked ? (
+                      <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
+                    ) : (
+                      <Button
+                        variant="primary"
+                        className="w-full"
+                        onClick={() => setIsBookingDialogOpen(true)}
+                      >
+                        Book Now
+                      </Button>
+                    )
                   ) : (
-                    <Button
-                      variant="primary"
-                      className="w-full mt-6"
-                      onClick={() => setIsBookingDialogOpen(true)}
-                    >
-                      Book Now
-                    </Button>
-                  )
-                ) : (
-                  <motion.div whileHover={{ scale: 1.02 }}>
-                    <Button
-                      variant="primary"
-                      className="w-full mt-6"
-                      onClick={() => navigate('/login')}
-                    >
-                      Sign in now to book
-                    </Button>
-                  </motion.div>
+                    <motion.div whileHover={{ scale: 1.02 }}>
+                      <Button
+                        variant="primary"
+                        className="w-full"
+                        onClick={() => navigate('/login')}
+                      >
+                        Sign in now to book
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    icon={<MessageCircle size={18} />}
+                    onClick={handleStartConversation}
+                    loading={startingConversation}
+                  >
+                    {isAuthenticated ? 'Message Merchant' : 'Sign in to Message'}
+                  </Button>
+                </div>
+
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold">Business Hours</h3>
+                    {!hasBusinessHoursToday && (
+                      <span className="text-xs font-medium rounded-full bg-slate-100 text-slate-700 px-2 py-1">
+                        Closed today
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {businessHours.length > 0 ? (
+                      businessHours.map((hour) => (
+                        <div key={`${hour.id}-${hour.day_of_week}-${hour.open_time}-${hour.close_time}`} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                          <span className="font-medium text-gray-700">{dayLabels[hour.day_of_week] || `Day ${hour.day_of_week}`}</span>
+                          <span className="text-gray-600">
+                            {formatTime(hour.open_time)} - {formatTime(hour.close_time)}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                        No business hours have been set yet.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {breakHours.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-3">Break Hours</h3>
+                    <div className="space-y-2">
+                      {breakHours.map((breakHour) => (
+                        <div key={`${breakHour.id}-${breakHour.day_of_week}-${breakHour.break_start}-${breakHour.break_end}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm">
+                          <span className="font-medium text-amber-900">{breakHour.label || 'Break'} - {dayLabels[breakHour.day_of_week] || `Day ${breakHour.day_of_week}`}</span>
+                          <span className="text-amber-800">
+                            {formatTime(breakHour.break_start)} - {formatTime(breakHour.break_end)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
-                <Button
-                  variant="outline"
-                  className="w-full mt-3"
-                  icon={<MessageCircle size={18} />}
-                  onClick={handleStartConversation}
-                  loading={startingConversation}
-                >
-                  {isAuthenticated ? 'Message Merchant' : 'Sign in to Message'}
-                </Button>
+                {upcomingClosures.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-3">Upcoming Closures</h3>
+                    <div className="space-y-2">
+                      {upcomingClosures.map((closure) => (
+                        <div key={`${closure.id}-${closure.start_datetime}`} className="rounded-lg bg-rose-50 px-3 py-2 text-sm">
+                          <div className="font-medium text-rose-900">
+                            {DateUtils.formatDateTimeString(closure.start_datetime)} - {DateUtils.formatDateTimeString(closure.end_datetime)}
+                          </div>
+                          {closure.reason && (
+                            <div className="text-rose-700 mt-1">{closure.reason}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               </div>
             </motion.div>
 
