@@ -1,7 +1,7 @@
 {
   "name": "furk-pet-services",
   "private": true,
-  "version": "1.2646.0",
+  "version": "1.26521.0",
   "type": "module",
   "scripts": {
     "lint": "eslint .",
