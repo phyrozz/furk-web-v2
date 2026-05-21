@@ -14,6 +14,7 @@ export interface MerchantProfile {
   id?: string;
   business_name?: string;
   merchant_type?: string;
+  phone_number?: string;
   address?: string;
   city?: string;
   province?: string;
@@ -94,9 +95,10 @@ const MerchantProfilePage = () => {
     try {
       setLoadingSave(true);
 
-       await dataService.updateMerchantDetails({
+      await dataService.updateMerchantDetails({
          business_name: editFormData.business_name,
          merchant_type: editFormData.merchant_type,
+         phone_number: editFormData.phone_number,
          address: editFormData.address,
          city: editFormData.city,
          province: editFormData.province,
@@ -107,7 +109,10 @@ const MerchantProfilePage = () => {
       ToastService.show("Merchant profile updated successfully!");
     } catch (error) {
       console.error("Error updating merchant profile:", error);
-      ToastService.show("Failed to update merchant profile.");
+      const message = (error as any)?.response?.data?.error || "Failed to update merchant profile.";
+      ToastService.show(message);
+    } finally {
+      setLoadingSave(false);
     }
   };
 
@@ -230,6 +235,22 @@ const MerchantProfilePage = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               value={editFormData?.merchant_type ?? ''}
               onChange={(e) => setEditFormData(prev => ({ ...prev!, merchant_type: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+              Mobile Number
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              maxLength={13}
+              placeholder="+639XXXXXXXXX"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={editFormData?.phone_number ?? ''}
+              onChange={(e) => setEditFormData(prev => ({ ...prev!, phone_number: e.target.value }))}
               required
             />
           </div>
@@ -387,6 +408,10 @@ const MerchantProfilePage = () => {
                     <div className="mb-4">
                       <p className="text-gray-600">Merchant Type:</p>
                       <p className="font-semibold">{profile?.merchant_type}</p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-gray-600">Mobile Number:</p>
+                      <p className="font-semibold">{profile?.phone_number || 'No mobile number set'}</p>
                     </div>
                     <div className="mb-4">
                       <p className="text-gray-600">Address:</p>
