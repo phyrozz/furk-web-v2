@@ -363,7 +363,8 @@ const ProfilePage = () => {
             <input
               type="tel"
               id="phoneNumber"
-              maxLength={255}
+              maxLength={13}
+              placeholder="+639XXXXXXXXX"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               value={editFormData?.phone_number ?? ''}
               onChange={(e) => setEditFormData(prev => ({ ...prev!, phone_number: e.target.value }))}
