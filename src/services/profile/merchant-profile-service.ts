@@ -12,6 +12,20 @@ export class MerchantProfileService {
         return http.put('/merchant-profile', merchantProfile);
     }
 
+    async updateMerchantLocation(long: number, lat: number): Promise<any> {
+        return http.post('/merchant-profile/location', {
+            long,
+            lat,
+        });
+    }
+
+    async searchLocations(query: string, limit: number = 5): Promise<any> {
+        return http.post('/location-search/geocode', {
+            query,
+            limit,
+        });
+    }
+
     async updateMerchantBusinessHours(businessHours: BusinessHour[]): Promise<any> {
         return http.post('/merchant-profile/business-hours', { data: businessHours });
     }

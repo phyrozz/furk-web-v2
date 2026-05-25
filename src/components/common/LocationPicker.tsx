@@ -18,6 +18,8 @@ interface LocationPickerProps {
   enableSearch?: boolean;
   searchLocations?: (query: string) => Promise<LocationSearchResult[]>;
   searchPlaceholder?: string;
+  searchValue?: string;
+  autoSelectFirstResult?: boolean;
 }
 
 const MapEvents: React.FC<{
@@ -122,6 +124,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   enableSearch = false,
   searchLocations,
   searchPlaceholder = 'Search location...',
+  searchValue,
+  autoSelectFirstResult = false,
 }) => {
   const [position, setPosition] = useState<LatLng>(new LatLng(initialLat, initialLng));
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,6 +136,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   useEffect(() => {
     setPosition(new LatLng(initialLat, initialLng));
   }, [initialLat, initialLng]);
+
+  useEffect(() => {
+    if (typeof searchValue === 'string') {
+      setSearchQuery(searchValue);
+    }
+  }, [searchValue]);
 
   const handleMapClick = (e: LeafletMouseEvent) => {
     if (readonly) return;
@@ -176,6 +186,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         const results = await searchLocations(query);
         setSearchResults(results);
         setShowResults(true);
+        if (autoSelectFirstResult && results.length > 0) {
+          handleSelectSearchResult(results[0]);
+        }
       } catch {
         setSearchResults([]);
       } finally {
@@ -186,7 +199,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [searchQuery, enableSearch, searchLocations, readonly]);
+  }, [searchQuery, enableSearch, searchLocations, readonly, autoSelectFirstResult]);
 
   return (
     <div className="h-[400px] w-full rounded-lg overflow-hidden border border-gray-300 relative z-0">
