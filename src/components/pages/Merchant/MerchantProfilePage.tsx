@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, History, Heart, Save, PawPrint, CalendarX } from 'lucide-react';
+import { User, History, Heart, Save, PawPrint, CalendarX, Edit3 } from 'lucide-react';
 import Button from '../../common/Button';
 import { loginService } from '../../../services/auth/auth-service';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,9 @@ import useScreenSize from '../../../hooks/useScreenSize';
 import MerchantNavbar from '../../common/MerchantNavbar';
 import { MerchantProfileService } from '../../../services/profile/merchant-profile-service';
 import SetBreakHours from './SetBreakHours/SetBreakHoursPage';
+import Autocomplete from '../../common/Autocomplete';
+import { LocationService } from '../../../services/location/location-service';
+import LocationPicker from '../../common/LocationPicker';
 
 export interface MerchantProfile {
   id?: string;
@@ -19,6 +22,8 @@ export interface MerchantProfile {
   city?: string;
   province?: string;
   barangay?: string;
+  longitude?: number;
+  latitude?: number;
   exterior_photo?: string;
   business_hours?: BusinessHours[];
   break_hours?: BreakHours[];
@@ -47,8 +52,14 @@ const MerchantProfilePage = () => {
   const [isBusinessHoursEdit, setIsBusinessHoursEdit] = useState(false);
   const [editBusinessHoursFormData, setEditBusinessHoursFormData] = useState<BusinessHours[] | null>(null);
   const [loadingSave, setLoadingSave] = useState(false);
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [barangays, setBarangays] = useState<string[]>([]);
+  const [editedLocation, setEditedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationSearchValue, setLocationSearchValue] = useState('');
 
   const dataService = new MerchantProfileService();
+  const locationService = new LocationService();
   const navigate  = useNavigate();
 
   const { isMobile } = useScreenSize();
@@ -56,6 +67,7 @@ const MerchantProfilePage = () => {
   useEffect(() => {
     document.title = 'My Profile - FURK';
     getUserDetails();
+    setProvinces(locationService.getProvinces());
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -69,12 +81,61 @@ const MerchantProfilePage = () => {
     try {
       const response = await dataService.getMerchantDetails();
       setProfile(response.data);
+      const lat = response.data?.latitude;
+      const lng = response.data?.longitude;
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        setEditedLocation({ latitude: lat, longitude: lng });
+      } else {
+        setEditedLocation({ latitude: 14.5995, longitude: 120.9842 });
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user details:', error);
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (editFormData?.province) {
+      setCities(locationService.getCities(editFormData.province));
+    } else {
+      setCities([]);
+    }
+  }, [editFormData?.province]);
+
+  useEffect(() => {
+    if (editFormData?.province && editFormData.city) {
+      setBarangays(locationService.getBarangays(editFormData.province, editFormData.city));
+    } else {
+      setBarangays([]);
+    }
+  }, [editFormData?.city]);
+
+  useEffect(() => {
+    const parts = [
+      editFormData?.barangay?.trim(),
+      editFormData?.city?.trim(),
+      editFormData?.province?.trim(),
+    ].filter(Boolean);
+
+    setLocationSearchValue(parts.join(', '));
+  }, [editFormData?.barangay, editFormData?.city, editFormData?.province]);
+
+  const isValidPhoneNumber = (value?: string) => {
+    if (!value) return false;
+    const normalized = value.replace(/\s+/g, '');
+    return /^\+63\d{10}$/.test(normalized) || /^09\d{9}$/.test(normalized);
+  };
+
+  const canSaveProfile = Boolean(
+    editFormData &&
+    editFormData.business_name?.trim() &&
+    editFormData.address?.trim() &&
+    editFormData.province?.trim() &&
+    editFormData.city?.trim() &&
+    editFormData.barangay?.trim() &&
+    isValidPhoneNumber(editFormData.phone_number)
+  );
 
   const handleLogout = async () => {
     try {
@@ -95,17 +156,38 @@ const MerchantProfilePage = () => {
     try {
       setLoadingSave(true);
 
-      await dataService.updateMerchantDetails({
-         business_name: editFormData.business_name,
-         merchant_type: editFormData.merchant_type,
-         phone_number: editFormData.phone_number,
-         address: editFormData.address,
-         city: editFormData.city,
-         province: editFormData.province,
-         barangay: editFormData.barangay,
-       });
+      const [detailsResponse, locationResponse] = await Promise.all([
+        dataService.updateMerchantDetails({
+          business_name: editFormData.business_name,
+          phone_number: editFormData.phone_number,
+          address: editFormData.address,
+          city: editFormData.city,
+          province: editFormData.province,
+          barangay: editFormData.barangay,
+        }),
+        editedLocation
+          ? dataService.updateMerchantLocation(
+              editedLocation.longitude,
+              editedLocation.latitude
+            )
+          : Promise.resolve(null),
+      ]);
+
+      const updatedProfile = {
+        ...(detailsResponse?.data ?? editFormData),
+        ...(locationResponse?.data ?? {}),
+        longitude: locationResponse?.data?.longitude ?? editedLocation?.longitude,
+        latitude: locationResponse?.data?.latitude ?? editedLocation?.latitude,
+      };
+      setProfile(prev => ({
+        ...prev,
+        ...updatedProfile,
+      }));
+      setEditFormData(prev => ({
+        ...prev,
+        ...updatedProfile,
+      }));
       setIsEdit(false);
-      setLoadingSave(false);
       ToastService.show("Merchant profile updated successfully!");
     } catch (error) {
       console.error("Error updating merchant profile:", error);
@@ -225,18 +307,12 @@ const MerchantProfilePage = () => {
           </div>
 
           <div className="mb-2">
-            <label htmlFor="merchantType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Merchant Type
             </label>
-            <input
-              type="text"
-              id="merchantType"
-              maxLength={255}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              value={editFormData?.merchant_type ?? ''}
-              onChange={(e) => setEditFormData(prev => ({ ...prev!, merchant_type: e.target.value }))}
-              required
-            />
+            <div className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {editFormData?.merchant_type || profile?.merchant_type || 'Merchant'}
+            </div>
           </div>
 
           <div className="mb-2">
@@ -256,8 +332,123 @@ const MerchantProfilePage = () => {
           </div>
 
           <div className="mb-2">
+            <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-2">
+              Province
+            </label>
+            <Autocomplete
+              options={provinces.map(province => ({ value: province }))}
+              value={editFormData?.province ? { value: editFormData.province } : null}
+              onChange={(value) => {
+                const provinceValue =
+                  value && typeof value === 'object' && 'value' in value
+                    ? String(value.value)
+                    : '';
+
+                setEditFormData(prev => ({
+                  ...prev!,
+                  province: provinceValue,
+                  city: '',
+                  barangay: ''
+                }));
+
+                if (provinceValue) {
+                  setCities(locationService.getCities(provinceValue));
+                } else {
+                  setCities([]);
+                }
+                setBarangays([]);
+              }}
+              onSearch={async (query) => {
+                const allProvinces = locationService.getProvinces();
+                setProvinces(
+                  query
+                    ? allProvinces.filter(province =>
+                        province.toLowerCase().includes(query.toLowerCase())
+                      )
+                    : allProvinces
+                );
+              }}
+              getOptionLabel={(option: { value: string }) => option.value}
+              placeholder="Select province"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+              City/Municipality
+            </label>
+            <Autocomplete
+              options={cities.map(city => ({ value: city }))}
+              value={editFormData?.city ? { value: editFormData.city } : null}
+              onChange={(value) => {
+                const cityValue =
+                  value && typeof value === 'object' && 'value' in value
+                    ? String(value.value)
+                    : '';
+
+                setEditFormData(prev => ({
+                  ...prev!,
+                  city: cityValue,
+                  barangay: ''
+                }));
+
+                if (cityValue && editFormData?.province) {
+                  setBarangays(locationService.getBarangays(editFormData.province, cityValue));
+                } else {
+                  setBarangays([]);
+                }
+              }}
+              onSearch={async (query) => {
+                if (!editFormData?.province) return;
+
+                const allCities = locationService.getCities(editFormData.province);
+                setCities(
+                  query
+                    ? allCities.filter(city =>
+                        city.toLowerCase().includes(query.toLowerCase())
+                      )
+                    : allCities
+                );
+              }}
+              getOptionLabel={(option: { value: string }) => option.value}
+              placeholder="Select city"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="barangay" className="block text-sm font-medium text-gray-700 mb-2">
+              Barangay
+            </label>
+            <Autocomplete
+              options={barangays.map(barangay => ({ value: barangay }))}
+              value={editFormData?.barangay ? { value: editFormData.barangay } : null}
+              onChange={(value) => {
+                const barangayValue =
+                  value && typeof value === 'object' && 'value' in value
+                    ? String(value.value)
+                    : '';
+                setEditFormData(prev => ({ ...prev!, barangay: barangayValue }));
+              }}
+              onSearch={async (query) => {
+                if (!editFormData?.province || !editFormData?.city) return;
+
+                const allBarangays = locationService.getBarangays(editFormData.province, editFormData.city);
+                setBarangays(
+                  query
+                    ? allBarangays.filter(barangay =>
+                        barangay.toLowerCase().includes(query.toLowerCase())
+                      )
+                    : allBarangays
+                );
+              }}
+              getOptionLabel={(option: { value: string }) => option.value}
+              placeholder="Select barangay"
+            />
+          </div>
+
+          <div className="mb-2 md:col-span-2">
             <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-              Address
+              Street Address
             </label>
             <input
               type="text"
@@ -270,62 +461,54 @@ const MerchantProfilePage = () => {
             />
           </div>
 
-          <div className="mb-2">
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-              City
-            </label>
-            <input
-              type="text"
-              id="city"
-              maxLength={255}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              value={editFormData?.city ?? ''}
-              onChange={(e) => setEditFormData(prev => ({ ...prev!, city: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="mb-2">
-            <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-2">
-              Province
-            </label>
-            <input
-              type="text"
-              id="province"
-              maxLength={255}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              value={editFormData?.province ?? ''}
-              onChange={(e) => setEditFormData(prev => ({ ...prev!, province: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="mb-2">
-            <label htmlFor="barangay" className="block text-sm font-medium text-gray-700 mb-2">
-              Barangay
-            </label>
-            <input
-              type="text"
-              id="barangay"
-              maxLength={255}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              value={editFormData?.barangay ?? ''}
-              onChange={(e) => setEditFormData(prev => ({ ...prev!, barangay: e.target.value }))}
-              required
-            />
+          <div className="md:col-span-2">
+            <div className="flex flex-row justify-between items-center gap-4 mb-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Business Location Map</p>
+                <p className="text-xs text-gray-500">Drag the pin or click the map to update the saved merchant location.</p>
+              </div>
+            </div>
+            {editedLocation ? (
+              <LocationPicker
+                initialLat={editedLocation.latitude}
+                initialLng={editedLocation.longitude}
+                enableSearch
+                searchValue={locationSearchValue}
+                autoSelectFirstResult
+                searchLocations={async (query) => {
+                  try {
+                    const response: any = await dataService.searchLocations(query, 6);
+                    return response?.data || [];
+                  } catch {
+                    return [];
+                  }
+                }}
+                onChange={(lat, lng) => setEditedLocation({ latitude: lat, longitude: lng })}
+              />
+            ) : (
+              <div className="w-full h-96 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-500">
+                Loading map...
+              </div>
+            )}
+            {editedLocation && (
+              <p className="mt-3 text-sm text-gray-600">
+                Lat: {editedLocation.latitude.toFixed(6)} | Lng: {editedLocation.longitude.toFixed(6)}
+              </p>
+            )}
           </div>
         </div>
         
         <div className="w-full flex flex-row justify-end items-center">
-          <Button
-            type='submit'
-            variant="primary"
-            className="ml-2"
-            icon={<Save size={18} />}
-            loading={loadingSave}
-          >
-            Save
-          </Button>
+            <Button
+              type='submit'
+              variant="primary"
+              className="ml-2"
+              icon={<Save size={18} />}
+              loading={loadingSave}
+              disabled={loadingSave || !canSaveProfile}
+            >
+              Save
+            </Button>
         </div>
       </form>
     </>
@@ -388,14 +571,19 @@ const MerchantProfilePage = () => {
             <div className="space-y-6 h-full overflow-y-hidden">
               <div className="flex flex-row justify-between items-center px-6 pt-6">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">Profile</h2>
-                {/* <button
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<Edit3 size={16} />}
                   onClick={() => {
-                    
-                  }}                  
-                  className="text-sm text-primary-600 hover:text-primary-700"
+                    if (!isEdit && profile) {
+                      setEditFormData({ ...profile });
+                    }
+                    setIsEdit(prev => !prev);
+                  }}
                 >
-                  Edit
-                </button> */}
+                  {isEdit ? 'Cancel Edit' : 'Edit Profile'}
+                </Button>
               </div>
               
               <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">

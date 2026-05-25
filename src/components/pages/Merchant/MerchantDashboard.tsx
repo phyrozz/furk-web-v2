@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Package, Plus, List } from 'lucide-react';
+import { Calendar, Clock, Package, Plus, List, MapPin, Pen } from 'lucide-react';
 import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
@@ -307,6 +307,11 @@ const MerchantDashboard = () => {
       icon: <Calendar size={20} />,
       onClick: () => navigate('/merchant/bookings'),
     },
+    {
+      title: 'Edit Profile',
+      icon: <Pen size={20} />,
+      onClick: () => navigate('/merchant/profile'),
+    },
   ];
 
   return (
@@ -500,7 +505,7 @@ const MerchantDashboard = () => {
 
         {/* Quick Actions */}
         {status !== 'unverified' && 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
@@ -554,6 +559,31 @@ const MerchantDashboard = () => {
             lastActivityElementRef={lastActivityElementRef}
           />
           <TodaysSchedule onViewCalendar={() => navigate('/merchant/bookings')} />
+        </div>
+
+        <div className="my-8 grid grid-cols-1 gap-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">Profile setup</p>
+                <h2 className="mt-2 text-xl font-semibold text-gray-900">Keep your business details current</h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Update your business name, address, and contact details from your merchant profile so customers see the right information.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-primary-50 p-3 text-primary-600">
+                <MapPin size={24} />
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-between gap-4">
+              <div className="text-sm text-gray-500">
+                Need to correct your address or other profile info? Jump straight to editing.
+              </div>
+              <Button onClick={() => navigate('/merchant/profile')}>
+                Edit Profile
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 bg-white rounded-xl shadow-sm p-6" id="business-location-container">
