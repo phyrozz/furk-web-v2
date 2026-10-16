@@ -18,7 +18,14 @@ interface LocationPickerProps {
   enableSearch?: boolean;
   searchLocations?: (query: string) => Promise<LocationSearchResult[]>;
   searchPlaceholder?: string;
+  /**
+   * When this value changes (driven by address fields), the picker will
+   * automatically search and select the first result — moving the pin to
+   * match the new address.  When the user types in the search box manually,
+   * the dropdown is shown so they can pick a result themselves.
+   */
   searchValue?: string;
+  /** @deprecated No longer used — kept for backwards compatibility only. */
   autoSelectFirstResult?: boolean;
 }
 
@@ -68,7 +75,6 @@ const LocationControl: React.FC<{
 
   useEffect(() => {
     if (controlRef.current) {
-      // Prevent Leaflet map clicks from bubbling from this div
       L.DomEvent.disableClickPropagation(controlRef.current);
       L.DomEvent.disableScrollPropagation(controlRef.current);
     }
@@ -78,7 +84,7 @@ const LocationControl: React.FC<{
     map.locate({
       setView: false,
       enableHighAccuracy: true,
-      timeout: 10000, // wait up to 10 seconds
+      timeout: 10000,
       maximumAge: 0,
     });
   };
@@ -118,14 +124,13 @@ const MapRecenter: React.FC<{
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   onChange,
-  initialLat = 14.5995,  // default to Metro Manila
+  initialLat = 14.5995,
   initialLng = 120.9842,
   readonly = false,
   enableSearch = false,
   searchLocations,
   searchPlaceholder = 'Search location...',
   searchValue,
-  autoSelectFirstResult = false,
 }) => {
   const [position, setPosition] = useState<LatLng>(new LatLng(initialLat, initialLng));
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,12 +138,45 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
+  /**
+   * Tracks the source of the most recent searchQuery change:
+   *   'external' — driven by the searchValue prop (address field change) → auto-select first result
+   *   'manual'   — user typed in the search box → show dropdown, let user pick
+   *   'selected' — a result was just selected → skip re-searching
+   */
+  const searchSource = useRef<'external' | 'manual' | 'selected'>('external');
+
+  /**
+   * Stable ref to searchLocations so the search effect doesn't list it as a
+   * dependency — prevents re-firing when the parent passes an inline function.
+   */
+  const searchLocationsRef = useRef(searchLocations);
+  useEffect(() => {
+    searchLocationsRef.current = searchLocations;
+  });
+
   useEffect(() => {
     setPosition(new LatLng(initialLat, initialLng));
   }, [initialLat, initialLng]);
 
+  // Sync the search box when the searchValue prop changes (address fields).
+  // isMounted skips the very first execution so loading a page with pre-filled
+  // address fields never triggers a geocode call automatically.
+  const isMounted = useRef(false);
+  const prevSearchValue = useRef<string | undefined>(searchValue);
   useEffect(() => {
-    if (typeof searchValue === 'string') {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      prevSearchValue.current = searchValue;
+      return;
+    }
+
+    if (typeof searchValue !== 'string') return;
+    if (searchValue === prevSearchValue.current) return;
+    prevSearchValue.current = searchValue;
+
+    if (searchValue.trim().length >= 3) {
+      searchSource.current = 'external';
       setSearchQuery(searchValue);
     }
   }, [searchValue]);
@@ -167,27 +205,44 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     const newPos = new LatLng(result.lat, result.lng);
     setPosition(newPos);
     onChange(result.lat, result.lng);
+    // Mark as 'selected' so the search effect skips re-querying when
+    // setSearchQuery updates searchQuery below.
+    searchSource.current = 'selected';
     setSearchQuery(result.label);
     setShowResults(false);
+    setSearchResults([]);
   };
 
   useEffect(() => {
-    if (readonly || !enableSearch || !searchLocations) return;
+    if (readonly || !enableSearch || !searchLocationsRef.current) return;
+
+    // A result was just selected — update the input text but don't re-search.
+    if (searchSource.current === 'selected') {
+      searchSource.current = 'manual'; // reset for future manual typing
+      return;
+    }
 
     const query = searchQuery.trim();
     if (query.length < 3) {
       setSearchResults([]);
+      setShowResults(false);
       return;
     }
+
+    const isExternal = searchSource.current === 'external';
 
     const timer = window.setTimeout(async () => {
       try {
         setIsSearching(true);
-        const results = await searchLocations(query);
+        const results = await searchLocationsRef.current!(query);
         setSearchResults(results);
-        setShowResults(true);
-        if (autoSelectFirstResult && results.length > 0) {
+
+        if (isExternal && results.length > 0) {
+          // Address-driven: silently move the pin to the best match.
           handleSelectSearchResult(results[0]);
+        } else {
+          // Manual: show the dropdown so the user can choose.
+          setShowResults(true);
         }
       } catch {
         setSearchResults([]);
@@ -199,7 +254,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     return () => {
       window.clearTimeout(timer);
     };
-  }, [searchQuery, enableSearch, searchLocations, readonly, autoSelectFirstResult]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, enableSearch, readonly]);
 
   return (
     <div className="h-[400px] w-full rounded-lg overflow-hidden border border-gray-300 relative z-0">
@@ -209,8 +265,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => {
+              searchSource.current = 'manual';
               setSearchQuery(e.target.value);
-              setShowResults(true);
+              if (!e.target.value) {
+                setShowResults(false);
+                setSearchResults([]);
+              }
             }}
             placeholder={searchPlaceholder}
             className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"

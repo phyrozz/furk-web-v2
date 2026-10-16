@@ -102,13 +102,13 @@ const Autocomplete = <T extends object>({
   }, []);
 
   useEffect(() => {
-    // only sync if the actual value changed
-    if (prevValueRef.current !== value) {
-      if (value) {
-        setSearchTerm(getOptionLabel(value));
-      } else {
-        setSearchTerm('');
-      }
+    // Compare by label so that inline-created value objects (e.g. `{ value: x }`)
+    // that are new references on every render don't falsely trigger a reset.
+    const prevLabel = prevValueRef.current ? getOptionLabel(prevValueRef.current as T) : null;
+    const nextLabel = value ? getOptionLabel(value) : null;
+
+    if (prevLabel !== nextLabel) {
+      setSearchTerm(nextLabel ?? '');
       prevValueRef.current = value;
     }
   }, [value, getOptionLabel]);

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2, X, Check, Save, MailPlusIcon } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { ExternalLink, Image as ImageIcon, FileText, AlertTriangle, Play, Maximize2, X, Check, Save, MailPlusIcon, MapPin } from 'lucide-react';
 import { AdminDashboardService } from '../../../../services/admin/admin-dashboard-service';
 import { ToastService } from '../../../../services/toast/toast-service';
 import FileUploadField, { UploadedFile } from '../../../common/FileUploadField';
@@ -7,6 +7,10 @@ import Button from '../../../common/Button';
 import { Tooltip } from '../../../common/Tooltip';
 import { S3UploadService } from '../../../../services/s3-upload/s3-upload-service';
 import NotesList from './NotesList';
+import LocationPicker from '../../../common/LocationPicker';
+import Autocomplete from '../../../common/Autocomplete';
+import { LocationService } from '../../../../services/location/location-service';
+import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -58,6 +62,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   );
 };
 
+const locationService = new LocationService();
+const merchantVerificationService = new MerchantVerificationService();
+
 interface MerchantDetailsProps {
   merchant: any;
   onStatusChange?: () => void;
@@ -85,6 +92,20 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
   const [affiliateCodeInput, setAffiliateCodeInput] = useState(merchant.affiliate_code || '');
   const [assignAffiliateLoading, setAssignAffiliateLoading] = useState(false);
   const [deassignAffiliateLoading, setDeassignAffiliateLoading] = useState(false);
+  const [addressLine, setAddressLine] = useState(merchant.address || '');
+  const [province, setProvince] = useState(merchant.province || '');
+  const [city, setCity] = useState(merchant.city || '');
+  const [barangay, setBarangay] = useState(merchant.barangay || '');
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [barangays, setBarangays] = useState<string[]>([]);
+  const [latitude, setLatitude] = useState<number | null>(
+    merchant.latitude ?? merchant.lat ?? null
+  );
+  const [longitude, setLongitude] = useState<number | null>(
+    merchant.longitude ?? merchant.long ?? null
+  );
+  const [loadingSaveAddress, setLoadingSaveAddress] = useState(false);
 
   const getAttachmentValue = (attachments: any[], key: string) => {
     const attachment = attachments.find(a => Object.keys(a)[0] === key);
@@ -268,6 +289,52 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
     setAffiliateCodeInput(merchant.affiliate_code || '');
   }, [merchant.affiliate_code])
 
+  useEffect(() => {
+    setAddressLine(merchant.address || '');
+    setProvince(merchant.province || '');
+    setCity(merchant.city || '');
+    setBarangay(merchant.barangay || '');
+    setLatitude(
+      merchant.latitude ?? merchant.lat ?? merchant.location?.latitude ?? null
+    );
+    setLongitude(
+      merchant.longitude ?? merchant.long ?? merchant.location?.longitude ?? null
+    );
+  }, [
+    merchant.address,
+    merchant.province,
+    merchant.city,
+    merchant.barangay,
+    merchant.latitude,
+    merchant.lat,
+    merchant.longitude,
+    merchant.long,
+    merchant.location
+  ])
+
+  // Initialise provinces list once on mount
+  useEffect(() => {
+    setProvinces(locationService.getProvinces());
+  }, []);
+
+  // Cascade: province → cities
+  useEffect(() => {
+    if (province) {
+      setCities(locationService.getCities(province));
+    } else {
+      setCities([]);
+    }
+  }, [province]);
+
+  // Cascade: province + city → barangays
+  useEffect(() => {
+    if (province && city) {
+      setBarangays(locationService.getBarangays(province, city));
+    } else {
+      setBarangays([]);
+    }
+  }, [province, city]);
+
   const assignAffiliate = async () => {
     const trimmedAffiliateCode = affiliateCodeInput.trim();
 
@@ -314,6 +381,61 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
       })
       .finally(() => {
         setDeassignAffiliateLoading(false);
+      });
+  };
+
+  // Build the location search string from barangay / city / province only.
+  // Street address is intentionally excluded — it rarely yields accurate
+  // geocoding results and the barangay level is precise enough for the pin.
+  const locationSearchValue = useMemo(
+    () => [barangay, city, province].filter(Boolean).join(', '),
+    [barangay, city, province]
+  );
+
+  const saveAddress = async () => {
+    const trimmedAddress = addressLine.trim();
+
+    if (!trimmedAddress) {
+      ToastService.show('Please enter an address');
+      return;
+    }
+
+    setLoadingSaveAddress(true);
+
+    dataService.updateMerchantAddress(
+      merchant.merchant_id,
+      trimmedAddress,
+      city.trim() || undefined,
+      province.trim() || undefined,
+      barangay.trim() || undefined,
+      longitude ?? undefined,
+      latitude ?? undefined
+    )
+      .then((res: any) => {
+        if (res?.success) {
+          merchant.address = trimmedAddress;
+          merchant.city = city.trim() || null;
+          merchant.province = province.trim() || null;
+          merchant.barangay = barangay.trim() || null;
+          merchant.latitude = latitude;
+          merchant.longitude = longitude;
+          merchant.lat = latitude;
+          merchant.long = longitude;
+          setAddressLine(trimmedAddress);
+          setCity(city.trim());
+          setProvince(province.trim());
+          setBarangay(barangay.trim());
+          ToastService.show('Merchant address & location updated successfully');
+        } else {
+          ToastService.show('Failed to update merchant address');
+        }
+      })
+      .catch((error) => {
+        console.error('Error updating merchant address:', error);
+        ToastService.show('Error updating merchant address: ' + (error.message || 'Unknown error'));
+      })
+      .finally(() => {
+        setLoadingSaveAddress(false);
       });
   };
 
@@ -446,6 +568,157 @@ const MerchantDetails: React.FC<MerchantDetailsProps> = ({ merchant, onStatusCha
       <div className="p-6">
         {activeTab === 'profile' && (
           <div className="space-y-6 cursor-default select-text">
+            <div className="grid grid-cols-1 gap-6">
+              <div className="rounded-xl border bg-gray-50/80 p-5 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Address Editor</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Update the merchant's registered address on their behalf.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={<Save className="h-4 w-4" />}
+                    loading={loadingSaveAddress}
+                    onClick={saveAddress}
+                    disabled={!addressLine.trim()}
+                  >
+                    Save Address & Location
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Street / Business Address
+                    </label>
+                    <textarea
+                      className="w-full min-h-[96px] p-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="Enter the merchant's street or business address"
+                      value={addressLine}
+                      onChange={(e) => setAddressLine(e.target.value)}
+                      maxLength={512}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Province</label>
+                      <Autocomplete
+                        options={provinces.map(p => ({ value: p }))}
+                        value={province ? { value: province } : null}
+                        onChange={(val) => {
+                          const next = val && typeof val === 'object' && 'value' in val ? String(val.value) : '';
+                          setProvince(next);
+                          setCity('');
+                          setBarangay('');
+                        }}
+                        onSearch={async (query) => {
+                          const all = locationService.getProvinces();
+                          setProvinces(query ? all.filter(p => p.toLowerCase().includes(query.toLowerCase())) : all);
+                        }}
+                        getOptionLabel={(option: { value: string }) => option.value}
+                        placeholder="Select province"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">City / Municipality</label>
+                      <Autocomplete
+                        options={cities.map(c => ({ value: c }))}
+                        value={city ? { value: city } : null}
+                        onChange={(val) => {
+                          const next = val && typeof val === 'object' && 'value' in val ? String(val.value) : '';
+                          setCity(next);
+                          setBarangay('');
+                        }}
+                        onSearch={async (query) => {
+                          if (!province) return;
+                          const all = locationService.getCities(province);
+                          setCities(query ? all.filter(c => c.toLowerCase().includes(query.toLowerCase())) : all);
+                        }}
+                        getOptionLabel={(option: { value: string }) => option.value}
+                        placeholder={province ? 'Select city' : 'Choose province first'}
+                        disabled={!province}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Barangay</label>
+                      <Autocomplete
+                        options={barangays.map(b => ({ value: b }))}
+                        value={barangay ? { value: barangay } : null}
+                        onChange={(val) => {
+                          const next = val && typeof val === 'object' && 'value' in val ? String(val.value) : '';
+                          setBarangay(next);
+                        }}
+                        onSearch={async (query) => {
+                          if (!province || !city) return;
+                          const all = locationService.getBarangays(province, city);
+                          setBarangays(query ? all.filter(b => b.toLowerCase().includes(query.toLowerCase())) : all);
+                        }}
+                        getOptionLabel={(option: { value: string }) => option.value}
+                        placeholder={province && city ? 'Select barangay' : 'Choose city first'}
+                        disabled={!province || !city}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border bg-gray-50/80 p-5 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <MapPin size={18} />
+                      Pin Location
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Move the pin or search a place to update the merchant's coordinates.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="rounded-lg border bg-white p-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Latitude</p>
+                    <p className="mt-1 text-sm text-gray-900 break-all">
+                      {latitude !== null ? latitude.toFixed(6) : 'Not set'}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border bg-white p-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Longitude</p>
+                    <p className="mt-1 text-sm text-gray-900 break-all">
+                      {longitude !== null ? longitude.toFixed(6) : 'Not set'}
+                    </p>
+                  </div>
+                </div>
+
+                <LocationPicker
+                  initialLat={latitude ?? 14.5995}
+                  initialLng={longitude ?? 120.9842}
+                  onChange={(lat, lng) => {
+                    setLatitude(lat);
+                    setLongitude(lng);
+                  }}
+                  enableSearch={true}
+                  searchPlaceholder="Search a place or landmark"
+                  searchValue={locationSearchValue}
+                  autoSelectFirstResult
+                  searchLocations={async (query) => {
+                    try {
+                      const response: any = await merchantVerificationService.searchLocations(query);
+                      return response?.data || [];
+                    } catch {
+                      return [];
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Business Information
