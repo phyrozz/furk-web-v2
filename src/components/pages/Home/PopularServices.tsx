@@ -64,7 +64,7 @@ const PopularServices = () => {
 
   const ServiceCard = ({ service }: { service: PopularService }) => (
     <article
-      className="w-[78vw] sm:w-[20rem] md:w-[22rem] shrink-0 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
+      className="w-[78vw] sm:w-[20rem] md:w-[22rem] shrink-0 furk-panel hover:shadow-md transition-shadow duration-300"
       aria-label={`${service.name} by ${service.business_name}`}
     >
       <button
@@ -78,7 +78,7 @@ const PopularServices = () => {
           decoding="async"
           width={640}
           height={384}
-          className="w-full h-44 object-cover rounded-t-xl"
+          className="w-full h-44 object-cover rounded-t-2xl"
         />
         <div className="p-4">
           <h3 className="font-semibold text-lg text-gray-900 truncate">{service.name}</h3>
@@ -99,7 +99,7 @@ const PopularServices = () => {
   return (
     <section className="py-12 md:py-16 lg:py-20 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <h2 className="font-cursive text-3xl md:text-4xl font-bold sm:text-start text-center mb-3 text-gray-900">
+        <h2 className="text-3xl md:text-4xl font-extrabold sm:text-start text-center mb-3 text-gray-900">
           Popular Services
         </h2>
         <p className="text-lg md:text-xl text-gray-600 sm:text-start text-center mb-10">

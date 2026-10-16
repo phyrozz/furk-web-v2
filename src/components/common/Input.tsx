@@ -20,7 +20,7 @@ const Input: React.FC<InputProps> = ({
   placeholder = "",
   ...rest
 }) => {
-  const defaultClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const defaultClasses = "furk-field";
   const combinedClasses = `${defaultClasses} ${className}`.trim();
 
   return (

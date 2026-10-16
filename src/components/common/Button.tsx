@@ -34,15 +34,15 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   id,
 }) => {
-  const baseStyles = 'font-medium rounded-lg transition-all duration-200 flex items-center justify-center';
+  const baseStyles = 'font-bold rounded-xl transition-colors duration-200 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:shadow-none';
   
   const getColorClasses = (color: ButtonColor) => {
     const colorMap = {
-      primary: 'bg-primary-500 hover:bg-primary-600',
+      primary: 'bg-primary-600 hover:bg-primary-700',
       secondary: 'bg-secondary-500 hover:bg-secondary-600',
       accent: 'bg-accent-500 hover:bg-accent-600',
       red: 'bg-red-500 hover:bg-red-600',
-      yellow: 'bg-yellow-500 hover:bg-yellow-600'
+      yellow: 'bg-yellow-600 hover:bg-yellow-700'
     };
     return colorMap[color];
   };
@@ -60,18 +60,18 @@ const Button: React.FC<ButtonProps> = ({
   
   const getOutlineClasses = (color: ButtonColor) => {
     const baseMap = {
-      primary: 'border-primary-500 text-primary-500',
+      primary: 'border-primary-200 text-primary-700',
       secondary: 'border-secondary-500 text-secondary-500',
       accent: 'border-accent-500 text-accent-500',
       red: 'border-red-500 text-red-500',
       yellow: 'border-yellow-500 text-yellow-500'
     };
-    return `bg-transparent border border-solid ${baseMap[color]} ${getHoverBg(color)}`;
+    return `bg-white border border-solid ${baseMap[color]} ${getHoverBg(color)}`;
   };
   
   const getGhostClasses = (color: ButtonColor) => {
     const textMap = {
-      primary: 'text-primary-500',
+      primary: 'text-primary-700',
       secondary: 'text-secondary-500',
       accent: 'text-accent-500',
       red: 'text-red-500',
@@ -89,9 +89,9 @@ const Button: React.FC<ButtonProps> = ({
   };  
   
   const sizeStyles = {
-    sm: 'text-sm py-1.5 px-3',
-    md: 'text-base py-2 px-4',
-    lg: 'text-lg py-2.5 px-5',
+    sm: 'min-h-9 text-sm py-1.5 px-3',
+    md: 'min-h-11 text-sm py-2.5 px-4',
+    lg: 'min-h-12 text-base py-3 px-5',
   };
   
   const widthStyle = fullWidth ? 'w-full' : '';
@@ -99,7 +99,7 @@ const Button: React.FC<ButtonProps> = ({
 
   // drop shadow for primary, secondary, accent variants
   const shadowStyle =
-    variant === 'primary' || variant === 'secondary' || variant === 'accent' ? 'shadow-md' : '';
+    variant === 'primary' || variant === 'secondary' || variant === 'accent' ? 'shadow-sm' : '';
 
   // spinners are old school 🥹
   // const Spinner = () => (
@@ -122,9 +122,9 @@ const Button: React.FC<ButtonProps> = ({
   // );
 
   const BouncingPaw = () => (
-    <div className="animate-bounce -mb-2">
-      <Paw size={36} color="currentColor" />
-    </div>
+    <span className="mr-2 animate-pulse" aria-hidden="true">
+      <Paw size={20} color="currentColor" />
+    </span>
   );
   
   return (
@@ -134,6 +134,7 @@ const Button: React.FC<ButtonProps> = ({
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyle} ${shadowStyle} whitespace-nowrap ${className}`}
       onClick={onClick}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
     >
       {icon && !loading && <span className={children ? "mr-2" : ""}>{icon}</span>}
       {loading && <BouncingPaw />}

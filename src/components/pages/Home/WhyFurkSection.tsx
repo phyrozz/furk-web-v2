@@ -29,7 +29,7 @@ const WhyFurkSection = () => {
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="sm:text-start text-center mx-auto w-full mb-14">
           <h2 
-            className="text-3xl md:text-4xl font-cursive font-bold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4"
           >
             Why Choose FURK
           </h2>
@@ -46,9 +46,9 @@ const WhyFurkSection = () => {
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              className="bg-white rounded-xl p-6 md:p-7 text-center shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 group"
+              className="furk-panel p-6 md:p-7 text-left hover:border-primary-200 transition-colors group"
             >
-              <div className="flex justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 mb-5">
                 {benefit.icon}
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">

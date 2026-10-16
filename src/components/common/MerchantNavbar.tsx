@@ -98,14 +98,14 @@ const MerchantNavbar = () => {
         </div>
 
         <div className={`flex-1 overflow-y-auto py-4 ${isCollapsed ? 'px-2' : 'px-3'}`}>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
+            {!isCollapsed && <p className="furk-eyebrow px-4 pb-2 pt-3">Merchant workspace</p>}
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-500 transition-colors ${
-                  location.pathname === item.path ? 'bg-primary-50 text-primary-600 font-semibold' : ''
-                } ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}
+                aria-current={location.pathname === item.path ? 'page' : undefined}
+                className={`furk-sidebar-link ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}
                 title={isCollapsed ? item.name : undefined}
                 aria-label={item.name}
               >
@@ -118,7 +118,7 @@ const MerchantNavbar = () => {
           <div className="mt-6">
             <Link
               to="/help"
-              className={`flex items-center rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-50 hover:text-primary-500 transition-colors ${
+              className={`furk-sidebar-link ${
                 isCollapsed ? 'justify-center px-2' : 'px-4'
               }`}
               aria-label="Help"
@@ -201,38 +201,43 @@ const MerchantNavbar = () => {
       )}
 
       <nav
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white py-4 lg:hidden ${scrolled ? 'shadow-lg' : ''}`}
+        className={`furk-topbar fixed top-0 left-0 w-full z-50 transition-all duration-300 py-3 lg:hidden ${scrolled ? 'shadow-lg' : ''}`}
       >
-        <div className="container mx-auto px-4 lg:px-6 lg:px-8">
+        <div className="container mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center">
             <Link
               to="/merchant/dashboard"
               className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
               onClick={closeMenu}
             >
-              <img src="/logo_new_small.png" alt="Logo" className="h-8" />
+              <img src="/logo_new_small.png" alt="Furk" className="h-8" />
             </Link>
 
             <button
-              className="lg:hidden text-gray-700 hover:text-primary-500 transition-colors"
+              className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
               onClick={() => setIsOpen((prev) => !prev)}
               aria-label="Toggle menu"
+              aria-controls="merchantnavbar-mobile-menu"
+              aria-expanded={isOpen}
             >
               {isOpen ? <PanelLeftClose size={24} /> : <Menu size={24} />}
             </button>
           </div>
 
           <div
+            id="merchantnavbar-mobile-menu"
+            hidden={!isOpen}
             className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
               isOpen ? 'max-h-[70vh] opacity-100 mt-4 overflow-y-auto' : 'max-h-0 opacity-0'
             }`}
           >
-            <div className="flex flex-col space-y-4 py-4 pb-6">
+            <div className="flex flex-col space-y-1 py-3 pb-6">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center space-x-2 font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  aria-current={location.pathname === item.path ? 'page' : undefined}
+                  className={`furk-nav-link gap-2 ${
                     location.pathname === item.path ? 'text-primary-500 font-semibold' : ''
                   }`}
                   onClick={closeMenu}

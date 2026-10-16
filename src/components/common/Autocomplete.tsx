@@ -148,7 +148,7 @@ const Autocomplete = <T extends object>({
       <div className="relative">
         <input
           type="text"
-          className={`w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+          className={`furk-field pl-10 pr-4 ${
             disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
           }`}
           placeholder={placeholder}
@@ -157,20 +157,20 @@ const Autocomplete = <T extends object>({
           onFocus={handleFocus}
           disabled={disabled}
         />
-        <Search className={`absolute left-3 top-2.5 ${disabled ? 'text-gray-300' : 'text-gray-400'}`} size={20} />
+        <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${disabled ? 'text-gray-300' : 'text-gray-400'}`} size={20} />
       </div>
 
       {isOpen && !disabled && (
         <div 
           ref={dropdownRef}
-          className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto"
+          className="furk-dropdown absolute z-10 w-full mt-2 max-h-60 overflow-auto"
         >
           {options.length > 0 ? (
             <>
               {options.map((option, index) => (
                 <div
                   key={index}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                  className="rounded-lg px-3 py-2.5 cursor-pointer hover:bg-primary-50"
                   onClick={() => {
                     onChange(option);
                     setIsOpen(false);

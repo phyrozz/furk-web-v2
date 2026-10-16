@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
+import Button from '../../common/Button';
 
 interface ServiceHeroProps {
   onSearch: (keyword: string) => void;
@@ -14,23 +15,26 @@ const ServiceHero: React.FC<ServiceHeroProps> = ({ onSearch }) => {
   };
 
   return (
-    <section className="bg-primary-600 text-white py-16">
+    <section className="border-b border-primary-100 bg-primary-50/60 py-10 md:py-14">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-3xl font-cursive md:text-4xl font-bold mb-4">Pet Services</h1>
-          <p className="text-xl opacity-90 mb-8">
+          <p className="furk-eyebrow">Care for every companion</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">Pet Services</h1>
+          <p className="text-base md:text-lg text-gray-600 mb-7">
             Discover and book the best services for your beloved pets
           </p>
 
-          <form onSubmit={handleSubmit} className="bg-white p-2 rounded-lg shadow-lg max-w-3xl mx-auto">
-            <div className="flex">
-              <div className="relative flex-grow">
+          <form role="search" onSubmit={handleSubmit} className="furk-panel p-2 max-w-2xl mx-auto">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative min-w-0 flex-grow">
+                <label htmlFor="service-search" className="sr-only">Search for services</label>
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <Search size={20} />
                 </div>
                 <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-3 border-0 focus:ring-0 focus:outline-none rounded-lg text-gray-800"
+                  id="service-search"
+                  type="search"
+                  className="block min-h-12 w-full pl-10 pr-3 py-3 border-0 rounded-xl text-gray-900 placeholder:text-gray-500"
                   placeholder="Search for services..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
@@ -46,12 +50,12 @@ const ServiceHero: React.FC<ServiceHeroProps> = ({ onSearch }) => {
                   <option value="training">Training</option>
                 </select>
               </div> */}
-              <button
+              <Button
                 type="submit"
-                className="bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-6 rounded-lg ml-2 transition-colors"
+                size="lg"
               >
                 Search
-              </button>
+              </Button>
             </div>
           </form>
         </div>

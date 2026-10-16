@@ -233,7 +233,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 py-4 bg-white ${
+      className={`furk-topbar fixed top-0 left-0 w-full z-40 transition-all duration-300 py-3 ${
         scrolled ? 'shadow-md' : ''
       }`}
     >
@@ -248,12 +248,13 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                aria-current={location.pathname === item.path ? 'page' : undefined}
+                className={`furk-nav-link ${
                   location.pathname === item.path ? 'text-primary-500 font-semibold' : ''
                 }`}
               >
@@ -264,7 +265,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
             {isAuth && (
               <Link
                 to="/chat"
-                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                className={`furk-nav-link ${
                   location.pathname === '/chat' ? 'text-primary-500 font-semibold' : ''
                 }`}
               >
@@ -421,7 +422,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
                 >
                   <Link
                     to="/login"
-                    className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                    className="bg-primary-600 hover:bg-primary-700 text-white py-2.5 px-5 rounded-xl font-bold transition-colors"
                   >
                     Login / Register
                   </Link>
@@ -432,9 +433,11 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-gray-700 hover:text-primary-500 transition-colors"
+            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
             onClick={toggleMenu}
             aria-label="Toggle menu"
+            aria-controls="navbar-mobile-menu"
+            aria-expanded={isOpen}
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -442,16 +445,19 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isOpen ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+          id="navbar-mobile-menu"
+          hidden={!isOpen}
+          className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+            isOpen ? 'max-h-[70vh] opacity-100 mt-4 overflow-y-auto' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="flex flex-col space-y-4 py-4">
+          <div className="flex flex-col space-y-1 py-3">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                aria-current={location.pathname === item.path ? 'page' : undefined}
+                className={`furk-nav-link ${
                   location.pathname === item.path ? 'text-primary-500 font-semibold' : ''
                 }`}
                 onClick={closeMenu}
@@ -463,7 +469,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
             {isAuth && (
               <Link
                 to="/chat"
-                className={`font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                className={`furk-nav-link ${
                   location.pathname === '/chat' ? 'text-primary-500 font-semibold' : ''
                 }`}
                 onClick={closeMenu}
@@ -475,7 +481,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
               <>
                 <Link
                   to="/help"
-                  className={`flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  className={`flex items-center furk-nav-link ${
                     location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
                   }`}
                   onClick={closeMenu}
@@ -544,7 +550,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
               <>
                 <Link
                   to="/help"
-                  className={`flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  className={`flex items-center furk-nav-link ${
                     location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
                   }`}
                   onClick={closeMenu}
@@ -554,7 +560,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
                 </Link>
                 <Link
                   to="/login"
-                  className="bg-primary-500 hover:bg-primary-600 text-white py-2 px-4 rounded-lg font-medium transition-colors text-center"
+                  className="bg-primary-600 hover:bg-primary-700 text-white py-2.5 px-5 rounded-xl font-bold transition-colors text-center"
                   onClick={closeMenu}
                 >
                   Login / Register
