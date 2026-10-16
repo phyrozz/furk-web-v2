@@ -2,6 +2,7 @@ import { ArrowRight, PawPrint, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Button from '../../common/Button';
+import Reveal from '../../common/Reveal';
 
 const HERO_IMAGE_URL = 'https://images.pexels.com/photos/46024/pexels-photo-46024.jpeg';
 
@@ -17,7 +18,7 @@ const HeroSection = () => {
   return (
     <section className="overflow-hidden border-b border-primary-100 bg-primary-50">
       <div className="container mx-auto grid items-center gap-10 px-4 py-10 md:px-6 md:py-16 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-20">
-        <div className="max-w-2xl">
+        <Reveal className="max-w-2xl">
           <p className="furk-eyebrow mb-5 flex items-center gap-2">
             <PawPrint size={16} aria-hidden="true" />
             For pets. For their people.
@@ -48,22 +49,24 @@ const HeroSection = () => {
           <Link to="/services" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-bold text-primary-700 hover:text-primary-900">
             Explore Services <ArrowRight size={17} aria-hidden="true" />
           </Link>
-        </div>
-        <figure className="relative isolate m-0 min-w-0">
-          <div className="absolute -right-5 -top-5 -z-10 h-2/3 w-2/3 rounded-full bg-primary-100" aria-hidden="true" />
-          <img
-            src={HERO_IMAGE_URL}
-            alt="A dog enjoying the outdoors"
-            className="h-72 w-full rounded-[2rem] bg-primary-100 object-cover sm:h-96 lg:h-[500px]"
-          />
-          <figcaption className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-700" aria-hidden="true"><PawPrint size={22} /></span>
-            <span>
-              <span className="block font-bold text-gray-900">Good care. Happy companions.</span>
-              <span className="mt-0.5 block text-sm text-gray-600">A little love for every part of their day.</span>
-            </span>
-          </figcaption>
-        </figure>
+        </Reveal>
+        <Reveal delay={0.12} className="min-w-0">
+          <figure className="relative isolate m-0 min-w-0">
+            <div className="absolute -right-5 -top-5 -z-10 h-2/3 w-2/3 rounded-full bg-primary-100" aria-hidden="true" />
+            <img
+              src={HERO_IMAGE_URL}
+              alt="A dog enjoying the outdoors"
+              className="h-72 w-full rounded-[2rem] bg-primary-100 object-cover sm:h-96 lg:h-[500px]"
+            />
+            {/* <figcaption className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-700" aria-hidden="true"><PawPrint size={22} /></span>
+              <span>
+                <span className="block font-bold text-gray-900">Good care. Happy companions.</span>
+                <span className="mt-0.5 block text-sm text-gray-600">A little love for every part of their day.</span>
+              </span>
+            </figcaption> */}
+          </figure>
+        </Reveal>
       </div>
     </section>
   );

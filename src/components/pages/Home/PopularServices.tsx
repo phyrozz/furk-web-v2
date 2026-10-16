@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { HomeService, PopularService } from '../../../services/home/home-service';
 import PawLoading from '../../common/PawLoading';
 
@@ -10,8 +11,10 @@ const PopularServices = () => {
   const [popularServices, setPopularServices] = useState<PopularService[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [unavailableImageIds, setUnavailableImageIds] = useState<Set<number>>(() => new Set());
   const navigate = useNavigate();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     let isMounted = true;
@@ -21,14 +24,52 @@ const PopularServices = () => {
         setLoading(true);
         const data = await homeService.listPopularServices();
         if (!isMounted) return;
-        setPopularServices(data.data || []);
+        const services = data.data || [];
+        const imageResults = await Promise.all(services.map(async (service) => {
+          if (!service.attachment) return { id: service.id, loaded: false };
+
+          const loaded = await new Promise<boolean>((resolve) => {
+            const image = new Image();
+            let settled = false;
+            const finish = (success: boolean) => {
+              if (settled) return;
+              settled = true;
+              resolve(success);
+            };
+
+            image.onload = () => {
+              if (typeof image.decode === 'function') {
+                image.decode().then(() => finish(true)).catch(() => finish(false));
+              } else {
+                finish(true);
+              }
+            };
+            image.onerror = () => finish(false);
+            image.src = service.attachment;
+
+            if (image.complete) {
+              if (image.naturalWidth === 0) {
+                finish(false);
+              } else if (typeof image.decode === 'function') {
+                image.decode().then(() => finish(true)).catch(() => finish(false));
+              } else {
+                finish(true);
+              }
+            }
+          });
+
+          return { id: service.id, loaded };
+        }));
+
+        if (!isMounted) return;
+        setUnavailableImageIds(new Set(imageResults.filter((result) => !result.loaded).map((result) => result.id)));
+        setPopularServices(services);
       } catch (error) {
         if (!isMounted) return;
         setHasError(true);
         console.error('Error fetching popular services:', error);
       } finally {
-        if (!isMounted) return;
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -71,15 +112,19 @@ const PopularServices = () => {
         className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-xl"
         onClick={() => navigate(`/services/${service.id}`)}
       >
-        <img
-          src={service.attachment}
-          alt={service.name}
-          loading="lazy"
-          decoding="async"
-          width={640}
-          height={384}
-          className="w-full h-44 object-cover rounded-t-2xl"
-        />
+        {unavailableImageIds.has(service.id) ? (
+          <div className="h-44 rounded-t-2xl bg-gray-100" aria-hidden="true" />
+        ) : (
+          <img
+            src={service.attachment}
+            alt={service.name}
+            loading="eager"
+            decoding="async"
+            width={640}
+            height={384}
+            className="w-full h-44 object-cover rounded-t-2xl"
+          />
+        )}
         <div className="p-4">
           <h3 className="font-semibold text-lg text-gray-900 truncate">{service.name}</h3>
           <p className="text-sm text-gray-600 mt-1 truncate">{service.business_name}</p>
@@ -97,7 +142,12 @@ const PopularServices = () => {
   );
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-white">
+    <motion.section
+      className="py-12 md:py-16 lg:py-20 bg-white"
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut' }}
+    >
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <h2 className="text-3xl md:text-4xl font-extrabold sm:text-start text-center mb-3 text-gray-900">
           Popular Services
@@ -139,7 +189,7 @@ const PopularServices = () => {
           </div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
