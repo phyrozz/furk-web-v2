@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex justify-center items-center select-none"
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex justify-center items-center select-none"
         >
           <motion.div
             ref={modalRef}
@@ -60,11 +60,11 @@ const Modal: React.FC<ModalProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative p-5 border md:w-[42rem] w-full m-2 shadow-lg rounded-2xl bg-white"
+            className="relative p-5 sm:p-7 border border-gray-200 md:w-[42rem] w-full m-3 shadow-xl rounded-2xl bg-white"
           >
             <div className="flex justify-between items-center pb-3">
-              <h3 className="text-2xl font-cursive font-semibold text-gray-900">{title}</h3>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+              <button type="button" onClick={onClose} aria-label="Close dialog" className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -74,7 +74,7 @@ const Modal: React.FC<ModalProps> = ({
               {children}
             </div>
             {(showCancel || showConfirm) && (
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-5">
                 {showCancel && (
                   <Button onClick={onClose} variant="outline">
                     Cancel

@@ -110,23 +110,24 @@ const MerchantList: React.FC<MerchantListProps> = ({
   }, [merchants, selectedMerchant, onSelectMerchant, onMerchantStatusChange]);
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="furk-panel overflow-hidden">
       {/* Search and Filter */}
       <div className="p-4 border-b">
         <div className="flex justify-between items-center mb-4">
           <div className="relative flex-grow mr-2">
             <input
-              type="text"
+              type="search"
+              aria-label="Search merchants"
               placeholder="Search merchants..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg"
+              className="furk-field pl-10 pr-4"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
           </div>
           <button 
             onClick={handleRefresh}
-            className="p-2 text-gray-500 hover:text-gray-700 border rounded-lg hover:bg-gray-50 transition-colors"
+            className="min-h-11 min-w-11 flex items-center justify-center text-gray-600 hover:text-primary-700 border border-gray-300 rounded-xl hover:bg-primary-50 transition-colors"
             disabled={loading}
             title="Refresh list"
           >
@@ -136,7 +137,7 @@ const MerchantList: React.FC<MerchantListProps> = ({
         
         <div className="flex gap-2 overflow-x-auto pb-2">
           <button
-            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+            className={`px-3 py-2 rounded-full text-sm font-semibold flex-shrink-0 ${
               filter === 'pending'
                 ? 'bg-yellow-100 text-yellow-800'
                 : 'bg-gray-100 text-gray-600'
@@ -146,7 +147,7 @@ const MerchantList: React.FC<MerchantListProps> = ({
             Pending
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+            className={`px-3 py-2 rounded-full text-sm font-semibold flex-shrink-0 ${
               filter === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-gray-100 text-gray-600'
@@ -156,7 +157,7 @@ const MerchantList: React.FC<MerchantListProps> = ({
             Approved
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+            className={`px-3 py-2 rounded-full text-sm font-semibold flex-shrink-0 ${
               filter === 'rejected'
                 ? 'bg-red-100 text-red-800'
                 : 'bg-gray-100 text-gray-600'
@@ -166,7 +167,7 @@ const MerchantList: React.FC<MerchantListProps> = ({
             Rejected
           </button>
           <button
-            className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+            className={`px-3 py-2 rounded-full text-sm font-semibold flex-shrink-0 ${
               filter === 'suspended'
                 ? 'bg-gray-800 text-white'
                 : 'bg-gray-100 text-gray-600'
@@ -179,7 +180,7 @@ const MerchantList: React.FC<MerchantListProps> = ({
       </div>
 
       {/* Merchant List */}
-      <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto relative">
+      <div className="divide-y divide-gray-100 max-h-[calc(100vh-300px)] overflow-y-auto relative">
         {error ? (
           <div className="p-4 text-center text-red-500">{error}</div>
         ) : merchants.length === 0 ? (

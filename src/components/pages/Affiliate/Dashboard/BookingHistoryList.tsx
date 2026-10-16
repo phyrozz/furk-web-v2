@@ -111,9 +111,9 @@ const BookingHistoryList: React.FC<BookingHistoryListProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-lg shadow-md overflow-hidden"
+      className="furk-panel relative overflow-hidden"
     >
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800">Booking History</h3>
         <div className="flex items-center space-x-2">
           <button
@@ -144,7 +144,7 @@ const BookingHistoryList: React.FC<BookingHistoryListProps> = ({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="furk-table min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>

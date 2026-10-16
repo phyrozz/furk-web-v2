@@ -4,6 +4,19 @@ export default {
   theme: {
     extend: {
       colors: {
+        gray: {
+          50: '#F8F7F5',
+          100: '#F0EEEB',
+          200: '#E3DFD9',
+          300: '#CEC8BF',
+          400: '#A39B90',
+          500: '#787168',
+          600: '#5D574F',
+          700: '#464039',
+          800: '#302B25',
+          900: '#211D18',
+          950: '#16130F',
+        },
         primary: {
           50:  '#FBF8F4',
           100: '#F5EFE4',
@@ -81,6 +94,13 @@ export default {
         'slide-up': 'slideUp 0.5s ease-out',
         'fade-in': 'fadeIn 0.5s ease-out',
         'bounce-slow': 'bounce 3s infinite',
+      },
+      boxShadow: {
+        sm: '0 1px 3px rgb(48 43 37 / 0.04)',
+        DEFAULT: '0 2px 8px rgb(48 43 37 / 0.06)',
+        md: '0 4px 20px rgb(48 43 37 / 0.07)',
+        lg: '0 12px 32px rgb(48 43 37 / 0.10)',
+        xl: '0 20px 48px rgb(48 43 37 / 0.12)',
       },
       keyframes: {
         slideUp: {

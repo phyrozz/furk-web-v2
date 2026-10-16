@@ -3,6 +3,7 @@ import RewardsHero from './RewardsHero';
 import RewardsExplanation from './RewardsExplanation';
 import RewardsRedemption from './RewardsRedemption';
 import RewardsTiers from './RewardsTiers';
+import Reveal from '../../common/Reveal';
 
 const RewardsPage = () => {
   useEffect(() => {
@@ -20,9 +21,9 @@ const RewardsPage = () => {
 
   return (
     <div className="pt-16 cursor-default">
-      <RewardsHero />
-      <RewardsExplanation />
-      <RewardsTiers />
+      <Reveal><RewardsHero /></Reveal>
+      <Reveal><RewardsExplanation /></Reveal>
+      <Reveal><RewardsTiers /></Reveal>
       <RewardsRedemption />
     </div>
   );
