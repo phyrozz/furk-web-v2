@@ -90,7 +90,7 @@ const Select = <T extends object>({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         tabIndex={0}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer flex justify-between items-center"
+        className="furk-field cursor-pointer flex justify-between items-center gap-3"
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
       >
@@ -107,7 +107,7 @@ const Select = <T extends object>({
         <div 
           ref={dropdownRef}
           role="listbox"
-          className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto"
+          className="furk-dropdown absolute z-10 w-full mt-2 max-h-60 overflow-auto"
         >
           {options.length > 0 ? (
             options.map((option, index) => (
@@ -115,8 +115,8 @@ const Select = <T extends object>({
                 key={index}
                 role="option"
                 aria-selected={index === focusedIndex}
-                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                  index === focusedIndex ? 'bg-gray-100' : ''
+                className={`rounded-lg px-3 py-2.5 cursor-pointer hover:bg-primary-50 ${
+                  index === focusedIndex ? 'bg-primary-50' : ''
                 }`}
                 onClick={() => {
                   onChange(option);

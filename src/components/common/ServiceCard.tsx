@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import Button from './Button';
 
 interface ServiceCardProps {
   title: string;
@@ -16,13 +15,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   description,
   icon,
   imageUrl,
-  onClick,
   isImageLoaded = true,
   onImageLoad,
 }) => {
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-md overflow-hidden h-full flex flex-col transition-all hover:shadow-lg"
+      className="furk-panel overflow-hidden h-full flex flex-col transition-shadow hover:shadow-md"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: isImageLoaded ? 1 : 0, y: 0 }}
@@ -40,7 +38,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
       )}
       <div className="p-6 flex-grow flex flex-col">
         <div className="flex items-center mb-3">
-          <div className="text-primary-500 mr-3">
+          <div className="text-primary-700 mr-3">
             {icon}
           </div>
           <h3 className="text-lg font-semibold text-gray-800">{title}</h3>

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Users, DollarSign, Copy, CheckCircle } from 'lucide-react';
 import Button from '../../common/Button';
 import AffiliateNavbar from '../../common/AffiliateNavbar';
+import PageHeader from '../../common/PageHeader';
+import DashboardStat from '../../common/DashboardStat';
 import { http } from '../../../utils/http';
 import PawLoading from '../../common/PawLoading';
 import MerchantList from './Dashboard/MerchantList';
@@ -116,7 +118,7 @@ const AffiliateDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8 mt-20 select-none">
+    <div className="container mx-auto px-4 py-8 md:px-8 mt-16">
       <AffiliateNavbar />
       {affiliateData?.application_status === 'pending' && (
         <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
@@ -134,13 +136,13 @@ const AffiliateDashboard = () => {
       )}
 
       {affiliateData?.application_status === 'rejected' && (
-        <div className="bg-danger-50 border border-danger-200 rounded-lg p-4 mb-8">
+        <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-medium text-danger-800">
+              <h2 className="text-lg font-medium text-error-800">
                 Verification Rejected
               </h2>
-              <p className="text-danger-600 mt-1">
+              <p className="text-error-600 mt-1">
                 Your account has been rejected. Please contact support for more information.
               </p>
             </div>
@@ -148,22 +150,11 @@ const AffiliateDashboard = () => {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-3xl font-bold text-gray-800">Affiliate Dashboard</h1>
-          <p className="text-gray-600">Track your referrals and earnings</p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-4 md:mt-0"
-        >
+      <PageHeader
+        eyebrow="Your partner workspace"
+        title="Affiliate Dashboard"
+        description="Track your referrals and earnings"
+        actions={
           <Button
             id="affiliate-referral-link-btn"
             variant="primary"
@@ -174,8 +165,8 @@ const AffiliateDashboard = () => {
             {copied ? <CheckCircle size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
             {copied ? 'Copied!' : 'Copy Referral Link'}
           </Button>
-        </motion.div>
-      </div>
+        }
+      />
 
       {/* Affiliate ID Card */}
       <motion.div
@@ -183,7 +174,7 @@ const AffiliateDashboard = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-lg shadow-md p-6 mb-8"
+        className="furk-panel border-primary-200 bg-primary-50/50 p-5 sm:p-6 mb-8"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
@@ -199,10 +190,10 @@ const AffiliateDashboard = () => {
               </button>
             </div>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 min-w-0 max-w-full md:mt-0">
             <p className="text-gray-600">Referral Link:</p>
             <div className="flex items-center">
-              <span className="text-sm text-gray-800 font-medium truncate max-w-xs">{generateReferralLink()}</span>
+              <span className="min-w-0 text-sm text-gray-800 font-medium truncate max-w-xs">{generateReferralLink()}</span>
               <button 
                 onClick={copyReferralLink}
                 className="ml-2 text-gray-500 hover:text-primary-600 transition-colors"
@@ -222,16 +213,14 @@ const AffiliateDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-lg shadow-md p-6"
+          className="furk-panel"
         >
-          <div className="flex items-center mb-4">
-            <div className="p-3 rounded-full bg-primary-100 text-primary-600 mr-4">
-              <Users size={24} />
-            </div>
-            <h3 className="text-lg font-semibold">Total Merchants</h3>
-          </div>
-          <p className="text-3xl font-bold text-primary-600">{affiliateData?.merchant_count}</p>
-          <p className="text-sm text-gray-500 mt-2">{affiliateData?.pending_merchant_count} pending/unverified, {affiliateData?.verified_merchant_count} verified</p>
+          <DashboardStat
+            title="Total Merchants"
+            value={affiliateData?.merchant_count}
+            icon={<Users size={24} />}
+            description={<>{affiliateData?.pending_merchant_count} pending/unverified, {affiliateData?.verified_merchant_count} verified</>}
+          />
         </motion.div>
 
         <motion.div
@@ -239,31 +228,26 @@ const AffiliateDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-lg shadow-md p-6"
+          className="furk-panel"
         >
-          <div className="flex items-center mb-4">
-            <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
-              <DollarSign size={24} />
-            </div>
-            <h3 className="text-lg font-semibold">Total Earnings</h3>
-          </div>
-          <p className="text-3xl font-bold text-green-600">0 Points</p>
-          <p className="text-sm text-gray-500 mt-2">Commission rate: 5%</p>
+          <DashboardStat title="Total Earnings" value="0 Points" icon={<DollarSign size={24} />} iconClassName="bg-green-50 text-green-700" description="Commission rate: 5%" />
         </motion.div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="flex border-b">
+      <div className="furk-panel overflow-hidden mb-8">
+        <div className="furk-tabs" role="group" aria-label="Affiliate dashboard views">
           <button
-            className={`px-6 py-3 font-medium ${activeTab === 'overview' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
+            className="furk-tab"
+            aria-pressed={activeTab === 'overview'}
             onClick={() => setActiveTab('overview')}
           >
             Overview
           </button>
           <button
             id="affiliate-tab-merchants"
-            className={`px-6 py-3 font-medium ${activeTab === 'referrals' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
+            className="furk-tab"
+            aria-pressed={activeTab === 'referrals'}
             onClick={() => {
               setActiveTab('referrals');
               if (activeTab === 'referrals') {
@@ -274,14 +258,15 @@ const AffiliateDashboard = () => {
             Merchants
           </button>
           <button
-            className={`px-6 py-3 font-medium ${activeTab === 'bookings' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
+            className="furk-tab"
+            aria-pressed={activeTab === 'bookings'}
             onClick={() => setActiveTab('bookings')}
           >
             Bookings
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {activeTab === 'overview' && (
             <div>
               <h3 className="text-xl font-semibold mb-4">Program Overview</h3>
@@ -305,7 +290,7 @@ const AffiliateDashboard = () => {
                   Your referral link will direct merchants to our sign-up page. Make sure they complete the registration process to be counted as your referral.
                 </p>
                 <div className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between">
-                  <code className="text-sm text-gray-800">{generateReferralLink()}</code>
+                  <code className="min-w-0 break-all text-sm text-gray-800">{generateReferralLink()}</code>
                   <button 
                     onClick={copyReferralLink}
                     className="ml-2 text-gray-500 hover:text-primary-600 transition-colors"

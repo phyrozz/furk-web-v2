@@ -58,9 +58,9 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ onViewCalendar }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6" id="todays-schedule-container">
+    <div className="furk-panel p-5 sm:p-6" id="todays-schedule-container">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-cursive font-semibold text-gray-800">Today's Schedule</h2>
+        <h2 className="text-lg font-bold text-gray-800">Today's Schedule</h2>
         <Users size={20} className="text-gray-500" />
       </div>
       {loading && <div className="flex justify-center items-center"><PawLoading /></div>}

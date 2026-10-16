@@ -4,6 +4,8 @@ import { Dog, User, Users } from 'lucide-react';
 import PawLoading from '../../common/PawLoading';
 import { http } from '../../../utils/http';
 import AdminNavbar from '../../common/AdminNavbar';
+import PageHeader from '../../common/PageHeader';
+import DashboardStat from '../../common/DashboardStat';
 import TrendChart from './Dashboard/TrendChart';
 import PetOwnersWidget from './Dashboard/PetOwnersWidget';
 import Select from '../../common/Select';
@@ -166,21 +168,21 @@ const AdminDashboardPage = () => {
       title: 'Total Pet Owners',
       value: stats.users_count,
       icon: <Dog size={24} />,
-      color: 'bg-primary-500',
+      color: 'bg-primary-50 text-primary-700',
       href: "#pet-owners-list"
     },
     {
       title: 'Total Merchants',
       value: stats.merchants_count,
       icon: <User size={24} />,
-      color: 'bg-warning-500',
+      color: 'bg-amber-50 text-amber-700',
       href: "/admin/merchants"
     },
     {
       title: 'Total Affiliates',
       value: stats.affiliates_count,
       icon: <Users size={24} />,
-      color: 'bg-success-500',
+      color: 'bg-green-50 text-green-700',
       href: "/admin/affiliates"
     },
   ];
@@ -202,6 +204,7 @@ const AdminDashboardPage = () => {
       }
 
       {!statsLoading && <div className="container mx-auto px-4 py-8 pt-24 cursor-default">
+        <PageHeader eyebrow="Platform overview" title="Admin Dashboard" description="Keep track of your community and platform activity." />
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {cards.map((card, index) => {
@@ -209,22 +212,12 @@ const AdminDashboardPage = () => {
 
             const CardInner = (
               <motion.div
-                className="bg-white rounded-xl shadow-sm overflow-hidden"
+                className="furk-panel overflow-hidden transition-shadow hover:shadow-md"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`${card.color} text-white p-3 rounded-lg`}>
-                      {card.icon}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">{card.title}</p>
-                      <p className="text-2xl font-bold text-gray-800">{card.value}</p>
-                    </div>
-                  </div>
-                </div>
+                <DashboardStat title={card.title} value={card.value} icon={card.icon} iconClassName={card.color} />
               </motion.div>
             );
 
@@ -253,7 +246,7 @@ const AdminDashboardPage = () => {
 
         {/* Trend Charts */}
         <div className="grid grid-cols-1 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="furk-panel p-5 sm:p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Pet Owners</h3>
               <Select
@@ -271,7 +264,7 @@ const AdminDashboardPage = () => {
             />
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="furk-panel p-5 sm:p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Merchants</h3>
               <Select
@@ -289,7 +282,7 @@ const AdminDashboardPage = () => {
             />
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="furk-panel p-5 sm:p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Affiliates</h3>
               <Select

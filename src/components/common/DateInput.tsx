@@ -121,7 +121,7 @@ const DateInput = ({
             setIsOpen(false);
           }
         }}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent flex justify-between items-center
+        className={`furk-field flex justify-between items-center
           ${disabled ? 'cursor-not-allowed bg-gray-100 opacity-60' : 'cursor-pointer'}`}
       >
         <span className={`${value ? 'text-gray-900' : 'text-gray-500'} ${disabled ? 'opacity-60' : ''}`}>
@@ -174,7 +174,7 @@ const DateInput = ({
               setFocusedDate(newDate);
             }
           }}
-          className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg"
+          className="absolute z-10 w-full mt-1 furk-dropdown"
         >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">

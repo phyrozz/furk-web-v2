@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Users, Store, TicketPercent, LayoutDashboard, HelpCircle } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 
@@ -59,7 +59,7 @@ const AdminNavbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 py-4 bg-white ${
+      className={`furk-topbar fixed top-0 left-0 w-full z-50 transition-all duration-300 py-3 ${
         scrolled
           ? 'shadow-md'
           : ''
@@ -74,16 +74,18 @@ const AdminNavbar = () => {
           >
             {/* <Paw size={28} className="text-primary-500" />
             <span className="text-2xl font-bold">FURK ADMIN</span> */}
-            <img src="/logo_new_small.png" alt="Logo" className="h-8" />
+            <img src="/logo_new_small.png" alt="Furk" className="h-8" />
+            <span className="furk-role-label hidden xl:block">Admin</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center space-x-2 font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  aria-current={location.pathname === item.path ? 'page' : undefined}
+                className={`flex items-center space-x-2 furk-nav-link ${
                   location.pathname === item.path
                     ? 'text-primary-500 font-semibold'
                     : ''
@@ -153,9 +155,11 @@ const AdminNavbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden text-gray-700 hover:text-primary-500 transition-colors"
+            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
             onClick={toggleMenu}
             aria-label="Toggle menu"
+            aria-controls="adminnavbar-mobile-menu"
+            aria-expanded={isOpen}
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -167,14 +171,16 @@ const AdminNavbar = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden mt-4"
+            id="adminnavbar-mobile-menu"
+            className="lg:hidden mt-4 max-h-[70vh] overflow-y-auto"
           >
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-1 pb-3">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center space-x-2 px-4 py-2 font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                  aria-current={location.pathname === item.path ? 'page' : undefined}
+                  className={`flex items-center space-x-2 px-4 py-2 furk-nav-link ${
                     location.pathname === item.path
                       ? 'text-primary-500 font-semibold'
                       : ''
@@ -186,7 +192,7 @@ const AdminNavbar = () => {
               ))}
               <Link
                 to="/help"
-                className={`flex items-center space-x-2 px-4 py-2 font-medium text-gray-700 hover:text-primary-500 transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 furk-nav-link ${
                   location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
                 }`}
                 onClick={closeMenu}

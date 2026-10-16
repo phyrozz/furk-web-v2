@@ -22,9 +22,9 @@ interface RecentActivitiesProps {
 export const RecentActivities = ({ recentActivity, loading, hasMore, lastActivityElementRef }: RecentActivitiesProps) => {
   return (
     <div className="lg:col-span-2" id="recent-activities-container">
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="furk-panel p-5 sm:p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-cursive font-semibold text-gray-800">Recent Activity</h2>
+          <h2 className="text-lg font-bold text-gray-800">Recent Activity</h2>
           <Bell size={20} className="text-gray-500" />
         </div>
         <div className="space-y-4 max-h-96 overflow-y-auto">

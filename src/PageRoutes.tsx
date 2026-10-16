@@ -1,3 +1,4 @@
+import CustomerPageTransition from './components/common/CustomerPageTransition';
 import { useEffect, useState } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { loginService } from './services/auth/auth-service';
@@ -81,7 +82,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         {/* Public Routes */}
         <Route path="/login" element={
           <PublicRoute>
-            <LoginPage />
+            <CustomerPageTransition><LoginPage /></CustomerPageTransition>
           </PublicRoute>
         } />
         <Route path="/sign-up/merchant" element={
@@ -91,12 +92,12 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         } />
         <Route path="/sign-up/user" element={
           <PublicRoute>
-            <SignUpPage userType='user' />
+            <CustomerPageTransition><SignUpPage userType='user' /></CustomerPageTransition>
           </PublicRoute>
         } />
         <Route path="/reset-password" element={
           <PublicRoute>
-            <ResetPasswordPage />
+            <CustomerPageTransition><ResetPasswordPage /></CustomerPageTransition>
           </PublicRoute>
         } />
         <Route path="/affiliate/login" element={
@@ -110,7 +111,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
           </PublicRoute>
         } />
         <Route path="/terms-of-service" element={
-          <TermsOfService />
+          <CustomerPageTransition><TermsOfService /></CustomerPageTransition>
         } />
 
         {/* Main Routes */}
@@ -121,15 +122,15 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
               <Routes>
                 {/* redirect logic for root */}
                 <Route path="/" element={
-                  isAuthenticated ? <RoleRedirect /> : <HomePage />
+                  isAuthenticated ? <RoleRedirect /> : <CustomerPageTransition><HomePage /></CustomerPageTransition>
                 } />
 
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/merchants" element={<MerchantsPage />} />
-                <Route path="/rewards" element={<RewardsPage />} />
-                <Route path="/services/:id" element={<ServiceDetails />} />
-                <Route path="/merchants/:id" element={<MerchantDetailsPage />} />
-                <Route path="/help" element={<HelpPage />} />
+                <Route path="/services" element={<CustomerPageTransition><ServicesPage /></CustomerPageTransition>} />
+                <Route path="/merchants" element={<CustomerPageTransition><MerchantsPage /></CustomerPageTransition>} />
+                <Route path="/rewards" element={<CustomerPageTransition><RewardsPage /></CustomerPageTransition>} />
+                <Route path="/services/:id" element={<CustomerPageTransition><ServiceDetails /></CustomerPageTransition>} />
+                <Route path="/merchants/:id" element={<CustomerPageTransition><MerchantDetailsPage /></CustomerPageTransition>} />
+                <Route path="/help" element={<CustomerPageTransition><HelpPage /></CustomerPageTransition>} />
               </Routes>
             </main>
           </>
@@ -228,7 +229,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         } />
         <Route path="/profile" element={
           <ProtectedRoute requiredRoles={['user']}>
-            <ProfilePage />
+            <CustomerPageTransition><ProfilePage /></CustomerPageTransition>
           </ProtectedRoute>
         }></Route>
         <Route path="/affiliate/dashboard" element={

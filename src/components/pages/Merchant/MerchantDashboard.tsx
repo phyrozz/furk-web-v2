@@ -5,6 +5,8 @@ import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
+import PageHeader from '../../common/PageHeader';
+import DashboardStat from '../../common/DashboardStat';
 import { MerchantDashboardService } from '../../../services/merchant-dashboard/merchant-dashboard';
 import PawLoading from '../../common/PawLoading';
 import { RecentActivities } from './MerchantDashboard/RecentActivities';
@@ -268,25 +270,25 @@ const MerchantDashboard = () => {
       title: 'Total Bookings',
       value: stats.total_bookings_count,
       icon: <Package size={24} />,
-      color: 'bg-primary-500',
+      color: 'bg-primary-50 text-primary-700',
     },
     {
       title: 'Pending Bookings',
       value: stats.pending_only_count,
       icon: <Clock size={24} />,
-      color: 'bg-warning-500',
+      color: 'bg-amber-50 text-amber-700',
     },
     {
       title: 'Confirmed Bookings',
       value: stats.confirmed_only_count,
       icon: <Calendar size={24} />,
-      color: 'bg-success-500',
+      color: 'bg-green-50 text-green-700',
     },
     {
       title: 'Monthly Earnings',
       value: stats.monthly_earnings,
       icon: <FontAwesomeIcon icon={faPesoSign} size="lg" />,
-      color: 'bg-secondary-500',
+      color: 'bg-secondary-50 text-secondary-700',
     },
   ];
 
@@ -315,7 +317,7 @@ const MerchantDashboard = () => {
   ];
 
   return (
-      <div className="bg-gray-50 overflow-y-auto lg:mt-0 mt-20 lg:pl-[var(--merchant-navbar-width,18rem)]">
+      <div className="min-h-screen bg-gray-50 overflow-y-auto lg:mt-0 mt-16 lg:pl-[var(--merchant-navbar-width,18rem)]">
       <MerchantNavbar />
 
       {(status === null || hasBusinessHours === null) && 
@@ -324,12 +326,13 @@ const MerchantDashboard = () => {
         </div>
       }
 
-      {(status !== null && hasBusinessHours !== null) && <div className="w-full px-4 py-8 pt-8 md:pt-6 md:px-6 lg:px-8 cursor-default">
+      {(status !== null && hasBusinessHours !== null) && <div className="mx-auto w-full max-w-screen-2xl px-4 py-8 md:px-6 lg:px-8 cursor-default">
+        <PageHeader eyebrow="Your workspace" title="Merchant Dashboard" description="Your bookings, services and business at a glance." />
         {(status === 'unverified' || !hasBusinessHours) && (
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
-            <h1 className="text-2xl font-bold text-primary-800 mb-3">
+            <h2 className="text-2xl font-bold text-primary-800 mb-3">
               Welcome to Furk! 🐾
-            </h1>
+            </h2>
             <p className="text-primary-600 text-lg mb-4">
               We're excited to have you join our community of pet service providers. Let's get your business set up so you can start connecting with pet owners.
             </p>
@@ -527,26 +530,16 @@ const MerchantDashboard = () => {
         </div>}
 
         {/* KPI Cards */}
-        {!statsLoading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="kpi-cards-container">
+        {!statsLoading && <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8" id="kpi-cards-container">
           {cards.map((card, index) => (
             <motion.div
               key={index}
-              className="bg-white rounded-xl shadow-sm overflow-hidden"
+              className="furk-panel overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`${card.color} text-white p-3 rounded-lg`}>
-                    {card.icon}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">{card.title}</p>
-                    <p className="text-2xl font-bold text-gray-800">{card.value}</p>
-                  </div>
-                </div>
-              </div>
+              <DashboardStat title={card.title} value={card.value} icon={card.icon} iconClassName={card.color} />
             </motion.div>
           ))}
         </div>}
@@ -562,7 +555,7 @@ const MerchantDashboard = () => {
         </div>
 
         <div className="my-8 grid grid-cols-1 gap-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+          <div className="furk-panel p-5 sm:p-6 flex flex-col justify-between">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">Profile setup</p>
@@ -575,7 +568,7 @@ const MerchantDashboard = () => {
                 <MapPin size={24} />
               </div>
             </div>
-            <div className="mt-6 flex items-center justify-between gap-4">
+            <div className="mt-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
               <div className="text-sm text-gray-500">
                 Need to correct your address or other profile info? Jump straight to editing.
               </div>
@@ -586,7 +579,7 @@ const MerchantDashboard = () => {
           </div>
         </div>
 
-        <div className="mt-8 bg-white rounded-xl shadow-sm p-6" id="business-location-container">
+        <div className="furk-panel mt-8 p-5 sm:p-6" id="business-location-container">
           <div className="flex md:flex-row flex-col md:items-center items-start md:justify-between gap-4 mb-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">Business Location</h2>

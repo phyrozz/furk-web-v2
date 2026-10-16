@@ -5,7 +5,7 @@ const PartnerSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 md:py-20 lg:py-24 bg-gray-50">
+    <section className="py-16 md:py-20 lg:py-24 bg-white">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12">
           {/* Image Column */}
@@ -15,7 +15,7 @@ const PartnerSection = () => {
             <img 
               src="https://images.pexels.com/photos/6131005/pexels-photo-6131005.jpeg?auto=compress&cs=tinysrgb&w=1600" 
               alt="Veterinarian with pet" 
-              className="rounded-xl shadow-xl w-full h-auto object-cover max-h-96" 
+              className="rounded-2xl shadow-sm w-full h-auto object-cover max-h-96"
             />
           </div>
           
@@ -23,7 +23,7 @@ const PartnerSection = () => {
           <div 
             className="w-full md:w-1/2"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-5">Become a FURK Partner</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-5">Become a FURK Partner</h2>
             <p className="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed">
               Join the network of pet service providers in the Philippines and grow your business.
             </p>

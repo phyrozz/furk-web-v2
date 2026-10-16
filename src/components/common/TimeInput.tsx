@@ -114,7 +114,7 @@ const TimeInput = ({
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div
         tabIndex={disabled ? -1 : 0}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent flex justify-between items-center ${
+        className={`furk-field flex justify-between items-center ${
           disabled ? 'cursor-not-allowed bg-gray-100 opacity-60' : 'cursor-pointer'
         }`}
         onClick={() => {
@@ -177,7 +177,7 @@ const TimeInput = ({
             left: `${dropdownPosition.left}px`,
             width: `${dropdownPosition.width}px`,
           }}
-          className="z-50 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="z-50 furk-dropdown max-h-60 overflow-y-auto"
         >
           <div className="py-1">
           {timeSlots.map((timeSlot, index) => (

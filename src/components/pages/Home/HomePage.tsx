@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import HeroSection from './HeroSection';
 import PopularServices from './PopularServices';
+import WalletBasicsSection from './WalletBasicsSection';
 import WhatsNewSection from './WhatsNewSection';
 import WhyFurkSection from './WhyFurkSection';
 import PartnerSection from './PartnerSection';
 import Footer from '../../common/Footer';
 import HiddenPreviewDrawer from './HiddenPreviewDrawer';
+import Reveal from '../../common/Reveal';
 
 const HomePage = () => {
   useEffect(() => {
@@ -25,9 +27,10 @@ const HomePage = () => {
     <div className="pt-16 cursor-default">
       <HeroSection />
       <PopularServices />
-      <WhatsNewSection />
-      <WhyFurkSection />
-      <PartnerSection />
+      <Reveal><WalletBasicsSection /></Reveal>
+      <Reveal><WhatsNewSection /></Reveal>
+      <Reveal><WhyFurkSection /></Reveal>
+      <Reveal><PartnerSection /></Reveal>
       <Footer />
       <HiddenPreviewDrawer />
     </div>

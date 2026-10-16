@@ -33,7 +33,7 @@ const AffiliateNavbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white py-4 ${
+      className={`furk-topbar fixed top-0 left-0 w-full z-50 transition-all duration-300 py-3 ${
         scrolled ? 'shadow-md' : ''
       }`}
     >
@@ -43,7 +43,8 @@ const AffiliateNavbar = () => {
             to="/affiliate/dashboard"
             className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
           >
-            <img src="/logo_new_small.png" alt="Logo" className="h-8" />
+            <img src="/logo_new_small.png" alt="Furk" className="h-8" />
+            <span className="furk-role-label hidden sm:block">Affiliate</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -56,7 +57,7 @@ const AffiliateNavbar = () => {
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center px-4 py-2 text-gray-700 hover:text-primary-500 transition-colors"
+              className="furk-nav-link"
             >
               <LogOut size={16} className="mr-2" />
               Logout
