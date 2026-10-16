@@ -109,8 +109,11 @@ const MerchantProfilePage = () => {
     } else {
       setBarangays([]);
     }
-  }, [editFormData?.city]);
+  }, [editFormData?.province, editFormData?.city]);
 
+  // Build the location search query from barangay / city / province only.
+  // Street address is intentionally excluded — it rarely yields accurate
+  // geocoding results and the barangay level is precise enough for the pin.
   useEffect(() => {
     const parts = [
       editFormData?.barangay?.trim(),

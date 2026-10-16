@@ -70,4 +70,22 @@ export class AdminDashboardService {
         };
         return http.post('/merchant-application/deassign-affiliate', payload);
     }
+
+    async updateMerchantAddress(
+        merchantId: number,
+        address: string,
+        city?: string,
+        province?: string,
+        barangay?: string,
+        long?: number,
+        lat?: number
+    ): Promise<any> {
+        return http.post(`/merchant-application/merchants/${merchantId}`, {
+            address,
+            city,
+            province,
+            barangay,
+            ...(long !== undefined && lat !== undefined ? { long, lat } : {}),
+        });
+    }
 }
