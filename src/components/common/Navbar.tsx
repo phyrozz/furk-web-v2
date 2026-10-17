@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle, Coins } from 'lucide-react';
+import { LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle, Lightbulb, Coins } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 import { useLazyLoad } from '../../hooks/useLazyLoad';
@@ -16,6 +16,8 @@ import { useGuideTooltip } from '../../providers/GuideTooltip';
 import GuideTip from './GuideTooltip';
 import { UserProfileService } from '../../services/profile/user-profile-service';
 import MobileBottomNav from './MobileBottomNav';
+import { useTutorialsMenu } from './TutorialsMenuContext';
+import { getTutorialAudienceForPage } from '../../data/tutorials';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -46,6 +48,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [isProfileImageLoading, setIsProfileImageLoading] = useState(true);
   const [profileImageUrl, setProfileImageUrl] = useState<string>('/default_profile.png');
   const { tooltipState, setTooltipState } = useGuideTooltip();
+  const { isExpanded: isTutorialMenuExpanded, setIsExpanded: setIsTutorialMenuExpanded, mobileTriggerRef } = useTutorialsMenu();
   const userProfileService = new UserProfileService();
   const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
@@ -161,6 +164,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   }, []);
 
   const resolvedRole = userRole ?? loginService.getUserRole();
+  const hasTutorials = Boolean(getTutorialAudienceForPage(location.pathname, isAuth, resolvedRole));
   const formattedFurkredits = userWallet?.furkredits?.toFixed(2) ?? '0.00';
 
   useEffect(() => {
@@ -437,6 +441,22 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
             >
               <HelpCircle size={20} />
             </Link>
+            {hasTutorials && (
+              <motion.button
+                ref={mobileTriggerRef}
+                type="button"
+                onClick={() => setIsTutorialMenuExpanded(!isTutorialMenuExpanded)}
+                aria-label="Tips & Tricks"
+                aria-controls="floating-tutorial-topics"
+                aria-expanded={isTutorialMenuExpanded}
+                title="Tips & Tricks"
+                className="inline-flex h-10 min-w-[2.5rem] items-center justify-center gap-1.5 rounded-full px-2 text-primary-700 transition-colors hover:bg-primary-50"
+                whileTap={{ scale: 0.94 }}
+              >
+                <Lightbulb size={20} />
+                <span className="hidden text-xs font-semibold min-[360px]:inline">Tips</span>
+              </motion.button>
+            )}
             {isAuth ? (
               <>
                 <motion.button

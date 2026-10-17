@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react';
 import CustomerPageTransition from './components/common/CustomerPageTransition';
+import { TutorialsMenuContext } from './components/common/TutorialsMenuContext';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import MiniChatWidget from './components/pages/Chat/MiniChatWidget';
 import Navbar from './components/common/Navbar';
@@ -50,9 +52,16 @@ import { getTutorialAudienceForPage } from './data/tutorials';
 
 function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
   const location = useLocation();
+  const [isTutorialMenuExpanded, setIsTutorialMenuExpanded] = useState(false);
+  const mobileTutorialTriggerRef = useRef<HTMLButtonElement>(null);
   const merchantStatus = localStorage.getItem('merchantStatus');
   const canAccessMerchantProfile = merchantStatus && merchantStatus !== 'unverified';
   const tutorialAudience = getTutorialAudienceForPage(location.pathname, isAuthenticated, userRole);
+  const tutorialMenuContextValue = {
+    isExpanded: isTutorialMenuExpanded,
+    setIsExpanded: setIsTutorialMenuExpanded,
+    mobileTriggerRef: mobileTutorialTriggerRef,
+  };
 
   const isChatPage =
     location.pathname === '/chat' ||
@@ -78,7 +87,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
   };
 
   return (
-    <>
+    <TutorialsMenuContext.Provider value={tutorialMenuContextValue}>
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
@@ -286,7 +295,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
       {tutorialAudience && (
         <FloatingTutorials key={`${tutorialAudience}:${location.pathname}`} audience={tutorialAudience} pathname={location.pathname} />
       )}
-    </>
+    </TutorialsMenuContext.Provider>
   );
 }
 

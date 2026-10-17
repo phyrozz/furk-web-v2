@@ -6,6 +6,7 @@ import {
   DollarSign,
   FileText,
   HelpCircle,
+  Lightbulb,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
+import { getTutorialAudienceForPage } from '../../data/tutorials';
+import { useTutorialsMenu } from './TutorialsMenuContext';
 
 const MerchantNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +27,8 @@ const MerchantNavbar = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isExpanded: isTutorialMenuExpanded, setIsExpanded: setIsTutorialMenuExpanded, mobileTriggerRef } = useTutorialsMenu();
+  const hasTutorials = Boolean(getTutorialAudienceForPage(location.pathname, true, 'merchant'));
   const merchantStatus = localStorage.getItem('merchantStatus');
   const canAccessMerchantProfile = merchantStatus && merchantStatus !== 'unverified';
   const sidebarWidth = isCollapsed ? '6rem' : '18rem';
@@ -213,15 +218,32 @@ const MerchantNavbar = () => {
               <img src="/logo_new_small.png" alt="Furk" className="h-8" />
             </Link>
 
-            <button
-              className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-              onClick={() => setIsOpen((prev) => !prev)}
-              aria-label="Toggle menu"
-              aria-controls="merchantnavbar-mobile-menu"
-              aria-expanded={isOpen}
-            >
-              {isOpen ? <PanelLeftClose size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="flex items-center gap-1">
+              {hasTutorials && (
+                <button
+                  ref={mobileTriggerRef}
+                  type="button"
+                  onClick={() => setIsTutorialMenuExpanded(!isTutorialMenuExpanded)}
+                  aria-label="Tips & Tricks"
+                  aria-controls="floating-tutorial-topics"
+                  aria-expanded={isTutorialMenuExpanded}
+                  title="Tips & Tricks"
+                  className="inline-flex h-10 min-w-[2.5rem] items-center justify-center gap-1.5 rounded-xl px-2 text-primary-700 transition-colors hover:bg-primary-50"
+                >
+                  <Lightbulb size={20} />
+                  <span className="hidden text-xs font-semibold min-[360px]:inline">Tips</span>
+                </button>
+              )}
+              <button
+                className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                onClick={() => setIsOpen((prev) => !prev)}
+                aria-label="Toggle menu"
+                aria-controls="merchantnavbar-mobile-menu"
+                aria-expanded={isOpen}
+              >
+                {isOpen ? <PanelLeftClose size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
 
           <div
