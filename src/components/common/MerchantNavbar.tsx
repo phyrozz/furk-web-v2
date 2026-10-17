@@ -6,7 +6,7 @@ import {
   DollarSign,
   FileText,
   HelpCircle,
-  Lightbulb,
+  BookOpen,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -224,14 +224,14 @@ const MerchantNavbar = () => {
                   ref={mobileTriggerRef}
                   type="button"
                   onClick={() => setIsTutorialMenuExpanded(!isTutorialMenuExpanded)}
-                  aria-label="Tips & Tricks"
+                  aria-label="Guides & Walkthroughs"
                   aria-controls="floating-tutorial-topics"
                   aria-expanded={isTutorialMenuExpanded}
-                  title="Tips & Tricks"
+                  title="Guides & Walkthroughs"
                   className="inline-flex h-10 min-w-[2.5rem] items-center justify-center gap-1.5 rounded-xl px-2 text-primary-700 transition-colors hover:bg-primary-50"
                 >
-                  <Lightbulb size={20} />
-                  <span className="hidden text-xs font-semibold min-[360px]:inline">Tips</span>
+                  <BookOpen size={20} />
+                  <span className="hidden text-xs font-semibold min-[360px]:inline">Guides</span>
                 </button>
               )}
               <button

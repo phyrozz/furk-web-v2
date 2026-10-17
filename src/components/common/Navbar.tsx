@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle, Lightbulb, Coins } from 'lucide-react';
+import { LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle, BookOpen, Coins } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 import { useLazyLoad } from '../../hooks/useLazyLoad';
@@ -446,15 +446,15 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
                 ref={mobileTriggerRef}
                 type="button"
                 onClick={() => setIsTutorialMenuExpanded(!isTutorialMenuExpanded)}
-                aria-label="Tips & Tricks"
+                aria-label="Guides & Walkthroughs"
                 aria-controls="floating-tutorial-topics"
                 aria-expanded={isTutorialMenuExpanded}
-                title="Tips & Tricks"
+                title="Guides & Walkthroughs"
                 className="inline-flex h-10 min-w-[2.5rem] items-center justify-center gap-1.5 rounded-full px-2 text-primary-700 transition-colors hover:bg-primary-50"
                 whileTap={{ scale: 0.94 }}
               >
-                <Lightbulb size={20} />
-                <span className="hidden text-xs font-semibold min-[360px]:inline">Tips</span>
+                <BookOpen size={20} />
+                <span className="hidden text-xs font-semibold min-[360px]:inline">Guides</span>
               </motion.button>
             )}
             {isAuth ? (
