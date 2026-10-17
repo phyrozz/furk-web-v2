@@ -401,7 +401,7 @@ const ProfilePage = () => {
         }
       } />
 
-      <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none z-10">
+      <div className="pt-16 pb-[calc(5rem_+_env(safe-area-inset-bottom))] min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none z-10 lg:pb-0">
         <Navbar />
         <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
           {/* Profile Header */}

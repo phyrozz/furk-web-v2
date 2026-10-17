@@ -119,7 +119,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         <Route path="/*" element={
           <>
             {renderTopNavbar()}
-            <main className="flex-grow">
+            <main className="flex-grow pb-[calc(5rem_+_env(safe-area-inset-bottom))] lg:pb-0">
               <Routes>
                 {/* redirect logic for root */}
                 <Route path="/" element={
@@ -281,7 +281,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
       </Routes>
 
       {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && (
-        <MiniChatWidget />
+        <MiniChatWidget aboveBottomNav={userRole === 'user'} />
       )}
       {tutorialAudience && (
         <FloatingTutorials key={`${tutorialAudience}:${location.pathname}`} audience={tutorialAudience} pathname={location.pathname} />

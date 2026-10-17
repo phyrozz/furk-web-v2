@@ -48,7 +48,7 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
     <>
       <div
         ref={containerRef}
-        className={`fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-4 z-30 flex flex-col items-start gap-3 ${audience === 'merchant' ? 'lg:left-[calc(var(--merchant-navbar-width,18rem)+1rem)]' : ''}`}
+        className={`fixed ${audience === 'pet-owner' ? 'bottom-[calc(7rem_+_env(safe-area-inset-bottom))] lg:bottom-6' : 'bottom-[max(1.5rem,env(safe-area-inset-bottom))]'} left-4 z-30 flex flex-col items-start gap-3 ${audience === 'merchant' ? 'lg:left-[calc(var(--merchant-navbar-width,18rem)+1rem)]' : ''}`}
       >
         {isExpanded && (
           <section id="floating-tutorial-topics" aria-labelledby="floating-tutorial-heading" className="max-h-[calc(100dvh-8rem)] w-80 max-w-[calc(100vw-2rem)] space-y-3 overflow-y-auto rounded-3xl border border-primary-100 bg-white/95 p-4 shadow-xl backdrop-blur">
