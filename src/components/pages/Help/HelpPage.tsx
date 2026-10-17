@@ -41,7 +41,7 @@ const HelpPage = () => {
           <HelpCircle className="mx-auto h-12 w-12 text-primary-500 mb-4" />
           <h1 className="text-4xl font-cursive font-bold text-gray-900 mb-2">Help & Tutorials</h1>
           <p className="text-lg text-gray-600">
-            Follow a quick how-to guide, pick up useful tips, and watch tutorials when available.
+            Find step-by-step guides and video walkthroughs for the app’s key features.
           </p>
         </motion.div>
 

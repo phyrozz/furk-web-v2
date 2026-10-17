@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from '@headlessui/react';
-import { ArrowRight, Lightbulb, Play, X } from 'lucide-react';
+import { ArrowRight, BookOpen, Lightbulb, Play, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getTutorialVideoUrl, type Tutorial } from '../../data/tutorials';
 import TutorialVideo from './TutorialVideo';
@@ -33,8 +33,8 @@ const TutorialGuide = ({ tutorial, onClose, showAction = true }: TutorialGuidePr
             <header className="flex shrink-0 items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 sm:px-7 sm:py-5">
               <div className="min-w-0">
                 <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-700">
-                  <Lightbulb size={13} aria-hidden="true" />
-                  Useful tips & tricks
+                  <BookOpen size={13} aria-hidden="true" />
+                  Guides & walkthroughs
                 </p>
                 <DialogTitle className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">
                   {tutorial.title}

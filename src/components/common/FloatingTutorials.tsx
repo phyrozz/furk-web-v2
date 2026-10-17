@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BookOpen, ChevronRight, Lightbulb, Shuffle, X } from 'lucide-react';
+import { BookOpen, ChevronRight, Shuffle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getSuggestedTutorials, getTutorialsForAudience, type Tutorial, type TutorialAudience } from '../../data/tutorials';
 import TutorialGuide from './TutorialGuide';
@@ -79,8 +79,8 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
           <section id="floating-tutorial-topics" aria-labelledby="floating-tutorial-heading" className="max-h-[calc(100dvh_-_12rem_-_env(safe-area-inset-bottom))] w-80 max-w-[calc(100vw_-_2rem)] space-y-3 overflow-y-auto rounded-3xl border border-primary-100 bg-white/95 p-4 shadow-xl backdrop-blur lg:max-h-[calc(100dvh_-_8rem)]">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 id="floating-tutorial-heading" className="font-bold text-gray-900">A little help, one tap away</h2>
-                <p className="mt-1 text-xs text-gray-500">Quick guides for {audience === 'merchant' ? 'merchants' : 'pet owners'}</p>
+                <h2 id="floating-tutorial-heading" className="font-bold text-gray-900">Guides & walkthroughs</h2>
+                <p className="mt-1 text-xs text-gray-500">Step-by-step help for {audience === 'merchant' ? 'merchants' : 'pet owners'}</p>
               </div>
               <button type="button" aria-label="Hide tutorial topics" onClick={() => { setIsExpanded(false); focusTrigger(); }} className="rounded-full p-2 text-gray-500 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"><X size={18} aria-hidden="true" /></button>
             </div>
@@ -113,7 +113,7 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
           onClick={() => setIsExpanded((expanded) => !expanded)}
           className="hidden min-h-12 items-center gap-2 rounded-full border border-primary-200 bg-white px-4 py-3 text-sm font-semibold text-primary-800 shadow-lg transition-colors hover:bg-primary-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 lg:inline-flex"
         >
-          <Lightbulb size={21} className="text-primary-600" aria-hidden="true" />Tips & Tricks
+          <BookOpen size={21} className="text-primary-600" aria-hidden="true" />Guides
         </button>
       </div>
       <TutorialGuide tutorial={selectedTutorial} onClose={closeTutorial} />
