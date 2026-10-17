@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle } from 'lucide-react';
+import { LogOut, User, Shield, LayoutDashboard, Bell, HelpCircle, Lightbulb, Coins } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
 import { useLazyLoad } from '../../hooks/useLazyLoad';
@@ -15,6 +15,9 @@ import { Tooltip } from './Tooltip';
 import { useGuideTooltip } from '../../providers/GuideTooltip';
 import GuideTip from './GuideTooltip';
 import { UserProfileService } from '../../services/profile/user-profile-service';
+import MobileBottomNav from './MobileBottomNav';
+import { useTutorialsMenu } from './TutorialsMenuContext';
+import { getTutorialAudienceForPage } from '../../data/tutorials';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -36,7 +39,6 @@ interface NavbarProfile {
 }
 
 const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -46,6 +48,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [isProfileImageLoading, setIsProfileImageLoading] = useState(true);
   const [profileImageUrl, setProfileImageUrl] = useState<string>('/default_profile.png');
   const { tooltipState, setTooltipState } = useGuideTooltip();
+  const { isExpanded: isTutorialMenuExpanded, setIsExpanded: setIsTutorialMenuExpanded, mobileTriggerRef } = useTutorialsMenu();
   const userProfileService = new UserProfileService();
   const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
@@ -125,9 +128,6 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
-
   const handleLogout = async () => {
     try {
       await loginService.logout();
@@ -164,6 +164,8 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   }, []);
 
   const resolvedRole = userRole ?? loginService.getUserRole();
+  const hasTutorials = Boolean(getTutorialAudienceForPage(location.pathname, isAuth, resolvedRole));
+  const formattedFurkredits = userWallet?.furkredits?.toFixed(2) ?? '0.00';
 
   useEffect(() => {
     if (typeof isAuthenticated !== 'undefined') {
@@ -232,6 +234,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   );
 
   return (
+    <>
     <nav
       className={`furk-topbar fixed top-0 left-0 w-full z-40 transition-all duration-300 py-3 ${
         scrolled ? 'shadow-md' : ''
@@ -241,8 +244,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
         <div className="flex justify-between items-center">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors"
-            onClick={closeMenu}
+            className="hidden items-center space-x-2 text-primary-500 transition-colors hover:text-primary-600 lg:flex"
           >
             <img src="/logo_new_small.png" alt="Logo" className="h-8" />
           </Link>
@@ -319,7 +321,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
                           aria-label="Furkredits balance"
                         >
                           <span className="font-bold">
-                            {userWallet?.furkredits?.toFixed(2) ?? 0} <span className="text-xs font-medium">Furkredits</span>
+                            {formattedFurkredits} <span className="text-xs font-medium">Furkredits</span>
                           </span>
                         </Button>
                       </Tooltip>
@@ -431,141 +433,69 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-            aria-controls="navbar-mobile-menu"
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        <div
-          id="navbar-mobile-menu"
-          hidden={!isOpen}
-          className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isOpen ? 'max-h-[70vh] opacity-100 mt-4 overflow-y-auto' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="flex flex-col space-y-1 py-3">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                aria-current={location.pathname === item.path ? 'page' : undefined}
-                className={`furk-nav-link ${
-                  location.pathname === item.path ? 'text-primary-500 font-semibold' : ''
-                }`}
-                onClick={closeMenu}
+          <div className="ml-auto flex items-center gap-1 lg:hidden">
+            <Link
+              to="/help"
+              aria-label="Help"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-primary-700 transition-colors hover:bg-primary-50"
+            >
+              <HelpCircle size={20} />
+            </Link>
+            {hasTutorials && (
+              <motion.button
+                ref={mobileTriggerRef}
+                type="button"
+                onClick={() => setIsTutorialMenuExpanded(!isTutorialMenuExpanded)}
+                aria-label="Tips & Tricks"
+                aria-controls="floating-tutorial-topics"
+                aria-expanded={isTutorialMenuExpanded}
+                title="Tips & Tricks"
+                className="inline-flex h-10 min-w-[2.5rem] items-center justify-center gap-1.5 rounded-full px-2 text-primary-700 transition-colors hover:bg-primary-50"
+                whileTap={{ scale: 0.94 }}
               >
-                {item.name}
-              </Link>
-            ))}
-            {/* Chat link for authenticated users in mobile menu */}
-            {isAuth && (
-              <Link
-                to="/chat"
-                className={`furk-nav-link ${
-                  location.pathname === '/chat' ? 'text-primary-500 font-semibold' : ''
-                }`}
-                onClick={closeMenu}
-              >
-                Chat
-              </Link>
+                <Lightbulb size={20} />
+                <span className="hidden text-xs font-semibold min-[360px]:inline">Tips</span>
+              </motion.button>
             )}
             {isAuth ? (
               <>
-                <Link
-                  to="/help"
-                  className={`flex items-center furk-nav-link ${
-                    location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
-                  }`}
-                  onClick={closeMenu}
-                >
-                  <HelpCircle size={16} className="mr-2" />
-                  Help
-                </Link>
-                <button
+                <motion.button
                   onClick={toggleNotifications}
-                  className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
+                  aria-label="Notifications"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full text-primary-700 transition-colors hover:bg-primary-50"
+                  whileTap={{ scale: 0.94 }}
                 >
-                  <Bell size={16} className="mr-2" />
-                  Notifications
-                </button>
-                {resolvedRole === 'merchant' && (
-                  <Link
-                    to="/merchant/dashboard"
-                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
-                    onClick={closeMenu}
-                  >
-                    <LayoutDashboard size={16} className="mr-2" />
-                    Dashboard
-                  </Link>
-                )}
-                {resolvedRole === 'admin' && (
-                  <Link
-                    to="/admin/merchants"
-                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
-                    onClick={closeMenu}
-                  >
-                    <Shield size={16} className="mr-2" />
-                    Dashboard
-                  </Link>
-                )}
+                  <Bell size={20} />
+                </motion.button>
                 {resolvedRole === 'user' && (
-                  <Link
-                    to="/profile"
-                    className="flex items-center font-medium text-gray-700 hover:text-primary-500 transition-colors"
-                    onClick={closeMenu}
+                  <GuideTip
+                    content="Welcome to Furk! Let's get started by topping up your balance to access our services"
+                    position="bottom"
+                    show={tooltipState.isNewUser}
+                    onClose={() => setTooltipState({ ...tooltipState, isNewUser: false })}
                   >
-                    <User size={16} className="mr-2" />
-                    Profile
-                  </Link>
+                    <Tooltip content="Furkredits balance" position="bottom">
+                      <Link
+                        to="/profile"
+                        aria-label={`Furkredits balance: ${formattedFurkredits}`}
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-primary-200 bg-primary-50 px-3 text-sm font-bold text-primary-800 transition-colors hover:bg-primary-100"
+                        onClick={() => setTooltipState({ ...tooltipState, isNewUser: false })}
+                      >
+                        <Coins size={16} aria-hidden="true" />
+                        <span>{isLoading ? '...' : formattedFurkredits}</span>
+                        <span className="hidden text-[10px] font-semibold min-[360px]:inline">Furkredits</span>
+                      </Link>
+                    </Tooltip>
+                  </GuideTip>
                 )}
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    closeMenu();
-                  }}
-                  className="flex items-center w-full font-medium text-gray-700 hover:text-primary-500 transition-colors"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Logout
-                </button>
-                <Link
-                  to="/profile"
-                  className="flex items-center px-3 py-2 bg-primary-50 rounded-lg border border-primary-200 text-primary-700 hover:bg-primary-100 hover:text-primary-800 transition-colors"
-                  onClick={closeMenu}
-                >
-                  <span className="font-bold">
-                    {userWallet?.furkredits ?? 0} Furkredits
-                  </span>
-                </Link>
               </>
             ) : (
-              <>
-                <Link
-                  to="/help"
-                  className={`flex items-center furk-nav-link ${
-                    location.pathname === '/help' ? 'text-primary-500 font-semibold' : ''
-                  }`}
-                  onClick={closeMenu}
-                >
-                  <HelpCircle size={16} className="mr-2" />
-                  Help
-                </Link>
-                <Link
-                  to="/login"
-                  className="bg-primary-600 hover:bg-primary-700 text-white py-2.5 px-5 rounded-xl font-bold transition-colors text-center"
-                  onClick={closeMenu}
-                >
-                  Login / Register
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="rounded-xl bg-primary-600 px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-primary-700"
+              >
+                Sign in
+              </Link>
             )}
           </div>
         </div>
@@ -583,6 +513,8 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
         {renderNotifications()}
       </ResizableRightSidebar>
     </nav>
+    {(!isAuth || resolvedRole === 'user') && <MobileBottomNav isAuthenticated={isAuth} />}
+    </>
   );
 };
 

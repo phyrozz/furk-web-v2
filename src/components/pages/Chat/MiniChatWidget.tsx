@@ -20,7 +20,7 @@ interface Conversation {
   last_message_created_at: string;
 }
 
-export default function MiniChatWidget() {
+export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottomNav?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -114,7 +114,11 @@ export default function MiniChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 select-none">
+    <div
+      className={`fixed right-6 z-30 flex flex-col items-end gap-3 select-none ${
+        aboveBottomNav ? 'bottom-[calc(7rem_+_env(safe-area-inset-bottom))] lg:bottom-6' : 'bottom-6'
+      }`}
+    >
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -122,7 +126,7 @@ export default function MiniChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="w-80 h-[30rem] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col"
+            className="w-80 max-w-[calc(100vw_-_2rem)] h-[min(30rem,calc(100dvh_-_16.5rem_-_env(safe-area-inset-bottom)))] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col"
           >
             {/* Header */}
             <div className="flex justify-between items-center px-4 py-2 border-b bg-gray-50">

@@ -401,35 +401,30 @@ const ProfilePage = () => {
         }
       } />
 
-      <div className="pt-16 min-h-screen bg-gray-50 h-screen overflow-y-hidden select-none z-10">
+      <div className="pt-16 pb-[calc(5rem_+_env(safe-area-inset-bottom))] min-h-screen bg-gray-50 overflow-x-hidden select-none z-10 lg:pb-0">
         <Navbar />
-        <div className="flex flex-col container mx-auto px-4 py-8 h-full box-border">
+        <div className="container mx-auto flex min-w-0 flex-col px-4 py-8 box-border">
           {/* Profile Header */}
-          {(!isMobile || activeTab == 'profile' ) && <div className="bg-white rounded-xl shadow-sm mb-8">
-            <div className="flex sm:flex-row flex-col sm:items-center items-start gap-2 w-full overflow-x-auto p-6">
-              {/* <img
-                src={profile?.avatar}
-                alt={profile?.username}
-                className="w-24 h-24 rounded-full border-4 border-primary-100"
-              /> */}
-              <div className="flex items-center">
-                  <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-primary-100">
+          {(!isMobile || activeTab === 'profile') && <div className="mb-6 min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm sm:mb-8">
+            <div className="grid min-w-0 gap-5 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)] lg:items-center">
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="relative shrink-0">
+                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-primary-100 bg-gray-200 sm:h-24 sm:w-24">
                     {loading ? (
                       <PawLoading size={40} bounce={false} />
                     ) : (
-                      <img 
-                        src={profileImageUrl ?? "/default_profile.png"} 
-                        alt={`${profile?.first_name}'s avatar`}
-                        className="w-full h-full object-cover"
+                      <img
+                        src={profileImageUrl ?? "/default_profile.png"}
+                        alt={profile?.first_name ? profile.first_name + "'s avatar" : 'Profile avatar'}
+                        className="h-full w-full object-cover"
                       />
                     )}
-                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => profileImageInputRef.current?.click()}
                     disabled={isUploadingImage}
-                    className="absolute -bottom-2 -right-2 bg-primary-600 text-white rounded-full p-2 shadow-sm hover:bg-primary-700 disabled:opacity-60"
+                    className="absolute -bottom-2 -right-2 rounded-full bg-primary-600 p-2 text-white shadow-sm hover:bg-primary-700 disabled:opacity-60"
                     title="Change profile photo"
                   >
                     <Camera size={16} />
@@ -442,19 +437,18 @@ const ProfilePage = () => {
                     onChange={handleProfileImageChange}
                   />
                 </div>
-                <div className="ml-6">
-                  <h1 className="text-2xl font-cursive font-bold text-gray-800">{profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}</h1>
-                  <p className="text-gray-600">{profile?.email}</p>
-                  <div className="flex items-center mt-2 text-sm text-gray-500">
+                <div className="min-w-0 flex-1">
+                  <h1 className="break-words font-cursive text-xl font-bold leading-tight text-gray-800 sm:text-2xl">
+                    {profile?.first_name} {profile?.middle_name ?? ''} {profile?.last_name}
+                  </h1>
+                  <p className="mt-1 break-all text-sm text-gray-600">{profile?.email}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 sm:text-sm">
                     <span>Member since {profile?.created_at && DateUtils.formatDateStringFromTimestamp(profile.created_at)}</span>
-                    {/* <span className="mx-2">•</span>
-                    <span>{profile?.location}</span> */}
                   </div>
-                  {/* Display current tier if available */}
                   {profile?.tier_name && (
-                    <div className="flex items-center mt-2">
+                    <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
                       <span
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                        className="inline-flex max-w-full break-words items-center rounded-full px-3 py-1 text-sm font-medium"
                         style={{
                           backgroundColor: profile.tier_color_code || '#e5e7eb',
                           color: '#ffffff'
@@ -462,62 +456,68 @@ const ProfilePage = () => {
                       >
                         {profile.tier_name}
                       </span>
-                      <span className="ml-2 text-xs text-gray-500">
+                      <span className="text-xs text-gray-500">
                         Subscribed on {profile.tier_assigned_at && DateUtils.formatDateStringFromTimestamp(profile.tier_assigned_at)}
                       </span>
                     </div>
                   )}
-                  {userWallet && <div className="flex flex-row gap-5 items-center mt-3" id="user-wallet-container">
-                    <div className="">
-                      <span className="text-primary-600 font-bold text-2xl">{formatAmount(userWallet.furkredits)}</span>
-                      <span className="text-gray-500 text-sm"> Furkredits</span>
-                    </div>
-                    <div className="">
-                      <span className="text-primary-600 font-bold text-2xl">{userWallet?.furkoins}</span>
-                      <span className="text-gray-500 text-sm"> Furkoins</span>
-                    </div>
-                    <Button variant="ghost" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
-                    <Button variant="ghost" icon={<QrCode />} onClick={() => setIsOwnerQrModalOpen(true)} disabled={!ownerQrPayload}>
-                      My QR
-                    </Button>
-                  </div>}
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="ml-auto"
-                icon={<LogOut size={18} />}
-                onClick={handleLogout}
-                loading={signOutLoading}
-              >
-                Sign Out
-              </Button>
+
+              <div className="min-w-0">
+                {userWallet && <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-3" id="user-wallet-container">
+                  <div className="min-w-0 rounded-xl bg-primary-50 px-3 py-2.5 sm:px-4">
+                    <span className="block text-xs font-medium text-gray-500">Furkredits</span>
+                    <span className="mt-0.5 block break-words text-lg font-bold text-primary-700 sm:text-xl">{formatAmount(userWallet.furkredits)}</span>
+                  </div>
+                  <div className="min-w-0 rounded-xl bg-amber-50 px-3 py-2.5 sm:px-4">
+                    <span className="block text-xs font-medium text-gray-500">Furkoins</span>
+                    <span className="mt-0.5 block break-words text-lg font-bold text-amber-700 sm:text-xl">{userWallet.furkoins}</span>
+                  </div>
+                </div>}
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                  {userWallet && <>
+                    <Button variant="ghost" className="w-full justify-center px-2 sm:w-auto" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
+                    <Button variant="ghost" className="w-full justify-center px-2 sm:w-auto" icon={<QrCode />} onClick={() => setIsOwnerQrModalOpen(true)} disabled={!ownerQrPayload}>
+                      My QR
+                    </Button>
+                  </>}
+                  <Button
+                    variant="outline"
+                    className="col-span-2 w-full justify-center sm:ml-auto sm:w-auto"
+                    icon={<LogOut size={18} />}
+                    onClick={handleLogout}
+                    loading={signOutLoading}
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>}
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-gray-200 mb-8 w-full overflow-x-auto">
+          <nav aria-label="Profile sections" className="mb-5 grid min-w-0 grid-cols-2 gap-2 sm:mb-8 sm:flex sm:flex-wrap">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                id={`nav-tab-${tab.id}`}
-                className={`flex items-center px-6 py-3 text-sm font-medium whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'text-primary-600 border-b-2 border-primary-500'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                id={'nav-tab-' + tab.id}
+                type="button"
+                aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => setActiveTab(tab.id)}
+                className={activeTab === tab.id
+                  ? 'flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 text-left text-xs font-semibold text-primary-700 transition-colors sm:px-4 sm:text-sm'
+                  : 'flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-left text-xs font-semibold text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700 sm:px-4 sm:text-sm'}
               >
-                <tab.icon size={18} className="mr-2" />
-                {tab.label}
+                <tab.icon size={17} className="shrink-0" />
+                <span className="min-w-0 break-words leading-tight">{tab.label}</span>
               </button>
             ))}
-          </div>
-
+          </nav>
           {/* Tab Content */}
-          <div className="flex-1 bg-white rounded-xl shadow-sm h-full overflow-y-hidden">
+          <div className="min-w-0 overflow-x-hidden rounded-xl bg-white shadow-sm">
             {activeTab === 'profile' && (
-              <div className="space-y-6 h-full overflow-y-hidden">
+              <div className="space-y-6">
                 <div className="flex flex-row justify-between items-center px-6 pt-6">
                   <h2 className="text-xl font-cursive font-semibold text-gray-800">Personal Information</h2>
                   <button
@@ -533,7 +533,7 @@ const ProfilePage = () => {
                   </button>
                 </div>
                 
-                <div className="h-[calc(100%-4rem)] overflow-y-auto p-6">
+                <div className="p-6">
                   {isEdit? editForm : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>

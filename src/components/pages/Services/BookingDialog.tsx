@@ -11,7 +11,7 @@ import { BusinessHour } from './ServiceDetails';
 import SuccessDialog from '../../common/SuccessDialog';
 import Input from '../../common/Input';
 import { http } from '../../../utils/http';
-import { Calendar, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
+import { Calendar, DateHeaderProps, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
 import moment from 'moment';
 import { BookingEvent } from '../Merchant/BookingCalendar/BookingCalendar';
 
@@ -405,8 +405,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       }
     },
     '.rbcSelected': {
-      backgroundColor: '#312E81',
-      boxShadow: '0 4px 6px rgba(49, 46, 129, 0.3)'
+      backgroundColor: '#9c7a54',
+      boxShadow: '0 4px 6px rgba(156, 122, 84, 0.3)'
     },
     '.rbcHeader': {
       padding: '0.5rem',
@@ -506,8 +506,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     if (event.status === 'selected') {
       return {
         style: {
-          backgroundColor: '#e0f2fe',
-          border: '2px dashed #0284c7',
+          backgroundColor: '#f5efe4',
+          border: '2px dashed #9c7a54',
           color: '#000',
         }
       };
@@ -588,7 +588,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     if (selectedDate && moment(date).isSame(moment(selectedDate, 'YYYY-MM-DD'), 'day') && isDateInBusinessHours && !isDateInClosure) {
       style = {
         ...style,
-        backgroundColor: '#e0f2fe',
+        backgroundColor: '#f5efe4',
       };
     }
 
@@ -615,37 +615,58 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     return { style };
   };
 
-const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-  const date = slotInfo.start;
-  const today = moment().startOf('day');
-  const sixMonthsFromNow = moment().add(6, 'months').startOf('day');
-  
-  // Don't allow selection if date is before today or after 6 months
-  if (moment(date).isBefore(today) || moment(date).isAfter(sixMonthsFromNow)) {
-    return;
-  }
+  const isDateSelectable = useCallback((date: Date) => {
+    const selectedDay = moment(date);
+    const today = moment().startOf('day');
+    const sixMonthsFromNow = moment().add(6, 'months').startOf('day');
 
-  // Check if date is in closure period
-  const isDateInClosure = businessClosures.some(closure => {
-    const closureStart = moment(closure.start_datetime).startOf('day');
-    const closureEnd = moment(closure.end_datetime).endOf('day');
-    return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
-  });
+    if (selectedDay.isBefore(today) || selectedDay.isAfter(sixMonthsFromNow)) return false;
 
-  // Check if date is within business hours
-  const momentDow = moment(date).day();
-  const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
-  const isDateInBusinessHours = businessHours.some(merchantHour => {
-    return merchantDow === merchantHour.day_of_week;
-  });
+    const isDateInClosure = businessClosures.some((closure) => {
+      const closureStart = moment(closure.start_datetime).startOf('day');
+      const closureEnd = moment(closure.end_datetime).endOf('day');
+      return selectedDay.isBetween(closureStart, closureEnd, 'day', '[]');
+    });
+    if (isDateInClosure) return false;
 
-  // Only set selected date if it's not in closure and is within business hours
-  if (!isDateInClosure && isDateInBusinessHours) {
+    const momentDow = selectedDay.day();
+    const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
+    return businessHours.some((hour) =>
+      hour.day_of_week === merchantDow && !!hour.open_time && !!hour.close_time,
+    );
+  }, [businessClosures, businessHours]);
+
+  const handleSelectDate = useCallback((date: Date) => {
+    if (!isDateSelectable(date)) return;
     setSelectedDate(formatLocalDate(date));
     setSelectedTime('');
-  }
-  
-}, [businessClosures, businessHours, formatLocalDate]);
+  }, [formatLocalDate, isDateSelectable]);
+
+  const calendarComponents = useMemo(() => ({
+    dateHeader: ({ date, label }: DateHeaderProps) => {
+      const selectable = isDateSelectable(date);
+      const isSelected = selectedDate === formatLocalDate(date);
+
+      return (
+        <button
+          type="button"
+          disabled={!selectable}
+          aria-label={`${selectable ? 'Select' : 'Unavailable'} ${moment(date).format('dddd, MMMM D')}`}
+          aria-pressed={isSelected}
+          onClick={() => handleSelectDate(date)}
+          className={`rbc-button-link min-h-10 w-full rounded px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500 ${
+            selectable ? 'cursor-pointer hover:bg-primary-100' : 'cursor-not-allowed text-gray-400'
+          } ${isSelected ? 'bg-primary-100 font-bold text-primary-800' : ''}`}
+        >
+          {label}
+        </button>
+      );
+    },
+  }), [formatLocalDate, handleSelectDate, isDateSelectable, selectedDate]);
+
+  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+    handleSelectDate(slotInfo.start);
+  }, [handleSelectDate]);
 
   return (
     <div className="z-50">
@@ -663,6 +684,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
           <div className="flex flex-col gap-4">
             <div className="">
               <label className="block text-sm font-medium text-gray-700">Date</label>
+              <p className="mb-1 text-xs text-gray-500">Tap an available date number to select it.</p>
 
               <div style={{ width: '100%', aspectRatio: '1' }} className="cursor-pointer">
                 <Calendar
@@ -673,6 +695,7 @@ const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
                   onRangeChange={handleRangeChange}
                   eventPropGetter={eventPropGetter}
                   dayPropGetter={dayPropGetter}
+                  components={{ month: calendarComponents }}
                   onSelectSlot={handleSelectSlot}
                   startAccessor="start"
                   endAccessor="end"

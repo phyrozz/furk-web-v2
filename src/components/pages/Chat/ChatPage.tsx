@@ -108,7 +108,7 @@ export default function ChatPage() {
 
   return (
     <TopNavbarPageShell className="select-none">
-      <div className="flex h-[calc(100vh-4rem)] bg-gray-100 overflow-hidden">
+      <div className="flex h-[calc(100dvh_-_9rem_-_env(safe-area-inset-bottom))] bg-gray-100 overflow-hidden lg:h-[calc(100vh-4rem)]">
         <motion.div
           initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}

@@ -11,7 +11,7 @@ const TopNavbarPageShell: React.FC<TopNavbarPageShellProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`min-h-screen bg-gray-50 pt-16 ${className}`}>
+    <div className={`min-h-screen bg-gray-50 pb-[calc(5rem_+_env(safe-area-inset-bottom))] pt-16 lg:pb-0 ${className}`}>
       <Navbar />
       {children}
     </div>
