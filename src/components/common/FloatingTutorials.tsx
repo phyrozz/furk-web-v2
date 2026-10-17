@@ -64,6 +64,11 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
     setSuggestions(shuffled.slice(0, 3));
   };
 
+  const closeTutorial = () => {
+    setSelectedTutorial(null);
+    setIsExpanded(false);
+  };
+
   return (
     <>
       <div
@@ -111,7 +116,7 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
           <Lightbulb size={21} className="text-primary-600" aria-hidden="true" />Tips & Tricks
         </button>
       </div>
-      <TutorialGuide tutorial={selectedTutorial} onClose={() => setSelectedTutorial(null)} />
+      <TutorialGuide tutorial={selectedTutorial} onClose={closeTutorial} />
     </>
   );
 };

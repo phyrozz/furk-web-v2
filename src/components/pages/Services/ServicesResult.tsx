@@ -22,7 +22,8 @@ interface Service {
   long: number,
   lat: number,
   distance_meters: number,
-  average_rating: number
+  average_rating: number,
+  is_open: boolean
 }
 
 interface ServicesResultProps {
@@ -162,7 +163,11 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
           <motion.div
             key={service.id}
             variants={itemVariants}
-            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+            className={`rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden ${
+              service.is_open !== false
+                ? 'bg-white'
+                : 'bg-slate-100 opacity-60 grayscale'
+            }`}
           >
             <Link to={`/services/${service.id}`}>
               <div className="relative h-48">
@@ -171,6 +176,11 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />
+                {service.is_open === false && (
+                  <span className="absolute right-3 top-3 rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold text-white">
+                    Closed now
+                  </span>
+                )}
               </div>
               <div className="p-4">
                 <p className="text-gray-600 font-bold text-lg line-clamp-2">{service.name}</p>
