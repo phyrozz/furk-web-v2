@@ -1,7 +1,5 @@
 import CustomerPageTransition from './components/common/CustomerPageTransition';
-import { useEffect, useState } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { loginService } from './services/auth/auth-service';
 import MiniChatWidget from './components/pages/Chat/MiniChatWidget';
 import Navbar from './components/common/Navbar';
 import MerchantNavbar from './components/common/MerchantNavbar';
@@ -47,11 +45,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
 import EditService from './components/pages/Merchant/EditService/EditService';
+import FloatingTutorials from './components/common/FloatingTutorials';
+import { getTutorialAudienceForPage } from './data/tutorials';
 
 function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, userRole: string | null }) {
   const location = useLocation();
   const merchantStatus = localStorage.getItem('merchantStatus');
   const canAccessMerchantProfile = merchantStatus && merchantStatus !== 'unverified';
+  const tutorialAudience = getTutorialAudienceForPage(location.pathname, isAuthenticated, userRole);
 
   const isChatPage =
     location.pathname === '/chat' ||
@@ -281,6 +282,9 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
 
       {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && (
         <MiniChatWidget />
+      )}
+      {tutorialAudience && (
+        <FloatingTutorials key={`${tutorialAudience}:${location.pathname}`} audience={tutorialAudience} pathname={location.pathname} />
       )}
     </>
   );

@@ -1,34 +1,19 @@
 import { useState } from 'react';
-import TutorialVideoModal from '../../common/TutorialVideoModal';
-import { HelpCircle, Play } from 'lucide-react';
+import TutorialGuide from '../../common/TutorialGuide';
+import { BookOpen, HelpCircle, Play } from 'lucide-react';
 import HelpFaq from './HelpFaq';
 import { motion } from 'framer-motion';
 import TopNavbarPageShell from '../../common/TopNavbarPageShell';
 import MerchantNavbar from '../../common/MerchantNavbar';
 import { loginService } from '../../../services/auth/auth-service';
+import { getTutorialsForAudience, getTutorialVideoUrl, type Tutorial, type TutorialAudience } from '../../../data/tutorials';
 
 const HelpPage = () => {
-  const isMerchant = loginService.getUserRole() === 'merchant';
-  const [selectedTutorial, setSelectedTutorial] = useState<{
-    title: string;
-    videoUrl: string;
-    description: string;
-  } | null>(null);
-
-  const tutorials = [
-    {
-      id: 1,
-      title: 'How to use Merchant Dashboard',
-      description: 'Learn how to manage your services, bookings, and payouts from your dashboard.',
-      videoUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', // Placeholder
-    },
-    {
-      id: 2,
-      title: 'Setting up Business Hours',
-      description: 'See how to configure your business and break hours to manage your availability.',
-      videoUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', // Placeholder
-    },
-  ];
+  const userRole = loginService.getUserRole();
+  const isMerchant = userRole === 'merchant';
+  const [audience, setAudience] = useState<TutorialAudience>(isMerchant ? 'merchant' : 'pet-owner');
+  const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
+  const tutorials = getTutorialsForAudience(audience);
 
   const fadeUp = {
     hidden: { opacity: 0, y: 20 },
@@ -56,11 +41,20 @@ const HelpPage = () => {
           <HelpCircle className="mx-auto h-12 w-12 text-primary-500 mb-4" />
           <h1 className="text-4xl font-cursive font-bold text-gray-900 mb-2">Help & Tutorials</h1>
           <p className="text-lg text-gray-600">
-            Find answers to common questions and watch video tutorials to get the most out of FURK.
+            Follow a quick how-to guide, pick up useful tips, and watch tutorials when available.
           </p>
         </motion.div>
 
+        <div className="mb-6 flex justify-center gap-2" role="group" aria-label="Tutorial audience">
+          {(['pet-owner', 'merchant'] as const).map((option) => (
+            <button key={option} type="button" aria-pressed={audience === option} onClick={() => setAudience(option)} className={`rounded-full px-5 py-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500 ${audience === option ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-primary-50'}`}>
+              {option === 'pet-owner' ? 'Pet owners' : 'Merchants'}
+            </button>
+          ))}
+        </div>
+
         <motion.div
+          key={audience}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
           variants={staggerContainer}
           initial="hidden"
@@ -78,25 +72,24 @@ const HelpPage = () => {
                 <p className="text-gray-600 mb-6 line-clamp-2">{tutorial.description}</p>
                 <button
                   onClick={() => setSelectedTutorial(tutorial)}
-                  className="flex items-center text-primary-600 font-medium hover:text-primary-700 transition-colors"
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`Open guide: ${tutorial.title}`}
+                  className="flex items-center rounded-lg py-2 text-primary-600 font-medium hover:text-primary-700 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-500"
                 >
-                  <Play className="h-5 w-5 mr-2" />
-                  Watch Tutorial
+                  {getTutorialVideoUrl(tutorial.id, import.meta.env.VITE_CDN_URL) ? <Play className="h-5 w-5 mr-2" aria-hidden="true" /> : <BookOpen className="h-5 w-5 mr-2" aria-hidden="true" />}
+                  Open guide
                 </button>
               </div>
             </motion.div>
           ))}
         </motion.div>
 
-        {selectedTutorial && (
-          <TutorialVideoModal
-            isOpen={!!selectedTutorial}
-            onClose={() => setSelectedTutorial(null)}
-            title={selectedTutorial.title}
-            videoUrl={selectedTutorial.videoUrl}
-            description={selectedTutorial.description}
-          />
-        )}
+        <TutorialGuide
+          tutorial={selectedTutorial}
+          onClose={() => setSelectedTutorial(null)}
+          showAction={selectedTutorial?.audience === (isMerchant ? 'merchant' : 'pet-owner') && (!userRole || userRole === 'user' || isMerchant)}
+        />
 
         <motion.div
           variants={fadeUp}
@@ -114,7 +107,7 @@ const HelpPage = () => {
     return (
       <>
         <MerchantNavbar />
-        <div className="min-h-screen bg-gray-50 select-none lg:pl-72 pt-16 lg:pt-0">
+        <div className="min-h-screen bg-gray-50 lg:pl-[var(--merchant-navbar-width,18rem)] pt-16 lg:pt-0">
           {content}
         </div>
       </>
@@ -122,7 +115,7 @@ const HelpPage = () => {
   }
 
   return (
-    <TopNavbarPageShell className="select-none">
+    <TopNavbarPageShell>
       {content}
     </TopNavbarPageShell>
   );
