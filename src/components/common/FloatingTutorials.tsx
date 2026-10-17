@@ -75,7 +75,7 @@ const FloatingTutorials = ({ audience, pathname }: FloatingTutorialsProps) => {
         ref={containerRef}
         className={`fixed z-30 flex flex-col gap-3 select-none ${containerPositionClass}`}
       >
-        {isExpanded && (
+        {isExpanded && !selectedTutorial && (
           <section id="floating-tutorial-topics" aria-labelledby="floating-tutorial-heading" className="max-h-[calc(100dvh_-_12rem_-_env(safe-area-inset-bottom))] w-80 max-w-[calc(100vw_-_2rem)] space-y-3 overflow-y-auto rounded-3xl border border-primary-100 bg-white/95 p-4 shadow-xl backdrop-blur lg:max-h-[calc(100dvh_-_8rem)]">
             <div className="flex items-start justify-between gap-2">
               <div>
