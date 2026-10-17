@@ -10,7 +10,7 @@ interface ResizableRightSidebarProps {
   minWidth?: number;
   maxWidth?: number;
   title?: string;
-  icon?: any;
+  icon?: React.ReactNode;
 }
 
 const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
@@ -76,7 +76,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-[45]"
             onClick={onClose}
           />
           <motion.div
@@ -85,7 +85,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
             exit={{ x: '100%' }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             style={{ width: `${width}px` }}
-            className="fixed right-0 top-0 h-full bg-white shadow-lg flex flex-col z-40"
+            className="fixed right-0 top-0 h-full bg-white shadow-lg flex flex-col z-[46]"
           >
             <div
               className={`absolute left-0 top-0 h-full w-2 ${isMobile.current ? '' : 'cursor-ew-resize'}`}
@@ -96,7 +96,7 @@ const ResizableRightSidebar: React.FC<ResizableRightSidebarProps> = ({
                 {icon && <div>{icon}</div>}
                 <h2 className="text-xl font-bold">{title}</h2>
               </div>
-              <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <button type="button" onClick={onClose} aria-label="Close sidebar" className="text-gray-500 hover:text-gray-700">
                 <X size={20} />
               </button>
             </div>

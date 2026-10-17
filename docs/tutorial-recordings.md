@@ -2,7 +2,7 @@
 
 The floating **Tips & Tricks** button offers three guides for the viewer’s role. Initial suggestions relate to the current page; **More topics** shuffles that role’s topics. **All guides** opens the Help page, which lists both audiences. The button stays out of authentication, payment, and chat screens.
 
-Every topic has a written guide now. Videos are optional and only appear after their filename is enabled in `src/data/tutorials.ts`. Playback has controls and sound support, does not autoplay, and falls back to the written instructions if the video cannot load.
+Every topic has a written guide now. Videos are optional and only appear after their filename is enabled in `src/data/tutorials.ts`. Videos autoplay muted and loop while visible in the portrait viewer, with native controls hidden. Playback pauses when the clip scrolls out of view or the browser tab is hidden, and resumes when visible again. A pet-themed overlay appears while the video loads or buffers; its animation pauses when hidden and respects reduced-motion preferences. Written instructions remain available if the video cannot load.
 
 ## Record these first
 

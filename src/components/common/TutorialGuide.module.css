@@ -1,0 +1,103 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(22 19 15 / 70%);
+}
+
+.videoPanel {
+  background: #16130f;
+}
+
+.videoLabel {
+  color: rgb(255 255 255 / 65%);
+}
+
+.videoFrame {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, 17rem, 27vh);
+  width: min(100%, 17rem, 27dvh);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #000;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.videoUnavailable {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(255 255 255 / 5%);
+  color: rgb(255 255 255 / 75%);
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+
+.steps {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-width: 0;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #f8f7f5;
+  color: #464039;
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+.stepNumber {
+  display: flex;
+  flex: 0 0 1.75rem;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #f5efe4;
+  color: #62462e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stepText {
+  min-width: 0;
+  padding-top: 0.125rem;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 640px) {
+  .videoFrame {
+    width: min(100%, 19rem, 31.5vh);
+    width: min(100%, 19rem, 31.5dvh);
+  }
+}
+
+@media (min-width: 1024px) {
+  .videoFrame {
+    width: min(100%, 22rem, 36vh);
+    width: min(100%, 22rem, 36dvh);
+  }
+}

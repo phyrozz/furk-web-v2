@@ -1,90 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { http } from '../../../utils/http';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+interface PaymentStatusResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    status?: string;
+    message?: string;
+  };
+}
+
+const failedStatuses = new Set(['PAYMENT_FAILED', 'PAYMENT_EXPIRED', 'PAYMENT_CANCELLED']);
 
 const PaymentPage: React.FC = () => {
-  const [paymentStatus, setPaymentStatus] = useState('pending');
-  const [message, setMessage] = useState<string>('Processing your payment...');
-
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed'>('pending');
+  const [message, setMessage] = useState('Confirming your payment with Maya...');
   const navigate = useNavigate();
 
   const searchParams = new URLSearchParams(window.location.search);
-  const id = searchParams.get('id');
-
-  const pendingStatuses = ['PENDING_TOKEN', 'PENDING_PAYMENT', 'FOR_AUTHENTICATION', 'AUTHENTICATING', 'AUTH_SUCCESS', 'PAYMENT_PROCESSING']
+  const paymentId = searchParams.get('payment_id') || searchParams.get('id');
 
   useEffect(() => {
+    if (!paymentId) {
+      setPaymentStatus('failed');
+      setMessage('We could not find the payment reference. Please contact support.');
+      return;
+    }
+
+    let active = true;
+    let polling = false;
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (status: 'success' | 'failed', nextRoute: string) => {
+      if (!active) return;
+      active = false;
+      setPaymentStatus(status);
+      if (intervalId) clearInterval(intervalId);
+      redirectTimer = setTimeout(() => navigate(nextRoute), 1800);
+    };
+
     const pollPaymentStatus = async () => {
+      if (!active || polling) return;
+      polling = true;
+
       try {
-        const response = await http.post<{
-          success: boolean;
-          message: string;
-          error?: string;
-          status?: string;
-        }>(`/payment/${id}`); 
+        const response = await http.post<PaymentStatusResponse>(
+          `/payment/${encodeURIComponent(paymentId)}`
+        );
+        if (!active) return;
 
-        console.log("error message", response);
-
-        if (!response.success && response.error && pendingStatuses.includes(response.error)) {
-          // Payment is still processing, keep the pending status
-          setMessage(response.message || 'Payment is still processing...');
-          setPaymentStatus('pending');
-          return;
-        }
-
-        if (response.status || response.error === 'Payment already processed') {
-          setPaymentStatus('success');
-        }
-
-        if (response.message) {
-          setMessage(response.message);
-        }
-
-        if (response.status === 'success') {
+        const status = response.data?.status;
+        if (status === 'success' || status === 'PAYMENT_SUCCESS') {
+          setMessage('Your payment was confirmed and your wallet has been updated.');
           toast.success('Payment successful!');
-          // Redirect to a success page or dashboard after a short delay
-          setTimeout(() => navigate('/payment/success'), 3000);
-        } else if (response.error && response.error === 'PAYMENT_FAILED') {
-          toast.error(`Payment failed: ${response.message || 'Please try again.'}`);
-          // Optionally redirect to an error page or allow retry
-          setTimeout(() => navigate('/payment/failed'), 3000);
-        }
-      } catch (error: any) {
-        console.error('Error polling payment status:', error);
-
-        const errorMessage = error?.response?.data?.error;
-        console.log("Error message: ", errorMessage);
-
-        if (errorMessage && errorMessage === 'Payment already processed') {
-          setPaymentStatus('success');
-          setTimeout(() => navigate('/payment/success'), 3000);
+          finish('success', '/payment/success');
+        } else if (status && failedStatuses.has(status)) {
+          setMessage('Maya could not complete this payment.');
+          toast.error('Payment failed.');
+          finish('failed', '/payment/failed');
         } else {
-          setPaymentStatus('failed');
-          setMessage(`Payment processing error: ${error.message || 'Please try again later.'}`);
-          toast.error(`Payment processing error: ${error.message || 'Please try again later.'}`);
-          setTimeout(() => navigate('/payment/failed'), 3000);
-        }        
+          setPaymentStatus('pending');
+          setMessage('Maya is still confirming your payment...');
+        }
+      } catch {
+        if (active) {
+          setPaymentStatus('pending');
+          setMessage('We are still checking your payment. Please keep this page open.');
+        }
+      } finally {
+        polling = false;
       }
     };
 
-    const intervalId = setInterval(() => {
-      if (paymentStatus === 'pending') {
-        pollPaymentStatus();
-      }
-    }, 1000); // Poll every 5 seconds
+    const intervalId = setInterval(() => void pollPaymentStatus(), 3000);
+    void pollPaymentStatus();
 
-    // Initial poll
-    pollPaymentStatus();
-
-    return () => clearInterval(intervalId);
-  }, [paymentStatus, navigate, id]);
+    return () => {
+      active = false;
+      if (intervalId) clearInterval(intervalId);
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
+  }, [paymentId, navigate]);
 
   const getStatusColor = () => {
     switch (paymentStatus) {
-      case 'successful':
+      case 'success':
         return 'text-primary-600';
       case 'failed':
         return 'text-red-600';
@@ -104,8 +107,8 @@ const PaymentPage: React.FC = () => {
             {message}
           </p>
           {paymentStatus === 'pending' && (
-            <p className="mt-2 text-center text-sm text-red-600 font-medium">
-              Please do not close this page while your payment is being processed
+            <p className="mt-2 text-center text-sm text-gray-500 font-medium">
+              Please keep this page open while your payment is being confirmed.
             </p>
           )}
         </div>
@@ -122,7 +125,7 @@ const PaymentPage: React.FC = () => {
             <svg className="mx-auto h-16 w-16 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p className="mt-2 text-lg font-medium text-gray-900">Payment Completed Successfully!</p>
+            <p className="mt-2 text-lg font-medium text-gray-900">Payment confirmed!</p>
           </div>
         )}
         {paymentStatus === 'failed' && (

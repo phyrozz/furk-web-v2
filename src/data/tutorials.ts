@@ -28,9 +28,9 @@ export interface Tutorial {
 // Add a filename only after the recording is uploaded and ready to watch.
 // Paths are relative to the existing VITE_CDN_URL/tutorials/ directory.
 export const tutorialVideoFiles: Partial<Record<TutorialId, string>> = {
-  // 'book-service': 'pet-owner/book-service.mp4',
-  // 'add-pet': 'pet-owner/add-pet.mp4',
-  // 'top-up-furkredits': 'pet-owner/top-up-furkredits.mp4',
+  'book-service': 'pet-owner/book-service.mp4',
+  'add-pet': 'pet-owner/add-pet.mp4',
+  'top-up-furkredits': 'pet-owner/top-up-furkredits.mp4',
   // 'furkoins-and-rewards': 'pet-owner/furkoins-and-rewards.mp4',
   // 'track-booking': 'pet-owner/track-booking.mp4',
   // 'message-merchant': 'pet-owner/message-merchant.mp4',
