@@ -27,7 +27,7 @@ interface ServiceDetail {
   price: string;
   furkredit_price: number;
   merchant_id: number;
-  business_name: number;
+  business_name: string;
   merchant_type: string;
   email: string;
   phone_number: string;
@@ -372,6 +372,8 @@ const ServiceDetails = () => {
         onClose={handleBookingDialogClose}
         onSuccess={handleBookingDialogSuccess}
         serviceId={service.id}
+        serviceName={service.name}
+        merchantName={service.business_name}
         requiresPet={service.requires_pet !== false}
         bookingAmount={String(service.furkredit_price)}
         merchantId={service.merchant_id}
