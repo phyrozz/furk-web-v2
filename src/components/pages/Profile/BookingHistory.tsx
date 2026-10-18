@@ -1,6 +1,8 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import { UserProfileService } from "../../../services/profile/user-profile-service";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
+import { subscribe } from "../../../utils/websockets";
+import { parseBookingStatusEvents } from "../../../utils/booking-status-events";
 import PawLoading from "../../common/PawLoading";
 import { useNavigate } from "react-router-dom";
 import Button from "../../common/Button";
@@ -114,6 +116,33 @@ const BookingHistory = () => {
     limit: 10,
     dependencies: [],
   });
+
+  const resetBookingsRef = useRef(reset);
+  resetBookingsRef.current = reset;
+
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const handleWebSocketMessage = (message: unknown) => {
+      if (parseBookingStatusEvents(message).length > 0) {
+        void resetBookingsRef.current();
+      }
+    };
+
+    subscribe(handleWebSocketMessage).then((stopListening) => {
+      if (isMounted) {
+        unsubscribe = stopListening;
+      } else {
+        stopListening();
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
+  }, []);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastBookingRef = useCallback(

@@ -9,6 +9,8 @@ import { X } from 'lucide-react';
 import Modal from '../../../common/Modal';
 import ResizableRightSidebar from '../../../common/ResizableRightSidebar';
 import DateUtils from '../../../../utils/date-utils';
+import { isAxiosError } from 'axios';
+import { ToastService } from '../../../../services/toast/toast-service';
 
 interface BookingDetailsProps {
   isOpen: boolean;
@@ -101,6 +103,8 @@ const BookingDetails: React.FC<BookingDetailsProps> = ({
       onClose();
     } catch (error) {
       console.error(`Error ${pendingAction} booking:`, error);
+      const message = isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined;
+      ToastService.show(message || 'Unable to update the booking. Please refresh and try again.');
     } finally {
       setConfirmLoading(false);
       setStartLoading(false);

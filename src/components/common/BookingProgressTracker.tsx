@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, useState, useRef } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { userNotificationsService } from '../../services/user-notifications/user-notifications';
 import { Loader, AlertTriangle, X, PawPrint, Heart } from 'lucide-react';
+import { parseBookingStatusEvents } from '../../utils/booking-status-events';
 
 interface BookingProgress {
   user_id: string;
@@ -19,6 +20,12 @@ const statusConfig = {
     color: 'text-yellow-400',
     bgColor: 'bg-yellow-50',
     message: 'Processing your pet service booking'
+  },
+  CONFIRMED: {
+    icon: Check,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50',
+    message: 'Your booking has been confirmed'
   },
   IN_PROGRESS: {
     icon: PawPrint,
@@ -37,6 +44,12 @@ const statusConfig = {
     color: 'text-gray-500',
     bgColor: 'bg-gray-50',
     message: 'Booking cancelled'
+  },
+  CANCELLED_BY_USER: {
+    icon: X,
+    color: 'text-gray-500',
+    bgColor: 'bg-gray-50',
+    message: 'You cancelled this booking'
   },
   ERROR: {
     icon: AlertTriangle,
@@ -82,18 +95,24 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
-        if (!['booking_progress', 'booking_completed', 'booking_started', 'booking_cancelled'].includes(data.event)) return;
+        const updates = parseBookingStatusEvents(JSON.parse(event.data));
+        if (updates.length === 0) return;
 
-        console.log('Received WebSocket message:', data);
-        // If the websocket sends a single booking progress, update the state
-        if (data && typeof data === 'object' && data.booking_status) {
-          setProgress(data);
-        } else if (Array.isArray(data) && data.length > 0) {
-          // If it sends a list, find the most recent one and update
-          const mostRecent = data.sort((a: BookingProgress, b: BookingProgress) => new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime())[0];
-          setProgress(mostRecent);
-        }
+        console.log('Received booking WebSocket update:', updates);
+        const mostRecent = updates.reduce((latest, update) => {
+          if (!update.modified_at) return latest;
+          if (!latest.modified_at) return update;
+          return new Date(update.modified_at).getTime() > new Date(latest.modified_at).getTime()
+            ? update
+            : latest;
+        });
+        setProgress({
+          user_id: String(mostRecent.user_id ?? ''),
+          service_id: String(mostRecent.service_id ?? ''),
+          service_name: mostRecent.service_name ?? 'Pet service',
+          booking_status: mostRecent.booking_status,
+          modified_at: mostRecent.modified_at ?? new Date().toISOString(),
+        });
       } catch (error) {
         console.error('Failed to parse WebSocket message:', error);
       }
