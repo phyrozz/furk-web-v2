@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ResizableRightSidebar from '../../common/ResizableRightSidebar';
 import Button from '../../common/Button';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
@@ -7,13 +7,16 @@ import { ToastService } from '../../../services/toast/toast-service';
 import TimeInput from '../../common/TimeInput';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
 import MultipleAutocomplete from '../../common/MultipleAutocomplete';
-import { BusinessHour } from './ServiceDetails';
 import SuccessDialog from '../../common/SuccessDialog';
 import Input from '../../common/Input';
 import { http } from '../../../utils/http';
-import { Calendar, DateHeaderProps, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
+import { Calendar, DateHeaderProps, momentLocalizer, SlotInfo } from 'react-big-calendar';
 import moment from 'moment';
 import { BookingEvent } from '../Merchant/BookingCalendar/BookingCalendar';
+import { isAxiosError } from 'axios';
+import { loginService } from '../../../services/auth/auth-service';
+import { bookingRequestStorageKey, confirmedBookingResult, persistBookingRequest, restoreBookingRequest, submitOrRecoverBooking } from '../../../utils/booking-request';
+import type { BookingRequest, BookingResult } from '../../../utils/booking-request';
 
 moment.updateLocale('en', {
   week: {
@@ -28,7 +31,6 @@ interface BookingDialogProps {
   onSuccess: () => void;
   serviceId: number;
   requiresPet: boolean;
-  businessHours: BusinessHour[];
   bookingAmount: string;
   merchantId: number;
 }
@@ -51,20 +53,16 @@ interface Pet {
 //   { id: 4, code: 'maya', displayName: 'Maya' },
 // ];
 
-const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, requiresPet, businessHours, bookingAmount, merchantId }) => {
-  const currentMonth = useMemo(() => {
-    const now = new Date();
-    return {
-      start: new Date(now.getFullYear(), now.getMonth(), 1),
-      end: new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    };
-  }, []);
-
+const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSuccess, serviceId, requiresPet, bookingAmount, merchantId }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(3); // Default to Cash on Site
   const [selectedPets, setSelectedPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState<BookingRequest | null>(null);
+  const [requestStorageKey, setRequestStorageKey] = useState<string | null>(null);
+  const [requestReady, setRequestReady] = useState(false);
+  const submissionInFlight = useRef(false);
   const [couponApplyLoading, setCouponApplyLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,102 +71,96 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
   const [couponCode, setCouponCode] = useState("");
   const [amount, setAmount] = useState(0);
   const [subtotal, setSubtotal] = useState<{ code: string, description: string, amount?: number }[]>([]);
-  const [events, setEvents] = useState<BookingEvent[]>([]);
-  const [selectionEvents, setSelectionEvents] = useState<BookingEvent[]>([]);
-  const [businessClosures, setBusinessClosures] = useState<{ start_datetime: string, end_datetime: string, reason?: string }[]>([]);
-  const [businessBreaks, setBusinessBreaks] = useState<{ day_of_week: number, break_start: string, break_end: string, label?: string }[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<Record<string, string[]>>({});
+  const [durationMinutes, setDurationMinutes] = useState(30);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [availabilityRefresh, setAvailabilityRefresh] = useState(0);
+  const [now, setNow] = useState(Date.now());
+  const [calendarDate, setCalendarDate] = useState(() => new Date(moment().utcOffset(8).format('YYYY-MM-DDTHH:mm:ss')));
   const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(() => {
-    const start = new Date(new Date().getFullYear(), new Date().getMonth(), -9);
-    const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 10);
+    const today = moment().utcOffset(8);
+    const start = new Date(today.year(), today.month(), -9);
+    const end = new Date(today.year(), today.month() + 1, 10);
     return { start, end };
   });
-  const [currentView, setCurrentView] = useState<View>('month');
 
-  const petServicesService = new PetServicesService();
+  const petServicesService = useMemo(() => new PetServicesService(), []);
+  const calendarNow = new Date(moment(now).utcOffset(8).format('YYYY-MM-DDTHH:mm:ss'));
   const petCountForPricing = selectedPets.length > 0 ? selectedPets.length : 1;
   const computedBookingAmount = amount * petCountForPricing;
 
   const formatLocalDate = useCallback((date: Date) => moment(date).format('YYYY-MM-DD'), []);
 
-  const getBusinessHoursForDate = useCallback((date: string) => {
-    const selectedDay = moment(date, 'YYYY-MM-DD').day();
-    const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
-    return businessHours.find(hour => (
-      hour.day_of_week === adjustedDay &&
-      !!hour.open_time &&
-      !!hour.close_time
-    ));
-  }, [businessHours]);
+  const completeBooking = useCallback((result: BookingResult, storageKey: string, requestId: string) => {
+    confirmedBookingResult(result, requestId);
+    // A local callback/storage failure must not turn a committed booking into a
+    // failed submission. An uncleared record is safe to reconcile on reopening.
+    try { localStorage.removeItem(storageKey); } catch (error) { console.error(error); }
+    setPendingRequest(null);
+    setError(null);
+    setEarnedPoints(result.data.added_points || 0);
+    setShowSuccessDialog(true);
+    try { onSuccess(); } catch (error) { console.error(error); }
+  }, [onSuccess]);
 
-  const getTimeConstraints = useMemo(() => {
-    if (!selectedDate) return { min: undefined, max: undefined };
-
-    const businessHour = getBusinessHoursForDate(selectedDate);
-    if (!businessHour) return { min: undefined, max: undefined };
-
-    const today = moment().format('YYYY-MM-DD');
-    const isToday = selectedDate === today;
-    
-    const now = new Date();
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
-
-    // Parse business hours
-    const [openHours, openMinutes] = businessHour.open_time.split(':').map(Number);
-    const [closeHours, closeMinutes] = businessHour.close_time.split(':').map(Number);
-
-    let min = new Date();
-    let max = new Date();
-
-    if (isToday) {
-      // If current time is after opening time, use current time as minimum
-      if (currentHours > openHours || (currentHours === openHours && currentMinutes >= openMinutes)) {
-        min.setHours(currentHours, currentMinutes, 0, 0);
-      } else {
-        min.setHours(openHours, openMinutes, 0, 0);
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setRequestReady(false);
+    const restore = async () => {
+      try {
+        const username = await loginService.getUsernameFromToken();
+        if (!username) throw new Error('Please sign in before booking.');
+        const key = bookingRequestStorageKey(username, serviceId);
+        const request = restoreBookingRequest(localStorage, key);
+        if (!active) return;
+        setRequestStorageKey(key);
+        setPendingRequest(request);
+        setRequestReady(true);
+        if (request) {
+          submissionInFlight.current = true;
+          setLoading(true);
+          try {
+            const result = await petServicesService.getBookingRequest(request.request_id);
+            if (active) completeBooking(result, key, request.request_id);
+          } catch {
+            if (active) setError('Your previous booking result is not confirmed yet. Check its status or retry the same booking request.');
+          } finally {
+            submissionInFlight.current = false;
+            if (active) setLoading(false);
+          }
+        }
+      } catch (error) {
+        if (active) setError(error instanceof Error ? error.message : 'Unable to restore your booking request. Please check booking history.');
       }
-    } else {
-      min.setHours(openHours, openMinutes, 0, 0);
-    }
+    };
+    void restore();
+    return () => { active = false; };
+  }, [isOpen, serviceId, petServicesService, completeBooking]);
 
-    max.setHours(closeHours, closeMinutes, 0, 0);
+  const selectedDayTimes = useMemo(() => (
+    (availableSlots[selectedDate] || []).filter((time) => (
+      new Date(`${selectedDate}T${time}+08:00`).getTime() > now
+    ))
+  ), [availableSlots, selectedDate, now]);
 
-    // If current time is after closing time on the same day, disable all times
-    if (isToday && (currentHours > closeHours || (currentHours === closeHours && currentMinutes >= closeMinutes))) {
-      return { min: undefined, max: undefined };
-    }
+  useEffect(() => {
+    if (!isOpen) return;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 30000);
+    return () => window.clearInterval(timer);
+  }, [isOpen]);
 
-    return { min, max };
-  }, [selectedDate, getBusinessHoursForDate]);
-
-  const breakExclusionRanges = useMemo(() => {
-    if (!selectedDate) return [];
-
-    const selectedDay = moment(selectedDate, 'YYYY-MM-DD').day();
-    const adjustedDay = selectedDay === 0 ? 6 : selectedDay - 1;
-    const selectedDayBreaks = businessBreaks.filter((b) => b.day_of_week === adjustedDay);
-
-    return selectedDayBreaks
-      .map((b) => {
-        const [startHours, startMinutes] = b.break_start.split(':').map(Number);
-        const [endHours, endMinutes] = b.break_end.split(':').map(Number);
-
-        const start = new Date();
-        start.setHours(startHours, startMinutes, 0, 0);
-        const end = new Date();
-        end.setHours(endHours, endMinutes, 0, 0);
-
-        if (end <= start) return null;
-        return { start, end };
-      })
-      .filter((value): value is { start: Date; end: Date } => value !== null);
-  }, [selectedDate, businessBreaks]);
+  useEffect(() => {
+    if (selectedTime && !selectedDayTimes.includes(selectedTime)) setSelectedTime('');
+  }, [selectedTime, selectedDayTimes]);
 
   const isFormValid = useMemo(() => {
-    return selectedDate !== '' && 
-           selectedTime !== '' && 
+    return requestReady && !showSuccessDialog && selectedDate !== '' &&
+           selectedDayTimes.includes(selectedTime) && !availabilityLoading && !availabilityError &&
            (requiresPet ? selectedPets.length > 0 : true);
-  }, [selectedDate, selectedTime, selectedPets, requiresPet]);
+  }, [requestReady, showSuccessDialog, selectedDate, selectedTime, selectedDayTimes, selectedPets, requiresPet, availabilityLoading, availabilityError]);
 
   const fetchPets = useCallback(async (limit: number, offset: number, query: string = '') => {
     try {
@@ -181,7 +173,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       ToastService.show('Failed to load pets');
       return [];
     }
-  }, []);
+  }, [petServicesService]);
 
   const { items: pets, loading: loadingPets, hasMore, loadMore } = useLazyLoad<Pet>({
     fetchData: fetchPets,
@@ -198,8 +190,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
       setError(null);
       setSearchQuery('');
     }
-    fetchClosuresAndBreaks();
-  }, [isOpen, requiresPet]);
+  }, [isOpen, requiresPet, bookingAmount]);
 
   useEffect(() => {
     // Coupons are validated against the computed total, so reset when pet count changes.
@@ -213,43 +204,62 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submissionInFlight.current || !requestReady || !requestStorageKey || showSuccessDialog) return;
+    submissionInFlight.current = true;
     setError(null);
     setLoading(true);
-
-    if (requiresPet && selectedPets.length === 0) {
-      setError('Please select at least one pet.');
-      setLoading(false);
-      return;
-    }
-
+    let request = pendingRequest;
+    let saved = !!request;
     try {
-      const bookingDateTime = new Date(`${selectedDate}T${selectedTime}`);
-
-      const response = await petServicesService.createBooking({
-        service_id: serviceId,
-        booking_datetime: bookingDateTime.toISOString(),
-        pet_ids: requiresPet ? selectedPets.map((pet) => pet.id) : [],
-        coupon_codes: subtotal.map(item => item.code)
-      });
-
-      // Get the added points from the response
-      const addedPoints = response.data.added_points || 0;
-      setEarnedPoints(addedPoints);
-      
-      // Show success dialog instead of closing immediately
-      setShowSuccessDialog(true);
-      
-      // Call onSuccess to update parent component
-      onSuccess();
-    } catch (err: any) {
-      console.log(err.response.data.error);
-      if (err.response && err.response.data && err.response.data.error) {
-        ToastService.show(err.response.data.error);
-        setError(err.response.data.error);
-      } else {
-        ToastService.show('Failed to create booking. Please try again.');
-        setError('An unexpected error occurred. Please try again.');
+      if (!request) {
+        const bookingDateTime = new Date(`${selectedDate}T${selectedTime}+08:00`);
+        if (!isFormValid || bookingDateTime.getTime() <= Date.now()) {
+          setError('Please select an available future appointment and any required pets.');
+          setAvailabilityRefresh((value) => value + 1);
+          return;
+        }
+        request = {
+          request_id: crypto.randomUUID(), service_id: serviceId,
+          booking_datetime: bookingDateTime.toISOString(),
+          pet_ids: requiresPet ? selectedPets.map((pet) => pet.id) : [],
+          coupon_codes: subtotal.map((item) => item.code),
+        };
+        persistBookingRequest(localStorage, requestStorageKey, request);
+        saved = true;
+        setPendingRequest(request);
       }
+      const response = await submitOrRecoverBooking(petServicesService, request);
+      completeBooking(response, requestStorageKey, request.request_id);
+    } catch (err) {
+      const details = isAxiosError<{ error?: string; booking_request_status?: string }>(err) ? err.response?.data : undefined;
+      if (details?.booking_request_status === 'not_created') {
+        try {
+          localStorage.removeItem(requestStorageKey);
+          setPendingRequest(null);
+        } catch (error) { console.error(error); }
+        setAvailabilityRefresh((value) => value + 1);
+      }
+      const message = details?.error || (saved
+        ? 'The booking result is not confirmed yet. Check its status or retry the same request.'
+        : 'Unable to save this booking request. Please check booking history before trying again.');
+      ToastService.show(message);
+      setError(message);
+    } finally {
+      submissionInFlight.current = false;
+      setLoading(false);
+    }
+  };
+
+  const checkBookingStatus = async () => {
+    if (!pendingRequest || !requestStorageKey || submissionInFlight.current) return;
+    submissionInFlight.current = true;
+    setLoading(true);
+    try {
+      completeBooking(await petServicesService.getBookingRequest(pendingRequest.request_id), requestStorageKey, pendingRequest.request_id);
+    } catch {
+      setError('No completed result is available yet. You can retry this same booking request.');
+    } finally {
+      submissionInFlight.current = false;
       setLoading(false);
     }
   };
@@ -454,187 +464,79 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
     }
   }
 
-  const fetchClosuresAndBreaks = async (
-    startDate: Date = dateRange.start,
-    endDate: Date = dateRange.end
-  ) => {
-    try {
-      const response = await petServicesService.listClosuresAndBreaks(
-        startDate,
-        endDate,
-        merchantId
-      );
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setAvailabilityLoading(true);
+    setAvailabilityError(null);
+    setAvailableSlots({});
 
-      setBusinessClosures(response.data?.closures || []);
-      setBusinessBreaks(response.data?.breaks || []);
-    } catch (err) {
-      console.error('Error fetching closures and breaks:', err);
-    }
-  }
+    const fetchAvailability = async () => {
+      try {
+        const response = await new PetServicesService().listClosuresAndBreaks(
+          dateRange.start, dateRange.end, merchantId, serviceId,
+        );
+        if (!active) return;
+        if (!response.data?.available_slots) throw new Error('Missing availability');
+        setAvailableSlots(response.data.available_slots);
+        setDurationMinutes(response.data.duration_minutes);
+      } catch {
+        if (active) setAvailabilityError('Unable to load appointment times. Please retry.');
+      } finally {
+        if (active) setAvailabilityLoading(false);
+      }
+    };
+    void fetchAvailability();
+    return () => { active = false; };
+  }, [isOpen, serviceId, merchantId, dateRange, availabilityRefresh]);
 
   const handleNavigate = (newDate: Date) => {
-    let firstDay, lastDay;
-    
-    // For month view, get first and last day of the visible calendar
+    setCalendarDate(newDate);
     const start = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
     const end = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
-    
-    // Add buffer days before and after to ensure we fetch all relevant data
-    firstDay = moment(start).subtract(30, 'days').toDate();
-    lastDay = moment(end).add(30, 'days').toDate();
-
-    setDateRange({ start: firstDay, end: lastDay });
-    fetchClosuresAndBreaks(firstDay, lastDay);
+    setDateRange({
+      start: moment(start).subtract(10, 'days').toDate(),
+      end: moment(end).add(10, 'days').toDate(),
+    });
   };
 
-  const handleViewChange = (view: View) => {
-    setCurrentView(view);
-    if (view === 'agenda') {
-      const firstDay = moment(dateRange.start).add(1, 'month').subtract(10, 'days').toDate();
-      const lastDay = moment(dateRange.start).add(2, 'month').add(10, 'days').toDate();
-      setDateRange({ start: firstDay, end: lastDay });
-    }
-  };
-
-  const handleRangeChange = (range: Date[] | { start: Date; end: Date }) => {
-    // Reset the selected dates when switching modes or changing range
+  const handleRangeChange = () => {
     setSelectedDate('');
-    setSelectionEvents([]);
-  }
-
-  const eventPropGetter = (event: BookingEvent) => {
-    if (event.status === 'selected') {
-      return {
-        style: {
-          backgroundColor: '#f5efe4',
-          border: '2px dashed #9c7a54',
-          color: '#000',
-        }
-      };
-    }
-
-    let backgroundColor = '';
-    let color = '#ffffff';
-    
-    switch (event.status) {
-      case 'pending':
-        backgroundColor = '#fde047';
-        color = '#000000';
-        break;
-      case 'confirmed':
-        backgroundColor = '#93c5fd';
-        color = '#000000';
-        break;
-      case 'in_progress':
-        backgroundColor = '#d8b4fe';
-        color = '#000000';
-        break;
-      case 'completed':
-        backgroundColor = '#86efac';
-        color = '#000000';
-        break;
-      case 'cancelled':
-        backgroundColor = '#fca5a5';
-        color = '#000000';
-        break;
-      default:
-        backgroundColor = '#d1d5db';
-        color = '#000000';
-    }
-    
-    return { 
-      style: { 
-        backgroundColor,
-        color
-      } 
-    };
-  };
-
-  const dayPropGetter = (date: Date) => {
-    const isDateInClosure = businessClosures.some(closure => {
-      const closureStart = moment(closure.start_datetime).startOf('day');
-      const closureEnd = moment(closure.end_datetime).endOf('day');
-      return moment(date).isBetween(closureStart, closureEnd, 'day', '[]');
-    });
-    
-    const momentDow = moment(date).day();
-    const merchantDow = momentDow === 0 ? 6 : momentDow - 1; // Convert Sunday=0 to 6, Mon-Sat to 0-5
-    const isDateInBusinessHours = businessHours.some(merchantHour => {
-      return merchantDow === merchantHour.day_of_week;
-    });
-    const today = moment().startOf('day');
-
-    let style: React.CSSProperties = {
-      backgroundColor: '#a1a1a1',
-      opacity: 1,
-      cursor: 'not-allowed'
-    };
-
-    if (isDateInBusinessHours && !isDateInClosure) {
-      style = {
-        backgroundColor: '#ffffff',
-        opacity: 1,
-        cursor: 'pointer'
-      };
-    }
-
-    if (moment(date).isSame(moment(), 'day')) {
-      style = {
-        ...style,
-        backgroundColor: '#fef9c3',
-      };
-    }
-
-    if (selectedDate && moment(date).isSame(moment(selectedDate, 'YYYY-MM-DD'), 'day') && isDateInBusinessHours && !isDateInClosure) {
-      style = {
-        ...style,
-        backgroundColor: '#f5efe4',
-      };
-    }
-
-    // Do not allow selection of past dates
-    if (moment(date).isBefore(today)) { 
-      style = {
-        ...style,
-        backgroundColor: '#d1d1d1',
-        opacity: 1,
-        cursor: 'not-allowed'
-      };
-    }
-
-    // Do not allow selection of dates 6 months in the future
-    if (moment(date).isAfter(today.add(6, 'month'))) {
-      style = {
-        ...style,
-        backgroundColor: '#d1d1d1',
-        opacity: 1,
-        cursor: 'not-allowed'
-      };
-    }
-
-    return { style };
+    setSelectedTime('');
   };
 
   const isDateSelectable = useCallback((date: Date) => {
-    const selectedDay = moment(date);
-    const today = moment().startOf('day');
-    const sixMonthsFromNow = moment().add(6, 'months').startOf('day');
+    const dateKey = formatLocalDate(date);
+    const today = moment(now).utcOffset(8).format('YYYY-MM-DD');
+    const lastDate = moment(now).utcOffset(8).add(6, 'months').format('YYYY-MM-DD');
+    return !availabilityLoading && !availabilityError && dateKey >= today && dateKey <= lastDate &&
+      (availableSlots[dateKey] || []).some((time) => new Date(`${dateKey}T${time}+08:00`).getTime() > now);
+  }, [availableSlots, availabilityLoading, availabilityError, formatLocalDate, now]);
 
-    if (selectedDay.isBefore(today) || selectedDay.isAfter(sixMonthsFromNow)) return false;
+  const dayPropGetter = (date: Date) => {
+    const selectable = isDateSelectable(date);
+    const dateKey = formatLocalDate(date);
+    const isToday = dateKey === moment(now).utcOffset(8).format('YYYY-MM-DD');
+    return {
+      style: {
+        backgroundColor: selectedDate === dateKey ? '#f5efe4' : isToday ? '#fef9c3' : selectable ? '#ffffff' : '#d1d1d1',
+        cursor: selectable ? 'pointer' : 'not-allowed',
+      },
+    };
+  };
 
-    const isDateInClosure = businessClosures.some((closure) => {
-      const closureStart = moment(closure.start_datetime).startOf('day');
-      const closureEnd = moment(closure.end_datetime).endOf('day');
-      return selectedDay.isBetween(closureStart, closureEnd, 'day', '[]');
-    });
-    if (isDateInClosure) return false;
+  const selectionEvents: BookingEvent[] = selectedDate && selectedTime ? [{
+    id: -1,
+    title: 'Selected appointment',
+    start: new Date(`${selectedDate}T${selectedTime}`),
+    end: moment(`${selectedDate}T${selectedTime}`).add(durationMinutes, 'minutes').toDate(),
+    status: 'selected',
+    bookingDetails: null,
+  }] : [];
 
-    const momentDow = selectedDay.day();
-    const merchantDow = momentDow === 0 ? 6 : momentDow - 1;
-    return businessHours.some((hour) =>
-      hour.day_of_week === merchantDow && !!hour.open_time && !!hour.close_time,
-    );
-  }, [businessClosures, businessHours]);
+  const eventPropGetter = () => ({
+    style: { backgroundColor: '#f5efe4', border: '2px dashed #9c7a54', color: '#000' },
+  });
 
   const handleSelectDate = useCallback((date: Date) => {
     if (!isDateSelectable(date)) return;
@@ -681,17 +583,33 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
         title="Book Service"
       >
         <form onSubmit={handleSubmit} className="p-2 flex flex-col justify-between h-full select-none">
+          {pendingRequest ? (
+            <div className="flex flex-col gap-4 p-3">
+              <p role="status" className="text-sm text-gray-700">
+                {loading ? 'Submitting or checking your booking...' : 'The result of this booking has not been confirmed yet. Check its status or retry the same request.'}
+              </p>
+              <p className="text-sm font-medium">
+                Appointment: {moment(pendingRequest.booking_datetime).utcOffset(8).format('MMMM D, YYYY [at] h:mm A')} (Philippine Time)
+              </p>
+              {error && <p role="alert" className="text-sm text-error-600">{error}</p>}
+              <Button type="button" variant="outline" onClick={checkBookingStatus} disabled={loading}>Check status</Button>
+              <Button type="submit" variant="primary" loading={loading} disabled={loading}>Retry same booking</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>Close</Button>
+            </div>
+          ) : (
+          <>
           <div className="flex flex-col gap-4">
             <div className="">
               <label className="block text-sm font-medium text-gray-700">Date</label>
-              <p className="mb-1 text-xs text-gray-500">Tap an available date number to select it.</p>
+              <p className="mb-1 text-xs text-gray-500">Tap an available date number to select it. Times are in Philippine Time (UTC+8).</p>
 
               <div style={{ width: '100%', aspectRatio: '1' }} className="cursor-pointer">
                 <Calendar
                   localizer={localizer}
-                  events={[...events, ...selectionEvents]}
+                  date={calendarDate}
+                  getNow={() => calendarNow}
+                  events={selectionEvents}
                   onNavigate={handleNavigate}
-                  onView={handleViewChange}
                   onRangeChange={handleRangeChange}
                   eventPropGetter={eventPropGetter}
                   dayPropGetter={dayPropGetter}
@@ -723,7 +641,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
             <div className="grid grid-cols-2 lg:flex md:items-center gap-2 lg:space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-gray-400" />
-                <span className="text-xs md:text-sm">Closed</span>
+                <span className="text-xs md:text-sm">Unavailable</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full bg-[#fef9c3]" />
@@ -732,17 +650,21 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
             </div>
 
             <div>
+              {availabilityLoading && <p role="status" className="text-sm text-gray-500">Loading appointment times...</p>}
+              {availabilityError && (
+                <div role="alert" className="text-sm text-red-600">
+                  {availabilityError}
+                  <button type="button" className="ml-2 underline" onClick={() => setAvailabilityRefresh((value) => value + 1)}>Retry</button>
+                </div>
+              )}
               <label className="block text-sm font-medium text-gray-700">Time</label>
               <TimeInput 
                 value={selectedTime ? new Date(`1970-01-01T${selectedTime}`) : null}
                 onChange={(time) => setSelectedTime(time ? time.toTimeString().split(' ')[0] : '')}
                 className="mt-1"
                 minuteStep={30}
-                min={getTimeConstraints.min}
-                max={getTimeConstraints.max}
-                maxExclusive
-                excludeRanges={breakExclusionRanges}
-                disabled={!selectedDate || !getBusinessHoursForDate(selectedDate)}
+                allowedTimes={selectedDayTimes}
+                disabled={!selectedDate || selectedDayTimes.length === 0 || availabilityLoading || !!availabilityError}
               />
             </div>
 
@@ -865,6 +787,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({ isOpen, onClose, onSucces
               </Button>
             </div>
           </div>
+          </>
+          )}
         </form>
       </ResizableRightSidebar>
     </div>

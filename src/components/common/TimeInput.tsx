@@ -12,6 +12,7 @@ interface TimeInputProps {
   max?: Date;
   maxExclusive?: boolean;
   excludeRanges?: Array<{ start: Date; end: Date }>;
+  allowedTimes?: string[];
   disabled?: boolean;
 }
 
@@ -25,6 +26,7 @@ const TimeInput = ({
   max,
   maxExclusive = false,
   excludeRanges = [],
+  allowedTimes,
   disabled = false
 }: TimeInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,6 +85,8 @@ const TimeInput = ({
       const mins = minutes % 60;
       const date = new Date();
       date.setHours(hours, mins, 0, 0);
+      const clockTime = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`;
+      if (allowedTimes && !allowedTimes.includes(clockTime)) continue;
       if (min && date < min) continue;
       if (max && (maxExclusive ? date >= max : date > max)) continue;
       const isExcluded = excludeRanges.some(({ start, end }) => date >= start && date < end);
@@ -147,7 +151,7 @@ const TimeInput = ({
               return next;
             });
           } else if (e.key === 'Enter') {
-            if (focusedIndex !== null) {
+            if (focusedIndex !== null && timeSlots[focusedIndex]) {
               const selectedTime = timeSlots[focusedIndex];
               const newDate = value ? new Date(value) : new Date();
               newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);

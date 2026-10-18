@@ -373,7 +373,6 @@ const ServiceDetails = () => {
         onSuccess={handleBookingDialogSuccess}
         serviceId={service.id}
         requiresPet={service.requires_pet !== false}
-        businessHours={service.business_hours}
         bookingAmount={String(service.furkredit_price)}
         merchantId={service.merchant_id}
       />

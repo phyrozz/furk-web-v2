@@ -1,6 +1,15 @@
 import axios from "axios";
 import { ReviewForm } from "../../components/pages/Services/ReviewDialog";
 import { http } from "../../utils/http";
+import type { BookingRequest, BookingResult } from "../../utils/booking-request";
+
+interface BookingAvailabilityResponse {
+    data: {
+        timezone: string;
+        duration_minutes: number;
+        available_slots: Record<string, string[]>;
+    };
+}
 
 export class PetServicesService {
     async listServices(
@@ -55,13 +64,12 @@ export class PetServicesService {
         return http.post('/pet-services/list-ratings', data);
     }
 
-    async createBooking(data: {
-        service_id: number;
-        booking_datetime: string;
-        pet_ids?: number[];
-        coupon_codes?: string[];
-    }): Promise<any> {
+    async createBooking(data: BookingRequest): Promise<BookingResult> {
         return http.post('/booking', data);
+    }
+
+    async getBookingRequest(requestId: string): Promise<BookingResult> {
+        return http.get(`/booking/requests/${encodeURIComponent(requestId)}`);
     }
 
     async addToFavorites(serviceId: number): Promise<any> {
@@ -93,11 +101,15 @@ export class PetServicesService {
         });
     }
 
-    async listClosuresAndBreaks(startDate: Date, endDate: Date, merchantId: number): Promise<any> {
+    async listClosuresAndBreaks(startDate: Date, endDate: Date, merchantId: number, serviceId: number): Promise<BookingAvailabilityResponse> {
+        const calendarDate = (date: Date) => (
+            `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        );
         return http.post('/booking/list-closures-and-break-times', {
-            start_date: startDate.toISOString(),
-            end_date: endDate.toISOString(),
-            merchant_id: merchantId
+            start_date: `${calendarDate(startDate)}T00:00:00+08:00`,
+            end_date: `${calendarDate(endDate)}T23:59:59+08:00`,
+            merchant_id: merchantId,
+            service_id: serviceId
         });
     }
 }
