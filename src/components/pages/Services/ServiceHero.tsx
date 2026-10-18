@@ -18,11 +18,11 @@ const ServiceHero: React.FC<ServiceHeroProps> = ({ onSearch }) => {
     <section className="border-b border-primary-100 bg-primary-50/60 py-10 md:py-14">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto">
-          <p className="furk-eyebrow">Care for every companion</p>
+          {/* <p className="furk-eyebrow">Care for every companion</p>
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">Pet Services</h1>
           <p className="text-base md:text-lg text-gray-600 mb-7">
             Discover and book the best services for your beloved pets
-          </p>
+          </p> */}
 
           <form role="search" onSubmit={handleSubmit} className="furk-panel p-2 max-w-2xl mx-auto">
             <div className="flex flex-col gap-2 sm:flex-row">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { useLazyLoad } from '../../../hooks/useLazyLoad';
@@ -14,6 +14,7 @@ interface Service {
   service_category_name: string;
   price: number;
   furkredit_price: number;
+  merchant_id: number;
   business_name: string;
   merchant_type: string;
   email: string;
@@ -29,11 +30,12 @@ interface Service {
 interface ServicesResultProps {
   keyword: string;
   serviceGroupId?: number;
+  showAllCategories?: boolean;
 }
 
-const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId }) => {
+const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId, showAllCategories = false }) => {
   const observerTarget = useRef<HTMLDivElement>(null);
-  const petServicesService = new PetServicesService();
+  const petServicesService = useMemo(() => new PetServicesService(), []);
   const [coords, setCoords] = useState<{ longitude: number, latitude: number} | null>(null);
   const [finishedLocationPrompt, setFinishedLocationPrompt] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -50,6 +52,8 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
           coords.longitude,
           coords.latitude,
           serviceGroupId || 0,
+          'distance_meters',
+          'ASC',
         );
         
         if (!response || !response.data) {
@@ -64,7 +68,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
         return [];
       }
     },
-    [coords, petServicesService]
+    [coords, petServicesService, serviceGroupId]
   );
 
   useEffect(() => {
@@ -100,7 +104,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
     fetchData: fetchServices,
     limit: 10,
     keyword,
-    dependencies: [coords]
+    dependencies: [coords, serviceGroupId]
   });
 
   useEffect(() => {
@@ -152,7 +156,19 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
 
   return (
     <>
+    {!finishedLocationPrompt && (
+      <p role="status" className="py-16 text-center text-sm text-gray-600">
+        Finding services close to you…
+      </p>
+    )}
     {finishedLocationPrompt && coords && <div className="py-8">
+      {showAllCategories && (
+        <div className="mb-6">
+          {/* <p className="furk-eyebrow">Across every category</p> */}
+          <h2 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Services near you</h2>
+          {/* <p className="mt-2 text-sm text-gray-600">Browse all pet services, with the closest options first.</p> */}
+        </div>
+      )}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         variants={containerVariants}
@@ -169,11 +185,11 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                 : 'bg-slate-100 opacity-60 grayscale'
             }`}
           >
-            <Link to={`/services/${service.id}`}>
+            <Link to={`/services/${service.id}`} aria-label={`View service: ${service.name}`}>
               <div className="relative h-48">
                 <img
                   src={service.attachments[0]}
-                  alt={service.name}
+                  alt=""
                   className="w-full h-full object-cover"
                 />
                 {service.is_open === false && (
@@ -182,18 +198,29 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                   </span>
                 )}
               </div>
-              <div className="p-4">
-                <p className="text-gray-600 font-bold text-lg line-clamp-2">{service.name}</p>
-                <div className="flex items-center text-gray-600 text-xs mb-4">
-                  {service.distance_meters < 500 && <>
-                    <MapPin size={16} className="mr-1" />
-                    <span>{service.distance_meters.toFixed(2)} KM</span>
-                  </>}
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-4">
+            </Link>
+            <div className="p-4">
+              <h3 className="text-gray-600 font-bold text-lg line-clamp-2">
+                <Link to={`/services/${service.id}`} className="rounded-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700">
+                  {service.name}
+                </Link>
+              </h3>
+              <div className="mt-2 mb-3">
+                <span className="inline-flex max-w-full break-words rounded-full bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-800 ring-1 ring-inset ring-primary-200">
+                  {service.service_category_name || 'Other services'}
+                </span>
+              </div>
+              <Link
+                to={`/merchants/${service.merchant_id}`}
+                aria-label={`View ${service.business_name}'s merchant page`}
+                className="mb-4 inline-block max-w-full truncate rounded-sm text-sm font-semibold text-primary-800 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700"
+              >
+                {service.business_name}
+              </Link>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-4">
                     <span className="text-primary-800 font-semibold">
-                      {service.furkredit_price}
+                      {service.furkredit_price} <span className="text-xs font-medium">Furkredits</span>
                     </span>
                     <Rating
                       initialValue={service.average_rating}
@@ -203,12 +230,16 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
                       allowHover={false}
                     />
                   </div>
-                  <span className="inline-block bg-primary-100 text-primary-800 text-xs mx-2 px-2 py-1 rounded-full text-center">
-                    {service.service_category_name}
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                    <MapPin size={15} aria-hidden="true" className="shrink-0 text-primary-700" />
+                    {Number.isFinite(service.distance_meters)
+                      ? service.distance_meters < 1000
+                        ? `${Math.round(service.distance_meters)} m away`
+                        : `${(service.distance_meters / 1000).toFixed(1)} km away`
+                      : 'Distance unavailable'}
                   </span>
-                </div>
               </div>
-            </Link>
+            </div>
           </motion.div>
         ))}
       </motion.div>
