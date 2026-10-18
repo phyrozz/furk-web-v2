@@ -104,7 +104,7 @@ const ServicesResult: React.FC<ServicesResultProps> = ({ keyword, serviceGroupId
     fetchData: fetchServices,
     limit: 10,
     keyword,
-    dependencies: [coords]
+    dependencies: [coords, serviceGroupId]
   });
 
   useEffect(() => {

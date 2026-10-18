@@ -12,6 +12,10 @@ interface BookingAvailabilityResponse {
 }
 
 export class PetServicesService {
+    async listServiceGroups(): Promise<{ data: Array<{ id: number; name: string }> }> {
+        return http.publicPost('/pet-services/list-service-groups', {});
+    }
+
     async listServices(
         limit: number, 
         offset: number, 
