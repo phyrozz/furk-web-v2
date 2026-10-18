@@ -135,7 +135,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
                   isAuthenticated ? <RoleRedirect /> : <CustomerPageTransition><HomePage /></CustomerPageTransition>
                 } />
 
-                <Route path="/services" element={<CustomerPageTransition><ServicesPage /></CustomerPageTransition>} />
+                <Route path="/services" element={<CustomerPageTransition><ServicesPage isPetOwner={isAuthenticated && userRole === 'user'} /></CustomerPageTransition>} />
                 <Route path="/merchants" element={<CustomerPageTransition><MerchantsPage /></CustomerPageTransition>} />
                 <Route path="/rewards" element={<CustomerPageTransition><RewardsPage /></CustomerPageTransition>} />
                 <Route path="/services/:id" element={<CustomerPageTransition><ServiceDetails /></CustomerPageTransition>} />
