@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from './Button';
+import TutorialVideo from './TutorialVideo';
 
 interface TutorialVideoModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ const TutorialVideoModal: React.FC<TutorialVideoModalProps> = ({
   title,
   description,
 }) => {
+  const [failedVideoUrl, setFailedVideoUrl] = useState<string>();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -45,15 +47,17 @@ const TutorialVideoModal: React.FC<TutorialVideoModalProps> = ({
                 </button>
               </div>
               
-              <div className="aspect-video bg-black rounded-xl overflow-hidden mb-4 relative">
-                <video
-                  src={videoUrl}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
+              <div className="bg-black rounded-xl overflow-hidden mb-4 relative">
+                {failedVideoUrl === videoUrl ? (
+                  <p role="status" className="p-6 text-center text-sm text-white/75">This video is unavailable right now. Please try again later.</p>
+                ) : (
+                  <TutorialVideo
+                    key={videoUrl}
+                    src={videoUrl}
+                    title={title}
+                    onError={() => setFailedVideoUrl(videoUrl)}
+                  />
+                )}
               </div>
 
               {description && (

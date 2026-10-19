@@ -17,7 +17,6 @@
   flex: 0 0 auto;
   width: min(100%, 17rem, 27vh);
   width: min(100%, 17rem, 27dvh);
-  aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 1rem;
   background: #000;
@@ -33,9 +32,8 @@
 }
 
 .videoUnavailable {
-  position: absolute;
-  inset: 0;
   display: flex;
+  min-height: 12rem;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
@@ -100,4 +98,9 @@
     width: min(100%, 22rem, 36vh);
     width: min(100%, 22rem, 36dvh);
   }
+}
+
+.landscapeFrame {
+  width: min(100%, 52rem, calc(55vh * var(--tutorial-video-ratio, 1.7778)));
+  width: min(100%, 52rem, calc(55dvh * var(--tutorial-video-ratio, 1.7778)));
 }
