@@ -35,9 +35,9 @@ export const tutorialVideoFiles: Partial<Record<TutorialId, string>> = {
   // 'track-booking': 'pet-owner/track-booking.mp4',
   // 'message-merchant': 'pet-owner/message-merchant.mp4',
   // 'merchant-verification': 'merchant/merchant-verification.mp4',
-  // 'manage-services': 'merchant/manage-services.mp4',
-  // 'business-hours': 'merchant/business-hours.mp4',
-  // 'manage-bookings': 'merchant/manage-bookings.mp4',
+  'manage-services': 'merchant/manage-services.mp4',
+  'business-hours': 'merchant/business-hours.mp4',
+  'manage-bookings': 'merchant/manage-bookings.mp4',
   // 'merchant-profile': 'merchant/merchant-profile.mp4',
   // 'merchant-earnings': 'merchant/merchant-earnings.mp4',
 };

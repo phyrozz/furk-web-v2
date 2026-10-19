@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Dialog, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from '@headlessui/react';
 import { ArrowRight, BookOpen, Lightbulb, Play, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -14,11 +14,14 @@ interface TutorialGuideProps {
 
 const TutorialGuide = ({ tutorial, onClose, showAction = true }: TutorialGuideProps) => {
   const [failedVideoUrl, setFailedVideoUrl] = useState<string>();
+  const [videoDimensions, setVideoDimensions] = useState<{ src: string; aspectRatio: number }>();
   if (!tutorial) return null;
 
   const videoUrl = getTutorialVideoUrl(tutorial.id, import.meta.env.VITE_CDN_URL);
   const hasVideo = Boolean(videoUrl);
   const videoFailed = Boolean(videoUrl && failedVideoUrl === videoUrl);
+  const aspectRatio = videoDimensions?.src === videoUrl ? videoDimensions?.aspectRatio ?? 9 / 16 : 9 / 16;
+  const isLandscape = aspectRatio >= 1;
 
   return (
     <Dialog open onClose={onClose} className="relative z-[150]">
@@ -55,7 +58,7 @@ const TutorialGuide = ({ tutorial, onClose, showAction = true }: TutorialGuidePr
 
             <div
               className={`min-h-0 flex-1 overflow-y-auto ${
-                hasVideo ? 'lg:grid lg:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)]' : ''
+                hasVideo && !isLandscape ? 'lg:grid lg:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)]' : ''
               }`}
             >
               {videoUrl && (
@@ -64,7 +67,10 @@ const TutorialGuide = ({ tutorial, onClose, showAction = true }: TutorialGuidePr
                     <Play size={14} aria-hidden="true" />
                     Video walkthrough
                   </div>
-                  <div className={`${styles.videoFrame} mx-auto shadow-2xl ring-1 ring-white/15`}>
+                  <div
+                    className={`${styles.videoFrame} ${isLandscape ? styles.landscapeFrame : ''} mx-auto shadow-2xl ring-1 ring-white/15`}
+                    style={{ '--tutorial-video-ratio': aspectRatio } as CSSProperties}
+                  >
                     {videoFailed ? (
                       <div className={styles.videoUnavailable}>
                         <p role="status">This video is unavailable right now. You can still follow the quick how-to guide.</p>
@@ -75,6 +81,7 @@ const TutorialGuide = ({ tutorial, onClose, showAction = true }: TutorialGuidePr
                         src={videoUrl}
                         title={tutorial.title}
                         onError={() => setFailedVideoUrl(videoUrl)}
+                        onAspectRatioChange={(ratio) => setVideoDimensions({ src: videoUrl, aspectRatio: ratio })}
                       />
                     )}
                   </div>
