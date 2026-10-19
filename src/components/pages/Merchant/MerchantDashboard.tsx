@@ -327,7 +327,7 @@ const MerchantDashboard = () => {
       }
 
       {(status !== null && hasBusinessHours !== null) && <div className="mx-auto w-full max-w-screen-2xl px-4 py-8 md:px-6 lg:px-8 cursor-default">
-        <PageHeader eyebrow="Your workspace" title="Merchant Dashboard" description="Your bookings, services and business at a glance." />
+        {/* <PageHeader eyebrow="Your workspace" title="Merchant Dashboard" description="Your bookings, services and business at a glance." /> */}
         {(status === 'unverified' || !hasBusinessHours) && (
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
             <h2 className="text-2xl font-bold text-primary-800 mb-3">

@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   ClipboardList,
+  Clock3,
+  Coffee,
   DollarSign,
   FileText,
   HelpCircle,
@@ -38,6 +40,8 @@ const MerchantNavbar = () => {
     { name: 'Services', path: '/merchant/manage-services', icon: ClipboardList },
     { name: 'Categories', path: '/merchant/service-categories', icon: FileText },
     { name: 'Bookings', path: '/merchant/bookings', icon: Calendar },
+    { name: 'Business hours', path: '/merchant/business-hours', icon: Clock3 },
+    { name: 'Break hours', path: '/merchant/break-hours', icon: Coffee },
     { name: 'Payouts', path: '/merchant/payouts', icon: DollarSign },
     { name: 'Chat', path: '/merchant/chat', icon: MessageCircle },
   ];
