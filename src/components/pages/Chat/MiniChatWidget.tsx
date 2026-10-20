@@ -6,22 +6,12 @@ import { http } from "../../../utils/http";
 import { loginService } from "../../../services/auth/auth-service";
 import { subscribe } from "../../../utils/websockets";
 import { useLazyLoad } from "../../../hooks/useLazyLoad";
-
-interface Conversation {
-  id: number;
-  pet_owner_id: number;
-  merchant_id: number;
-  merchant_user_id: number;
-  first_name?: string;
-  last_name?: string;
-  business_name: string;
-  created_at: string;
-  last_message_content: string;
-  last_message_created_at: string;
-}
+import ChatAvatar from "./ChatAvatar";
+import { getConversationName, type Conversation } from "./chat-utils";
 
 export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottomNav?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const isMerchant = loginService.getUserRole() === "merchant";
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadConversations, setUnreadConversations] = useState<Record<number, boolean>>({});
@@ -72,15 +62,11 @@ export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottom
   // 🔹 WebSocket: update last message + unread logic
   useEffect(() => {
     const setupSubscription = async () => {
-      unsubscribeRef.current = await subscribe((data: any) => {
+      unsubscribeRef.current = await subscribe((data: { event?: string; conversation_id?: number | string; chat_id?: number | string }) => {
         if (data.event !== "new_message") return;
 
-        const conversationId = data.conversation_id ?? data.chat_id;
-        if (!conversationId) return;
-
-        // Update list with new message content
-        const messageContent = data.message_content || "";
-        const messageTime = data.created_at || new Date().toISOString();
+        const conversationId = Number(data.conversation_id ?? data.chat_id);
+        if (!Number.isSafeInteger(conversationId) || conversationId <= 0) return;
 
         reset(); // Quick refresh of current page to reflect newest message
 
@@ -135,8 +121,13 @@ export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottom
                   <button onClick={handleBackToList} className="p-1 text-gray-500 hover:text-gray-700">
                     <ChevronLeft size={18} />
                   </button>
+                  <ChatAvatar
+                    name={getConversationName(activeConversation, isMerchant)}
+                    imageUrl={isMerchant ? activeConversation.pet_owner_image_url : activeConversation.merchant_image_url}
+                    variant="compact"
+                  />
                   <h4 className="font-semibold text-sm truncate flex-1 text-center">
-                    {activeConversation.business_name}
+                    {getConversationName(activeConversation, isMerchant)}
                   </h4>
                   <button
                     onClick={() => {
@@ -168,7 +159,7 @@ export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottom
             {/* Content */}
             <div className="flex-1 overflow-hidden">
               {activeConversation ? (
-                <ChatWindow conversation={activeConversation} />
+                <ChatWindow key={activeConversation.id} conversation={activeConversation} />
               ) : (
                 <div className="overflow-y-auto h-full">
                   {loading && conversations.length === 0 ? (
@@ -184,6 +175,7 @@ export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottom
                       {conversations.map((c, index) => {
                         const isUnread = unreadConversations[c.id];
                         const isLast = index === conversations.length - 1;
+                        const name = getConversationName(c, isMerchant);
                         return (
                           <li
                             key={c.id}
@@ -191,15 +183,18 @@ export default function MiniChatWidget({ aboveBottomNav = false }: { aboveBottom
                             onClick={() => handleSelectConversation(c)}
                             className="p-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
                           >
-                            <div>
+                            <ChatAvatar
+                              name={name}
+                              imageUrl={isMerchant ? c.pet_owner_image_url : c.merchant_image_url}
+                              variant="compact"
+                            />
+                            <div className="min-w-0 flex-1">
                               <p
                                 className={`text-sm truncate ${
                                   isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"
                                 }`}
                               >
-                                {c.first_name || c.last_name
-                                  ? `${c.first_name || ""} ${c.last_name || ""}`.trim()
-                                  : c.business_name}
+                                {name}
                               </p>
                               <p className="text-xs text-gray-500 truncate">
                                 {c.last_message_content || "No messages yet"}

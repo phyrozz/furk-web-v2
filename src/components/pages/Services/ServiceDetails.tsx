@@ -588,13 +588,21 @@ const ServiceDetails = () => {
                     ) : hasBooked ? (
                       <WarningContainer message="You have already booked this service. Please check your profile for the booking status." />
                     ) : (
-                      <Button
-                        variant="primary"
-                        className="w-full"
-                        onClick={() => setIsBookingDialogOpen(true)}
-                      >
-                        Book Now
-                      </Button>
+                      <div className="space-y-3">
+                        <p className="rounded-xl border border-primary-200 bg-primary-50 p-3 text-sm leading-relaxed text-gray-700">
+                          Before booking, <Link to="/profile?tab=profile" className="font-bold text-primary-800 underline underline-offset-2">top up Furkredits</Link> to cover the total.
+                          {service.requires_pet !== false && <> <Link to="/profile?tab=pets" className="font-bold text-primary-800 underline underline-offset-2">Add your pet profiles</Link> so you can select them here.</>}
+                        </p>
+                        <Button
+                          id="pet-owner-book-now"
+                          variant="primary"
+                          className="w-full"
+                          onClick={() => setIsBookingDialogOpen(true)}
+                        >
+                          Book Now
+                        </Button>
+                        <p className="text-xs leading-relaxed text-gray-600">Choose {service.requires_pet !== false ? 'your pet(s), ' : ''}an available date and time, then review your total before confirming.</p>
+                      </div>
                     )
                   ) : (
                     <motion.div whileHover={{ scale: 1.02 }}>

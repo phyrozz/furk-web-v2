@@ -1,3 +1,5 @@
+import { PET_OWNER_TOUR_PREFIX } from '../../utils/pet-owner-tour';
+
 export class LocalStorageService {
   private readonly MERCHANT_STATUS_KEY = 'merchantStatus';
   private readonly ROLE_NAME_KEY = 'roleName';
@@ -52,7 +54,13 @@ export class LocalStorageService {
     const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
     const petOwnerTourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
     const affiliateTourSeen = localStorage.getItem('furk_affiliate_tour_seen');
+    const petOwnerTours = Object.keys(localStorage)
+      .filter(key => key.startsWith(PET_OWNER_TOUR_PREFIX))
+      .map(key => [key, localStorage.getItem(key)] as const);
     localStorage.clear();
+    for (const [key, value] of petOwnerTours) {
+      if (value) localStorage.setItem(key, value);
+    }
     if (tourSeen) {
       localStorage.setItem('furk_merchant_tour_seen', tourSeen);
     }

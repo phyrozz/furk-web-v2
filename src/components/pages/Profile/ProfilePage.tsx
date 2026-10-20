@@ -5,7 +5,7 @@ import { UserProfileService } from '../../../services/profile/user-profile-servi
 import Navbar from '../../common/Navbar';
 import DateUtils from '../../../utils/date-utils';
 import { loginService } from '../../../services/auth/auth-service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ToastService } from '../../../services/toast/toast-service';
 import PawLoading from '../../common/PawLoading';
 import BookingHistory from './BookingHistory';
@@ -21,7 +21,7 @@ import { formatAmount } from '../../../utils/currency-utils';
 
 import Modal from '../../common/Modal';
 import Input from '../../common/Input';
-import GuidedTour, { TourStep } from '../../common/GuidedTour';
+import { PetOwnerGettingStarted } from '../../common/PetOwnerGettingStarted';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload-service';
 import ProfileImageUploadModal from './ProfileImageUploadModal';
 
@@ -50,7 +50,14 @@ export interface UserProfile {
 }
 
 const ProfilePage = () => {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') || 'profile';
+  const activeTab = ['profile', 'pets', 'history', 'transactions', 'favorites', 'rewards'].includes(tabParam) ? tabParam : 'profile';
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tab);
+    setSearchParams(params, { replace: true });
+  };
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [signOutLoading, setSignOutLoading] = useState(false);
@@ -63,8 +70,6 @@ const ProfilePage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteAccountEmail, setDeleteAccountEmail] = useState('');
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
-  const [isTourOpen, setIsTourOpen] = useState(false);
-  const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isProfileImageModalOpen, setIsProfileImageModalOpen] = useState(false);
   const [profileImageModalStep, setProfileImageModalStep] = useState<'uploading' | 'applying'>('uploading');
@@ -78,29 +83,6 @@ const ProfilePage = () => {
   const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
   const { isMobile } = useScreenSize();
-
-  const tourSteps: TourStep[] = [
-    {
-      targetId: 'user-wallet-container',
-      title: 'Your Wallet',
-      description: 'View your Furkredits and Furkoins balance here. You can also top up your wallet to pay for services easily.',
-    },
-    {
-      targetId: 'nav-tab-pets',
-      title: 'Pet Profiles',
-      description: 'Add and manage your furry friends here. Keep their information up to date for better service matching.',
-    },
-    {
-      targetId: 'nav-tab-history',
-      title: 'Booking History',
-      description: 'Keep track of all your past and upcoming appointments with pet service providers.',
-    },
-    {
-      targetId: 'nav-tab-rewards',
-      title: 'Reward Tiers',
-      description: 'Check your current tier and see what rewards you can unlock by using Furk services.',
-    }
-  ];
 
   const fetchUserWallet = useCallback(async () => {
     try {
@@ -124,19 +106,6 @@ const ProfilePage = () => {
     };
     // Dont run API fetchings concurrently. Wait all to finish before showing the page.
     loadData();
-
-    // Check if tour should be shown
-    const tourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
-    if (tourSeen !== 'true') {
-      const timer = setTimeout(() => {
-        const filteredSteps = tourSteps.filter(step => !!document.getElementById(step.targetId));
-        if (filteredSteps.length > 0) {
-          setActiveTourSteps(filteredSteps);
-          setIsTourOpen(true);
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
 
     return () => {
       const defaultTitle = document.querySelector('title[data-default]');
@@ -404,6 +373,7 @@ const ProfilePage = () => {
       <div className="pt-16 pb-[calc(5rem_+_env(safe-area-inset-bottom))] min-h-screen bg-gray-50 overflow-x-hidden select-none z-10 lg:pb-0">
         <Navbar />
         <div className="container mx-auto flex min-w-0 flex-col px-4 py-8 box-border">
+          <PetOwnerGettingStarted />
           {/* Profile Header */}
           {(!isMobile || activeTab === 'profile') && <div className="mb-6 min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm sm:mb-8">
             <div className="grid min-w-0 gap-5 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)] lg:items-center">
@@ -464,7 +434,7 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0" id="pet-owner-wallet">
                 {userWallet && <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-3" id="user-wallet-container">
                   <div className="min-w-0 rounded-xl bg-primary-50 px-3 py-2.5 sm:px-4">
                     <span className="block text-xs font-medium text-gray-500">Furkredits</span>
@@ -477,7 +447,7 @@ const ProfilePage = () => {
                 </div>}
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                   {userWallet && <>
-                    <Button variant="ghost" className="w-full justify-center px-2 sm:w-auto" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
+                    <Button id="pet-owner-top-up" variant="ghost" className="w-full justify-center px-2 sm:w-auto" icon={<PlusCircle />} onClick={() => setIsTopUpSidebarOpen(true)}>Top up</Button>
                     <Button variant="ghost" className="w-full justify-center px-2 sm:w-auto" icon={<QrCode />} onClick={() => setIsOwnerQrModalOpen(true)} disabled={!ownerQrPayload}>
                       My QR
                     </Button>
@@ -779,18 +749,6 @@ const ProfilePage = () => {
         </div>
       </Modal>
 
-      <GuidedTour
-        isOpen={isTourOpen && activeTourSteps.length > 0}
-        steps={activeTourSteps}
-        onClose={() => {
-          setIsTourOpen(false);
-          localStorage.setItem('furk_pet_owner_tour_seen', 'true');
-        }}
-        onFinish={() => {
-          setIsTourOpen(false);
-          localStorage.setItem('furk_pet_owner_tour_seen', 'true');
-        }}
-      />
     </>
   );
 };

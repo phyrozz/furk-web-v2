@@ -1,7 +1,6 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SignUpForm from './SignUpForm';
-import { useGuideTooltip } from '../../../providers/GuideTooltip';
 
 interface SignUpPageProps {
   userType: 'user' | 'merchant';
@@ -13,7 +12,6 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
   const [searchParams] = useSearchParams();
   const { email, password } = location.state || {};
   const referralCode = searchParams.get('ref');
-  const { tooltipState, setTooltipState } = useGuideTooltip();
 
   const handleSuccessfulSignUp = () => {
     if (userType === 'merchant') {
@@ -21,9 +19,6 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ userType }) => {
       return;
     }
     
-    if (userType === 'user') {
-      setTooltipState({ ...tooltipState, isNewUser: true });
-    }
     navigate('/services');
   };
 

@@ -225,6 +225,7 @@ const PetProfiles = () => {
             <div className="flex justify-between items-center px-6 pt-4">
                 <h2 className="text-xl font-cursive font-semibold text-gray-800">My Pets</h2>
                 <Button
+                    id="pet-owner-add-pet"
                     variant="primary"
                     icon={<Plus size={18} />}
                     onClick={() => {

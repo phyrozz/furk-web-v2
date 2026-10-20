@@ -1,74 +1,40 @@
-import { motion } from "framer-motion";
-
-interface RichContent {
-  type: string;
-  title?: string;
-  business_name?: string;
-  image_url?: string;
-  price?: number;
-}
+import { motion } from 'framer-motion';
+import type { RichContent } from './chat-utils';
+import styles from './Chat.module.css';
 
 interface Props {
   isMine: boolean;
   text: string;
   time: string;
   richContent?: RichContent | null;
+  pending?: boolean;
+  animateEntry?: boolean;
 }
 
-export default function MessageBubble({ isMine, text, time, richContent }: Props) {
-  const renderRichContent = (content: RichContent) => {
-    switch (content.type) {
-      case "service_card":
-        return (
-          <div className="flex items-start gap-3">
-            {content.image_url && (
-              <img
-                src={content.image_url}
-                alt={content.title ?? "Service"}
-                className="w-32 h-32 object-cover rounded-lg border"
-              />
-            )}
-            <div className="flex flex-col">
-              <h4 className="font-semibold text-sm">{content.title}</h4>
-              {content.business_name && (
-                <p className="text-xs text-gray-600 mt-1">{content.business_name}</p>
-              )}
-              {content.price && (
-                <p className="text-sm font-medium text-primary-600 mt-1">
-                  {content.price.toLocaleString()} Furkredits
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      default:
-        return <p>{text}</p>;
-    }
-  };
-
-  const isServiceCard = richContent?.type === "service_card";
+export default function MessageBubble({ isMine, text, time, richContent, pending, animateEntry = false }: Props) {
+  const isServiceCard = richContent?.type === 'service_card';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`select-text cursor-default flex ${
-        isMine ? "justify-end" : "justify-start"
-      }`}
+      className={styles.messageRow}
+      data-mine={isMine}
+      initial={animateEntry ? { opacity: 0, y: 7, scale: 0.99 } : false}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <div
-        className={`rounded-2xl px-4 py-2 shadow overflow-hidden
-          ${isServiceCard ? "max-w-md bg-primary-50 text-gray-800" : "max-w-xs"} 
-          ${isMine && !isServiceCard ? "bg-primary-500 text-white" : !isMine && !isServiceCard ? "bg-white text-gray-800" : ""}`}
-      >
-        {richContent ? renderRichContent(richContent) : <p>{text}</p>}
-        <span
-          className={`block mt-1 text-xs ${
-            isMine && !isServiceCard ? "text-gray-200" : "text-gray-400"
-          }`}
-        >
-          {time}
-        </span>
+      <div className={`${styles.bubble} ${isServiceCard ? styles.serviceBubble : ''}`}>
+        {isServiceCard ? (
+          <div className={styles.serviceCard}>
+            {richContent.image_url && <img src={richContent.image_url} alt={richContent.title || 'Service'} loading="lazy" />}
+            <div>
+              <span className={styles.serviceLabel}>Shared service</span>
+              <h3>{richContent.title || 'Service'}</h3>
+              {richContent.business_name && <p>{richContent.business_name}</p>}
+              {typeof richContent.price === 'number' && <strong>{richContent.price.toLocaleString()} <span>Furkredits</span></strong>}
+            </div>
+          </div>
+        ) : <p className={styles.messageText}>{text}</p>}
+        <span className={styles.messageTime}>{pending ? 'Sending…' : time}</span>
       </div>
     </motion.div>
   );

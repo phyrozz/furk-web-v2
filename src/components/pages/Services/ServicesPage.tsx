@@ -6,6 +6,7 @@ import ServicesResult from './ServicesResult';
 import Button from '../../common/Button';
 import { ArrowLeft, X } from 'lucide-react';
 import { PetServicesService } from '../../../services/pet-services/pet-services';
+import { PetOwnerBookingGuide } from '../../common/PetOwnerGettingStarted';
 
 interface ServiceGroup {
   id: number;
@@ -114,6 +115,7 @@ const ServicesPage: React.FC<ServicesPageProps> = ({ isPetOwner }) => {
     <div className="pt-16 cursor-default">
       <ServiceHero onSearch={handleSearch} />
       <div className="container mx-auto px-4 md:px-6 lg:px-8 relative">
+        {isPetOwner && <PetOwnerBookingGuide />}
         {isSearching ? (
           <>
             {(!isPetOwner || searchKeyword.trim()) && (

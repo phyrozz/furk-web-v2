@@ -15,7 +15,7 @@ const ServiceHero: React.FC<ServiceHeroProps> = ({ onSearch }) => {
   };
 
   return (
-    <section className="border-b border-primary-100 bg-primary-50/60 py-10 md:py-14">
+    <section className="border-b border-primary-100 bg-primary-50/60 pb-3 pt-4 sm:py-10 md:py-14">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto">
           {/* <p className="furk-eyebrow">Care for every companion</p>
@@ -24,7 +24,7 @@ const ServiceHero: React.FC<ServiceHeroProps> = ({ onSearch }) => {
             Discover and book the best services for your beloved pets
           </p> */}
 
-          <form role="search" onSubmit={handleSubmit} className="furk-panel p-2 max-w-2xl mx-auto">
+          <form id="pet-owner-service-search" role="search" onSubmit={handleSubmit} className="furk-panel p-2 max-w-2xl mx-auto">
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative min-w-0 flex-grow">
                 <label htmlFor="service-search" className="sr-only">Search for services</label>
