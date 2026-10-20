@@ -49,7 +49,8 @@ export const tutorials: Tutorial[] = [
     title: 'Book a pet service',
     description: 'Choose a service and find a time slot that works for you.',
     steps: [
-      'Sign in as a pet owner and open Services. Choose a service to see its details and price.',
+      'Sign in as a pet owner, then top up Furkredits in My Profile so your balance covers the booking total. Add your pets in My Profile → My Pets for services that require pet selection.',
+      'Open Services. Choose a service to see its details and price.',
       'Select Book Now. Choose your pet if the service requires one; add a pet in My Profile → My Pets first if needed.',
       'Choose an available date and time slot, then review the booking total in Furkredits. Apply a coupon if you have one.',
       'Select Confirm Booking, then open My Profile → Booking History to follow its status.',

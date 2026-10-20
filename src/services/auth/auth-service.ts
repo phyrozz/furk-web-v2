@@ -17,6 +17,7 @@ import { roleMapping } from '../../utils/role-mapping';
 import { http } from '../../utils/http';
 import { jwtDecode } from 'jwt-decode';
 import { LocalStorageService } from '../local-storage/local-storage-service';
+import { savePetOwnerTour } from '../../utils/pet-owner-tour';
 
 Amplify.configure({
   Auth: {
@@ -292,11 +293,14 @@ export class LoginService {
         throw new Error('User type mismatch');
       }
 
-      // If successful, clear the tour flag so the new merchant sees it
+      // Start a fresh tour for the newly registered account.
       if (responseData.role_name === 'merchant') {
         localStorage.removeItem('furk_merchant_tour_seen');
-      } else if (responseData.role_name === 'pet-owner') {
+      } else if (responseData.role_name === 'user') {
         localStorage.removeItem('furk_pet_owner_tour_seen');
+        if (cognitoUser.userId) {
+          savePetOwnerTour(localStorage, cognitoUser.userId, { status: 'active', step: 0 });
+        }
       } else if (responseData.role_name === 'affiliate') {
         localStorage.removeItem('furk_affiliate_tour_seen');
       }
