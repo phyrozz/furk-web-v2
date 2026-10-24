@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 
 interface AutocompleteProps<T> {
+  id?: string;
   options: T[];
   value: T | null;
   onChange: (value: T | null) => void;
@@ -17,6 +18,7 @@ interface AutocompleteProps<T> {
 }
 
 const Autocomplete = <T extends object>({
+  id,
   options,
   value,
   onChange,
@@ -147,6 +149,7 @@ const Autocomplete = <T extends object>({
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div className="relative">
         <input
+          id={id}
           type="text"
           className={`furk-field pl-10 pr-4 ${
             disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 
 interface MultipleAutocompleteProps<T> {
+  id?: string;
   options: T[];
   values: T[];
   onChange: (values: T[]) => void;
@@ -18,6 +19,7 @@ interface MultipleAutocompleteProps<T> {
 }
 
 const MultipleAutocomplete = <T extends object>({
+  id,
   options,
   values,
   onChange,
@@ -191,6 +193,7 @@ const MultipleAutocomplete = <T extends object>({
         <div className="flex-grow flex items-center min-w-[120px]">
           <Search className="ml-2 text-gray-400" size={18} />
           <input
+            id={id}
             ref={inputRef}
             type="text"
             className="w-full pl-2 py-2 border-none focus:outline-none focus:ring-0"

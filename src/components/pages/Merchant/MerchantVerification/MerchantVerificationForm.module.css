@@ -1,0 +1,139 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid #efe4d2;
+  background: #fbf8f4;
+}
+
+.intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.reviewTime {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  gap: 8px;
+  max-width: 100%;
+  margin: 0;
+  color: #62462e;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.reviewTime svg { flex-shrink: 0; }
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  padding: 16px 24px;
+  color: #5d574f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.steps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps span {
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5efe4;
+  color: #62462e;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+  justify-self: start;
+}
+
+.summaryCard { padding: 24px; }
+
+.summaryHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #62462e;
+}
+
+.progressRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+
+.progressTrack {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f5efe4;
+}
+
+.progressFill { height: 100%; border-radius: inherit; background: #7f5e3e; transition: width 150ms; }
+
+.checklist {
+  display: grid;
+  gap: 14px;
+  margin: 24px 0;
+  padding: 0 0 24px;
+  border-bottom: 1px solid #f0eeeb;
+  list-style: none;
+  font-size: 14px;
+}
+
+.checklist li { display: flex; align-items: center; gap: 10px; }
+
+.statusDot {
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #cec8bf;
+  border-radius: 50%;
+}
+
+.statusReady { border-color: #c6f6d5; background: #f0fff4; color: #22543d; }
+
+@media (min-width: 1280px) {
+  .hero { flex-direction: row; justify-content: space-between; gap: 24px; }
+  .reviewTime { margin-top: 4px; }
+  .layout { grid-template-columns: minmax(0, 1fr) 304px; }
+  .sidebar { position: sticky; top: 32px; max-width: none; }
+}
+
+@media (max-width: 639px) {
+  .hero { padding: 20px; }
+  .steps { padding: 16px 20px; gap: 12px 20px; }
+  .sidebar { max-width: none; }
+  .summaryCard { padding: 20px; }
+}
