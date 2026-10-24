@@ -6,7 +6,34 @@ export interface GeocodeLocationResult {
     lng: number;
 }
 
+export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected' | 'suspended';
+
+export interface VerificationAttachment {
+    requirement_id: string;
+    url: string;
+    media_type: 'image' | 'video' | 'document';
+}
+
+export interface MerchantVerificationApplication {
+    id: number;
+    status: VerificationStatus;
+    created_at: string;
+    modified_at: string;
+    business_name: string | null;
+    merchant_type: 'BUSINESS' | 'FREELANCE' | null;
+    address: string | null;
+    barangay: string | null;
+    city: string | null;
+    province: string | null;
+    business_types: { id: number; name: string }[];
+    attachments: VerificationAttachment[];
+}
+
 export class MerchantVerificationService {
+    async getOwnApplication(signal?: AbortSignal): Promise<{ data: MerchantVerificationApplication | null }> {
+        return http.get('/merchant-application/me', { signal });
+    }
+
     async submitMerchantApplicationDetails(formData: any): Promise<any> {
         const serviceGroupIds = formData.serviceGroups.map((group: any) => group.id);
 

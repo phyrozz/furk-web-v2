@@ -79,10 +79,13 @@ const MerchantWelcome = ({ status, hasBusinessHours }: MerchantWelcomeProps) => 
                 Start verification <ArrowRight size={16} className="ml-2" aria-hidden="true" />
               </Button>
             ) : (
-              <p className={`flex items-center gap-2 text-sm font-semibold ${isVerified ? 'text-success-800' : 'text-amber-800'}`}>
-                {isVerified ? <Check size={18} aria-hidden="true" /> : <Clock size={18} aria-hidden="true" />}
-                {isVerified ? 'Account verified' : 'Application submitted'}
-              </p>
+              <div>
+                <p className={`mb-3 flex items-center gap-2 text-sm font-semibold ${isVerified ? 'text-success-800' : 'text-amber-800'}`}>
+                  {isVerified ? <Check size={18} aria-hidden="true" /> : <Clock size={18} aria-hidden="true" />}
+                  {isVerified ? 'Account verified' : 'Application submitted'}
+                </p>
+                <Button variant="outline" onClick={() => navigate('/merchant/verification')}>View submission</Button>
+              </div>
             )}
           </div>
         </li>

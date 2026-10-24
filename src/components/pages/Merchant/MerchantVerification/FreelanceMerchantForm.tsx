@@ -156,7 +156,7 @@ const FreelanceMerchantForm: React.FC<FreelanceMerchantFormProps> = ({
 
       setUploads({});
       localStorage.setItem('merchantStatus', 'pending');
-      navigate('/merchant/dashboard');
+      navigate('/merchant/verification');
       ToastService.show('Application documents submitted successfully. We will send you an email once your application is verified or denied.');
     } catch (error: any) {
       ToastService.show(error?.response?.data?.error !== undefined ? error?.response?.data?.error : error?.message);

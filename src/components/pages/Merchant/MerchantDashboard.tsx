@@ -17,6 +17,7 @@ import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
 import LocationPicker from '../../common/LocationPicker';
 import { ToastService } from '../../../services/toast/toast-service';
 import GuidedTour, { TourStep } from '../../common/GuidedTour';
+import { verificationStatuses } from './MerchantVerification/verification-status';
 
 const merchantDashboardService = new MerchantDashboardService();
 
@@ -331,60 +332,15 @@ const MerchantDashboard = () => {
           <MerchantWelcome status={status} hasBusinessHours={hasBusinessHours} />
         )}
 
-        {status === 'pending' && hasBusinessHours && (
-          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-medium text-warning-800">
-                  Your verification is in review
-                </h2>
-                <p className="text-warning-600 mt-1">
-                  Thanks for sending your documents! Please allow 2 to 3 business days for us to review your application.
-                </p>
-              </div>
+        {status !== 'unverified' && !((status === 'pending' || status === 'verified') && !hasBusinessHours) && (
+          <section aria-label="Your verification" className="furk-panel mb-8 flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div>
+              <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${verificationStatuses[status].className}`}>{verificationStatuses[status].label}</span>
+              <h2 className="mt-3 text-lg font-bold text-gray-900">Your verification</h2>
+              <p className="mt-1 text-sm text-gray-600">{verificationStatuses[status].description}</p>
             </div>
-          </div>
-        )}
-
-        {/* TODO: add handling on application form where it overwrites the existing application instead of inserting a new one on the merchant_applications table */}
-        {status === 'rejected' && (
-          <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-medium text-error-800">
-                  Verification Rejected
-                </h2>
-                <p className="text-error-600 mt-1">
-                  Your verification has been rejected. Please review the feedback we have sent you through email and resubmit your verification documents. For assistance, contact support at <a className="underline" href="mailto:support@furk.app">support@furk.app</a>
-                </p>
-              </div>
-              <div className="flex flex-col justify-center items-end">
-                <Button
-                  size="lg"
-                  onClick={() => navigate('/merchant/verify', {
-                    state: { isForReapplying: true }
-                  })}
-                >
-                  Resubmit Verification
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {status === 'suspended' && (
-          <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-medium text-error-800">
-                  Account Suspended
-                </h2>
-                <p className="text-error-600 mt-1">
-                  Your account has been suspended. Please contact support at <a className="underline" href="mailto:support@furk.app">support@furk.app</a> to resolve this issue.
-                </p>
-              </div>
-            </div>
-          </div>
+            <Button variant="outline" onClick={() => navigate('/merchant/verification')} className="shrink-0">View verification</Button>
+          </section>
         )}
 
         {!hasBusinessHours && (status === 'rejected' || status === 'suspended') && (

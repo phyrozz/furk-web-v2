@@ -26,6 +26,7 @@ import MerchantDashboard from './components/pages/Merchant/MerchantDashboard';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantVerificationForm from './components/pages/Merchant/MerchantVerification/MerchantVerificationForm';
+import MerchantVerificationPage from './components/pages/Merchant/MerchantVerification/MerchantVerificationPage';
 import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 import ServiceCategoriesPage from './components/pages/Merchant/ServiceCategories/ServiceCategoriesPage';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
@@ -190,6 +191,11 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         <Route path="/merchant/verify" element={
           <ProtectedRoute requiredRoles={['merchant']}>
             <MerchantVerificationForm />
+          </ProtectedRoute>
+        } />
+        <Route path="/merchant/verification" element={
+          <ProtectedRoute requiredRoles={['merchant']}>
+            <MerchantVerificationPage />
           </ProtectedRoute>
         } />
         <Route path="/merchant/add-service" element={
