@@ -2,10 +2,10 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Package, Plus, List, MapPin, Pen } from 'lucide-react';
 import TodaysSchedule from './MerchantDashboard/TodaysSchedule';
+import MerchantWelcome from './MerchantDashboard/MerchantWelcome';
 import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import MerchantNavbar from '../../common/MerchantNavbar';
-import PageHeader from '../../common/PageHeader';
 import DashboardStat from '../../common/DashboardStat';
 import { MerchantDashboardService } from '../../../services/merchant-dashboard/merchant-dashboard';
 import PawLoading from '../../common/PawLoading';
@@ -23,13 +23,13 @@ const merchantDashboardService = new MerchantDashboardService();
 const tourSteps: TourStep[] = [
   {
     targetId: 'btn-complete-verification',
-    title: 'Complete Verification',
-    description: 'The first step is to get your business verified. You will need to upload some documents to get started.',
+    title: 'Start verification',
+    description: 'Tell us about your business or freelance work and upload the documents needed for your provider type.',
   },
   {
     targetId: 'btn-set-business-hours',
-    title: 'Set Business Hours',
-    description: 'Let pet owners know when you are open for business. Setting your hours is required before you can list services.',
+    title: 'Set your available hours',
+    description: 'After submitting your verification application, choose the days and times you offer services. Add your hours before listing your services.',
   },
   {
     targetId: 'quick-action-list-new-service',
@@ -327,108 +327,19 @@ const MerchantDashboard = () => {
       }
 
       {(status !== null && hasBusinessHours !== null) && <div className="mx-auto w-full max-w-screen-2xl px-4 py-8 md:px-6 lg:px-8 cursor-default">
-        {/* <PageHeader eyebrow="Your workspace" title="Merchant Dashboard" description="Your bookings, services and business at a glance." /> */}
-        {(status === 'unverified' || !hasBusinessHours) && (
-          <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-center">
-            <h2 className="text-2xl font-bold text-primary-800 mb-3">
-              Welcome to Furk! 🐾
-            </h2>
-            <p className="text-primary-600 text-lg mb-4">
-              We're excited to have you join our community of pet service providers. Let's get your business set up so you can start connecting with pet owners.
-            </p>
-            <p className="text-primary-600 mb-2 text-left">
-              To get started, you'll need to:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-              {/* Business Requirements */}
-              <div>
-                <h3 className="font-semibold text-primary-800 mb-3">For Businesses</h3>
-                <ul className="text-primary-700 mb-4">
-                  <li className="flex items-center gap-2 mb-1">
-                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                    Complete the verification process:
-                  </li>
-                  <ul className="list-disc list-inside ml-4 mb-2">
-                    <li>Company Profile Document (PDF or DOC)</li>
-                    <li>DTI/SEC Registration (Image or Scan)</li>
-                    <li>BIR 2303/COR (Image or Scan)</li>
-                    <li>Mayor's Permit(Image or Scan)</li>
-                    <li>2 Valid IDs (Image or Scan)</li>
-                    <li>Screenshot of Bank Account Name and Account Number</li>
-                    <li>1 Exterior Photo of Business</li>
-                    <li>2 Interior Photos of Business</li>
-                    <li>2 Videos of Actual Pet Service</li>
-                  </ul>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                    Set your business hours
-                  </li>
-                </ul>
-              </div>
-
-              {/* Freelancer Requirements */}
-              <div>
-                <h3 className="font-semibold text-primary-800 mb-3">For Freelancers</h3>
-                <ul className="text-primary-700 mb-4">
-                  <li className="flex items-center gap-2 mb-1">
-                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                    Complete the verification process:
-                  </li>
-                  <ul className="list-disc list-inside ml-4 mb-2">
-                    <li>CV/Professional Background (PDF or DOC)</li>
-                    <li>Current Address Proof (Image or Scan)</li>
-                    <li>Permanent Address Proof (Image or Scan)</li>
-                    <li>SSS ID/UMID (Image or Scan)</li>
-                    <li>BIR TIN Document (Image or Scan)</li>
-                    <li>1 Other Valid ID (Image or Scan)</li>
-                    <li>NBI Clearance (Image or Scan)</li>
-                    <li>Screenshot of Bank Account Name and Account Number</li>
-                    <li>3 Photos of Actual Pet Service</li>
-                    <li>2 Videos of Actual Pet Service</li>
-                  </ul>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary-500 rounded-full"/>
-                    Set your availability hours
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        {(status === 'unverified' || ((status === 'verified' || status === 'pending') && !hasBusinessHours)) && (
+          <MerchantWelcome status={status} hasBusinessHours={hasBusinessHours} />
         )}
 
-        {status === 'unverified' && (
-          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center justify-between md:flex-row flex-col gap-4">
-              <div>
-                <h2 className="text-lg font-medium text-warning-800">
-                  Verification Required
-                </h2>
-                <p className="text-warning-600 mt-1">
-                  Please complete the verification process to start listing services and unlock all merchant features.
-                </p>
-              </div>
-              <div className="flex flex-col justify-center items-end">
-                <Button
-                  id="btn-complete-verification"
-                  size="lg"
-                  onClick={() => navigate('/merchant/verify')}
-                >
-                  Complete Verification
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {status === 'pending' && (
+        {status === 'pending' && hasBusinessHours && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-medium text-warning-800">
-                  Verification Pending
+                  Your verification is in review
                 </h2>
                 <p className="text-warning-600 mt-1">
-                  Your account is currently pending verification. It may take 2 to 3 business working days.
+                  Thanks for sending your documents! Please allow 2 to 3 business days for us to review your application.
                 </p>
               </div>
             </div>
@@ -476,7 +387,7 @@ const MerchantDashboard = () => {
           </div>
         )}
 
-        {!hasBusinessHours && (
+        {!hasBusinessHours && (status === 'rejected' || status === 'suspended') && (
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4 mb-8">
             <div className="flex items-center justify-between md:flex-row flex-col gap-4">
               <div>
@@ -492,15 +403,9 @@ const MerchantDashboard = () => {
                   id="btn-set-business-hours"
                   size="lg"
                   onClick={() => navigate('/merchant/business-hours')}
-                  disabled={status === 'unverified'}
                 >
                   Set Business Hours
                 </Button>
-                {status === 'unverified' && (
-                  <p className="text-sm text-warning-600 mt-2 text-right">
-                    Please verify your business first before setting business hours
-                  </p>
-                )}
               </div>
             </div>
           </div>
