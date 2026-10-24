@@ -20,7 +20,7 @@ const requirements = pureModule(await compile('types.ts'));
 const statuses = pureModule(await compile('verification-status.ts'));
 const pageCode = await compile('MerchantVerificationPage.tsx');
 
-function makePage(initialData, fail = false) {
+function makePage(initialData, fail = false, savedDraft = null) {
   const state = [];
   const effects = [];
   const requests = [];
@@ -56,6 +56,7 @@ function makePage(initialData, fail = false) {
       if (name === 'lucide-react') return new Proxy({}, { get: (_, key) => String(key) });
       if (name === 'react-router-dom') return { useNavigate: () => (...args) => navigation.push(args) };
       if (name.endsWith('/merchant-verification-service')) return { MerchantVerificationService: class {
+        async getDraft() { return { data: savedDraft }; }
         async getOwnApplication(signal) {
           requests.push(signal);
           if (failRequest) throw new Error('Offline');
@@ -159,6 +160,21 @@ test('new merchants can begin verification and do not see fabricated submitted f
   assert.match(page.textContent(), /Not submitted/);
   assert.equal(page.nodes('img').length, 0);
   page.nodes('Button').find(node => page.textContent(node) === 'Start verification').props.onClick();
+  assert.equal(page.navigation[0][0], '/merchant/verify');
+});
+
+test('saved drafts show a resume action and do not appear as applications in review', async () => {
+  const page = makePage(null, false, {
+    business_name: 'Saved pet business', merchant_type: 'BUSINESS', current_step: 3,
+    modified_at: '2026-10-24T08:00:00Z', files_by_type: { BUSINESS: [{ requirement_id: 'bank_details' }], FREELANCE: [] },
+  });
+  await page.settle();
+  assert.match(page.textContent(), /Your draft is saved/);
+  assert.match(page.textContent(), /not been submitted for review/);
+  assert.ok(!page.textContent().includes('In review'));
+  assert.ok(!page.textContent().includes('Start verification'));
+  assert.equal(page.storage.get('merchantStatus'), 'unverified');
+  page.nodes('Button').find(node => page.textContent(node) === 'Continue draft').props.onClick();
   assert.equal(page.navigation[0][0], '/merchant/verify');
 });
 

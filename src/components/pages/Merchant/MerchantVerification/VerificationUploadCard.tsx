@@ -15,12 +15,13 @@ const VerificationUploadCard = ({ requirement, upload, disabled, onFileChange, o
   const Icon = requirement.type === 'video' ? Film : requirement.type === 'photo' ? Image : FileText;
   const isReady = upload?.status === 'success';
   const inputId = `file-${requirement.id}`;
+  const fileName = upload?.file?.name ?? upload?.saved?.name;
 
   return (
     <div id={`upload-${requirement.id}`} className={`flex min-w-0 scroll-mt-24 flex-col rounded-xl border bg-white p-4 sm:p-5 ${upload?.error ? 'border-error-300' : isReady ? 'border-success-200' : 'border-gray-200'}`}>
       <div className="flex items-start justify-between gap-3">
         <span className={`rounded-lg p-2 ${isReady ? 'bg-success-50 text-success-800' : 'bg-primary-50 text-primary-600'}`}><Icon size={18} aria-hidden="true" /></span>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isReady ? 'bg-success-50 text-success-800' : 'bg-gray-100 text-gray-600'}`}>{isReady ? 'Ready' : requirement.required ? 'Required' : 'Optional'}</span>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isReady ? 'bg-success-50 text-success-800' : 'bg-gray-100 text-gray-600'}`}>{upload?.saved ? 'Uploaded' : isReady ? 'Ready to upload' : requirement.required ? 'Required' : 'Optional'}</span>
       </div>
       <h4 className="mt-3 text-sm font-bold text-gray-900">{requirement.name}</h4>
       <p className="mt-1 flex-1 text-xs leading-relaxed text-gray-600">{requirement.description}</p>
@@ -30,7 +31,7 @@ const VerificationUploadCard = ({ requirement, upload, disabled, onFileChange, o
           {upload.preview && requirement.type === 'video' && <video src={upload.preview} controls preload="metadata" aria-label={`Preview of ${requirement.name}`} className="mb-3 h-28 w-full rounded-md bg-gray-900 object-contain" />}
           <div className="flex items-center gap-2">
             {isReady ? <Check size={16} className="shrink-0 text-success-800" aria-hidden="true" /> : <AlertCircle size={16} className="shrink-0 text-error-700" aria-hidden="true" />}
-            <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-gray-800" title={upload.file.name}>{upload.file.name}</p><p className="mt-0.5 text-xs text-gray-500">{(upload.file.size / (1024 * 1024)).toFixed(2)} MB</p></div>
+            <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-gray-800" title={fileName}>{fileName}</p>{upload.file && <p className="mt-0.5 text-xs text-gray-500">{(upload.file.size / (1024 * 1024)).toFixed(2)} MB</p>}{upload.saved?.url && <a href={upload.saved.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-semibold text-primary-700 underline underline-offset-2">Open uploaded file</a>}</div>
             <button type="button" onClick={() => onRemove(requirement.id)} disabled={disabled} aria-label={`Remove ${requirement.name}`} className="rounded-lg p-2 text-gray-500 hover:bg-error-50 hover:text-error-700 disabled:opacity-50"><X size={16} aria-hidden="true" /></button>
           </div>
         </div>

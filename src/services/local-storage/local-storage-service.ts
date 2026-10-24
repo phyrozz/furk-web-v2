@@ -52,6 +52,7 @@ export class LocalStorageService {
 
   clearAll(): void {
     const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
+    const verifiedNoticeSeen = localStorage.getItem('furk_merchant_verified_dashboard_notice_seen');
     const petOwnerTourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
     const affiliateTourSeen = localStorage.getItem('furk_affiliate_tour_seen');
     const petOwnerTours = Object.keys(localStorage)
@@ -63,6 +64,9 @@ export class LocalStorageService {
     }
     if (tourSeen) {
       localStorage.setItem('furk_merchant_tour_seen', tourSeen);
+    }
+    if (verifiedNoticeSeen) {
+      localStorage.setItem('furk_merchant_verified_dashboard_notice_seen', verifiedNoticeSeen);
     }
     if (petOwnerTourSeen) {
       localStorage.setItem('furk_pet_owner_tour_seen', petOwnerTourSeen);

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, X } from 'lucide-react';
 
 interface MultipleAutocompleteProps<T> {
@@ -16,6 +17,8 @@ interface MultipleAutocompleteProps<T> {
   hasMore?: boolean;
   debounceMs?: number;
   maxSelections?: number;
+  mobileDropdownTopBoundaryId?: string;
+  mobileDropdownBottomBoundaryId?: string;
 }
 
 const MultipleAutocomplete = <T extends object>({
@@ -32,7 +35,9 @@ const MultipleAutocomplete = <T extends object>({
   onLoadMore,
   hasMore = false,
   debounceMs = 300,
-  maxSelections
+  maxSelections,
+  mobileDropdownTopBoundaryId,
+  mobileDropdownBottomBoundaryId
 }: MultipleAutocompleteProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,8 +45,64 @@ const MultipleAutocomplete = <T extends object>({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [mobileDropdownStyle, setMobileDropdownStyle] = useState<React.CSSProperties | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const lastScrollPosition = useRef<number>(0);
+
+  useLayoutEffect(() => {
+    if (!isOpen || !mobileDropdownBottomBoundaryId || window.matchMedia('(min-width: 1024px)').matches) {
+      setMobileDropdownStyle(null);
+      return;
+    }
+
+    const positionDropdown = () => {
+      const anchor = wrapperRef.current?.getBoundingClientRect();
+      if (!anchor) return;
+
+      const topBoundary = mobileDropdownTopBoundaryId
+        ? document.getElementById(mobileDropdownTopBoundaryId)?.getBoundingClientRect().bottom ?? 12
+        : 12;
+      const bottomBoundary = mobileDropdownBottomBoundaryId
+        ? document.getElementById(mobileDropdownBottomBoundaryId)?.getBoundingClientRect().top ?? window.innerHeight - 12
+        : window.innerHeight - 12;
+      const safeTop = Math.max(8, topBoundary);
+      const safeBottom = Math.min(window.innerHeight - 8, bottomBoundary);
+      const above = Math.max(0, anchor.top - safeTop - 8);
+      const below = Math.max(0, safeBottom - anchor.bottom - 8);
+      const opensAbove = above >= below;
+      const maxHeight = Math.min(240, opensAbove ? above : below);
+
+      setMobileDropdownStyle({
+        position: 'fixed',
+        left: anchor.left,
+        top: opensAbove ? undefined : anchor.bottom + 4,
+        bottom: opensAbove ? window.innerHeight - anchor.top + 4 : undefined,
+        width: anchor.width,
+        maxHeight,
+        zIndex: 60,
+        overscrollBehavior: 'contain',
+      });
+    };
+
+    positionDropdown();
+    window.addEventListener('resize', positionDropdown);
+    window.addEventListener('scroll', positionDropdown, true);
+    const observer = typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(positionDropdown);
+    if (wrapperRef.current) observer?.observe(wrapperRef.current);
+    const topBoundary = mobileDropdownTopBoundaryId
+      ? document.getElementById(mobileDropdownTopBoundaryId)
+      : null;
+    const bottomBoundary = document.getElementById(mobileDropdownBottomBoundaryId);
+    if (topBoundary) observer?.observe(topBoundary);
+    if (bottomBoundary) observer?.observe(bottomBoundary);
+    return () => {
+      window.removeEventListener('resize', positionDropdown);
+      window.removeEventListener('scroll', positionDropdown, true);
+      observer?.disconnect();
+    };
+  }, [isOpen, mobileDropdownTopBoundaryId, mobileDropdownBottomBoundaryId, values.length, options.length, isLoading, hasMore]);
 
   // Filter out options that are already selected
   const filteredOptions = options.filter(
@@ -206,10 +267,11 @@ const MultipleAutocomplete = <T extends object>({
         </div>
       </div>
 
-      {isOpen && !reachedMaxSelections && (
-        <div 
+      {isOpen && !reachedMaxSelections && (() => {
+        const dropdown = <div
           ref={dropdownRef}
-          className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-auto"
+          style={mobileDropdownStyle ?? undefined}
+          className={`${mobileDropdownStyle ? '' : 'absolute z-10 mt-1 w-full'} bg-white rounded-lg shadow-lg max-h-60 overflow-auto`}
         >
           {filteredOptions.length > 0 ? (
             <>
@@ -238,8 +300,9 @@ const MultipleAutocomplete = <T extends object>({
           ) : (
             <div className="p-4 text-center text-gray-500">No options found</div>
           )}
-        </div>
-      )}
+        </div>;
+        return mobileDropdownStyle ? createPortal(dropdown, document.body) : dropdown;
+      })()}
     </div>
   );
 };

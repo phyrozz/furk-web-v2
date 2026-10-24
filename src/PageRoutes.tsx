@@ -69,6 +69,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
     location.pathname.startsWith('/chat/') ||
     location.pathname === '/merchant/chat' ||
     location.pathname.startsWith('/merchant/chat/');
+  const isMerchantVerificationPage = location.pathname === '/merchant/verify';
 
   const renderTopNavbar = () => {
     if (!isAuthenticated) {
@@ -295,7 +296,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         } />
       </Routes>
 
-      {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && (
+      {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && !isMerchantVerificationPage && (
         <MiniChatWidget aboveBottomNav={userRole === 'user'} />
       )}
       {tutorialAudience && (

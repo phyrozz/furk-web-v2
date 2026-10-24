@@ -20,6 +20,7 @@ import GuidedTour, { TourStep } from '../../common/GuidedTour';
 import { verificationStatuses } from './MerchantVerification/verification-status';
 
 const merchantDashboardService = new MerchantDashboardService();
+const VERIFIED_NOTICE_SEEN_KEY = 'furk_merchant_verified_dashboard_notice_seen';
 
 const tourSteps: TourStep[] = [
   {
@@ -118,8 +119,15 @@ const MerchantDashboard = () => {
   const [editedLocation, setEditedLocation] = useState<MerchantLocation | null>(null);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [activeTourSteps, setActiveTourSteps] = useState<TourStep[]>([]);
+  const [hasSeenVerifiedNotice] = useState(() => localStorage.getItem(VERIFIED_NOTICE_SEEN_KEY) === 'true');
 
   const { status, hasBusinessHours } = useMerchantStatus();
+
+  useEffect(() => {
+    if (status === 'verified' && hasBusinessHours && !hasSeenVerifiedNotice) {
+      localStorage.setItem(VERIFIED_NOTICE_SEEN_KEY, 'true');
+    }
+  }, [status, hasBusinessHours, hasSeenVerifiedNotice]);
 
   useEffect(() => {
     // Only show tour if not already seen
@@ -332,7 +340,28 @@ const MerchantDashboard = () => {
           <MerchantWelcome status={status} hasBusinessHours={hasBusinessHours} />
         )}
 
-        {status !== 'unverified' && !((status === 'pending' || status === 'verified') && !hasBusinessHours) && (
+        {status === 'verified' && hasBusinessHours && (
+          hasSeenVerifiedNotice ? (
+            <section aria-label="Your verification" className="furk-panel mb-8 flex items-center justify-between gap-4 p-3 sm:px-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${verificationStatuses.verified.className}`}>Verified</span>
+                <p className="truncate text-sm font-semibold text-gray-800">Your account is verified</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate('/merchant/verification')} className="shrink-0">View verification</Button>
+            </section>
+          ) : (
+            <section aria-label="Your verification" className="furk-panel mb-8 flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+              <div>
+                <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${verificationStatuses[status].className}`}>{verificationStatuses[status].label}</span>
+                <h2 className="mt-3 text-lg font-bold text-gray-900">Your verification</h2>
+                <p className="mt-1 text-sm text-gray-600">{verificationStatuses[status].description}</p>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/merchant/verification')} className="shrink-0">View verification</Button>
+            </section>
+          )
+        )}
+
+        {status !== 'unverified' && status !== 'verified' && !((status === 'pending') && !hasBusinessHours) && (
           <section aria-label="Your verification" className="furk-panel mb-8 flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
             <div>
               <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${verificationStatuses[status].className}`}>{verificationStatuses[status].label}</span>

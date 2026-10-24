@@ -6,7 +6,7 @@ import PageHeader from '../../../common/PageHeader';
 import Button from '../../../common/Button';
 import PawLoading from '../../../common/PawLoading';
 import { MerchantVerificationService } from '../../../../services/merchant-verification/merchant-verification-service';
-import type { MerchantVerificationApplication, VerificationAttachment } from '../../../../services/merchant-verification/merchant-verification-service';
+import type { MerchantVerificationApplication, SavedVerificationDraft, VerificationAttachment } from '../../../../services/merchant-verification/merchant-verification-service';
 import { businessMerchantRequirements, freelanceMerchantRequirements } from './types';
 import type { UploadRequirement } from './types';
 import { verificationStatuses } from './verification-status';
@@ -56,6 +56,7 @@ const SubmittedFile = ({ requirement, attachment }: { requirement: UploadRequire
 const MerchantVerificationPage = () => {
   const navigate = useNavigate();
   const [application, setApplication] = useState<MerchantVerificationApplication | null>(null);
+  const [draft, setDraft] = useState<SavedVerificationDraft | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
@@ -64,10 +65,11 @@ const MerchantVerificationPage = () => {
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    service.getOwnApplication(controller.signal)
-      .then(({ data }) => {
+    Promise.all([service.getOwnApplication(controller.signal), service.getDraft(controller.signal)])
+      .then(([{ data }, { data: savedDraft }]) => {
         if (controller.signal.aborted) return;
         setApplication(data);
+        setDraft(savedDraft);
         localStorage.setItem('merchantStatus', data?.status ?? 'unverified');
       })
       .catch(() => {
@@ -93,7 +95,6 @@ const MerchantVerificationPage = () => {
       <MerchantNavbar />
       <main className="mx-auto w-full max-w-screen-xl px-4 py-8 md:px-6 lg:px-8">
         <PageHeader
-          eyebrow="Your merchant account"
           title="Your verification"
           description="Track your application and review the details and files you provided."
           actions={<Button variant="outline" disabled={loading} onClick={() => setReloadKey(key => key + 1)} icon={<RefreshCw size={16} aria-hidden="true" />}>Refresh status</Button>}
@@ -107,6 +108,16 @@ const MerchantVerificationPage = () => {
           </div>
         ) : (
           <>
+            {draft && <section aria-labelledby="verification-draft-title" className="furk-panel mb-6 border-primary-200 bg-primary-50 p-5 sm:p-6">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <h2 id="verification-draft-title" className="text-lg font-bold text-primary-900">Your draft is saved</h2>
+                  <p className="mt-2 text-sm text-primary-800">{draft.business_name || 'Your verification'} has not been submitted for review. Continue from step {draft.current_step} with your saved details and uploaded files.</p>
+                  <p className="mt-2 text-xs text-primary-700">{draft.files_by_type[draft.merchant_type].length} files saved · Last saved {formatDate(draft.modified_at)}</p>
+                </div>
+                <Button className="shrink-0" onClick={() => navigate('/merchant/verify', { state: { isForReapplying: status === 'rejected' } })}>Continue draft</Button>
+              </div>
+            </section>}
             <section aria-labelledby="verification-status-title" className="furk-panel mb-6 p-5 sm:p-6">
               <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                 <div className="flex items-start gap-4">
@@ -118,8 +129,8 @@ const MerchantVerificationPage = () => {
                     {application && status !== 'unverified' && <p className="mt-3 text-xs text-gray-500">Application #{application.id} · Last updated {formatDate(application.modified_at)}</p>}
                   </div>
                 </div>
-                {status === 'unverified' && <Button onClick={() => navigate('/merchant/verify')} className="shrink-0">Start verification</Button>}
-                {status === 'rejected' && <Button onClick={() => navigate('/merchant/verify', { state: { isForReapplying: true } })} className="shrink-0">Resubmit verification</Button>}
+                {status === 'unverified' && !draft && <Button onClick={() => navigate('/merchant/verify')} className="shrink-0">Start verification</Button>}
+                {status === 'rejected' && !draft && <Button onClick={() => navigate('/merchant/verify', { state: { isForReapplying: true } })} className="shrink-0">Resubmit verification</Button>}
               </div>
             </section>
 

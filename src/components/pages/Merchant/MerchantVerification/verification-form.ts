@@ -1,6 +1,13 @@
 import type { ServiceGroup, UploadedFile, UploadRequirement } from './types';
 
 export type ProviderType = 'BUSINESS' | 'FREELANCE';
+export type VerificationStep = 1 | 2 | 3;
+
+export function getVerificationIssueStep(id: string): VerificationStep {
+  if (id === 'businessName' || id === 'serviceGroups') return 1;
+  if (['province', 'city', 'barangay', 'address', 'confirm-location'].includes(id)) return 2;
+  return 3;
+}
 
 export interface VerificationDraft {
   businessName: string;

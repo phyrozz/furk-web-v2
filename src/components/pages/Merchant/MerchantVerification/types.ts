@@ -1,3 +1,5 @@
+import type { VerificationDraftFile } from '../../../../services/merchant-verification/merchant-verification-service';
+
 export interface UploadRequirement {
   id: string;
   name: string;
@@ -10,7 +12,8 @@ export interface UploadRequirement {
 
 export interface UploadedFile {
   id: string;
-  file: File;
+  file?: File;
+  saved?: VerificationDraftFile;
   preview?: string;
   status: 'uploading' | 'success' | 'error';
   error?: string;
