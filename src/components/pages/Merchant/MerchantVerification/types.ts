@@ -1,8 +1,11 @@
+import type { VerificationDraftFile } from '../../../../services/merchant-verification/merchant-verification-service';
+
 export interface UploadRequirement {
   id: string;
   name: string;
   type: 'document' | 'photo' | 'video';
   description: string;
+  note?: string;
   required: boolean;
   maxSize: number;
   acceptedFormats: string[];
@@ -10,7 +13,8 @@ export interface UploadRequirement {
 
 export interface UploadedFile {
   id: string;
-  file: File;
+  file?: File;
+  saved?: VerificationDraftFile;
   preview?: string;
   status: 'uploading' | 'success' | 'error';
   error?: string;
@@ -21,6 +25,8 @@ export interface ServiceGroup {
   name: string;
   description: string;
 }
+
+const bankDetailsNote = "Please upload a screenshot or PDF showing the account name and number for the bank account where you want to receive service fees from your clients/pet owners. The account holder name must match the Business/Company Name on your SEC/DTI registration or the Business Owner's Name on a valid ID.";
 
 export const businessMerchantRequirements: UploadRequirement[] = [
   {
@@ -81,10 +87,11 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     id: 'bank_details',
     name: 'Bank Details',
     type: 'photo',
-    description: 'Screenshot of Bank Account Name and Account Number',
+    description: 'Proof of Bank Account Name and Account Number',
+    note: bankDetailsNote,
     required: true,
     maxSize: 5,
-    acceptedFormats: ['.jpg', '.jpeg', '.png'],
+    acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf'],
   },
   {
     id: 'exterior_photo',
@@ -127,7 +134,7 @@ export const businessMerchantRequirements: UploadRequirement[] = [
     name: 'Service Video 2',
     type: 'video',
     description: 'Video of actual pet service (max 1 minute)',
-    required: true,
+    required: false,
     maxSize: 25,
     acceptedFormats: ['.mp4', '.mov']
   }
@@ -201,10 +208,11 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     id: 'bank_details',
     name: 'Bank Details',
     type: 'photo',
-    description: 'Screenshot of Bank Account Name and Account Number',
+    description: 'Proof of Bank Account Name and Account Number',
+    note: bankDetailsNote,
     required: true,
     maxSize: 5,
-    acceptedFormats: ['.jpg', '.jpeg', '.png'],
+    acceptedFormats: ['.jpg', '.jpeg', '.png', '.pdf'],
   },
   {
     id: 'service_photo_1',
@@ -220,7 +228,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     name: 'Service Photo 2',
     type: 'photo',
     description: 'Photo of actual pet service',
-    required: true,
+    required: false,
     maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png']
   },
@@ -229,7 +237,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     name: 'Service Photo 3',
     type: 'photo',
     description: 'Photo of actual pet service',
-    required: true,
+    required: false,
     maxSize: 5,
     acceptedFormats: ['.jpg', '.jpeg', '.png']
   },
@@ -247,7 +255,7 @@ export const freelanceMerchantRequirements: UploadRequirement[] = [
     name: 'Service Video 2',
     type: 'video',
     description: 'Video of actual pet service (max 1 minute)',
-    required: true,
+    required: false,
     maxSize: 25,
     acceptedFormats: ['.mp4', '.mov']
   }

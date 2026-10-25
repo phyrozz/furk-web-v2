@@ -26,6 +26,7 @@ import MerchantDashboard from './components/pages/Merchant/MerchantDashboard';
 import MerchantDetailsPage from './components/pages/Merchant/MerchantDetails/MerchantDetailsPage';
 import MerchantProfilePage from './components/pages/Merchant/MerchantProfilePage';
 import MerchantVerificationForm from './components/pages/Merchant/MerchantVerification/MerchantVerificationForm';
+import MerchantVerificationPage from './components/pages/Merchant/MerchantVerification/MerchantVerificationPage';
 import PayoutsPage from './components/pages/Merchant/Payouts/PayoutsPage';
 import ServiceCategoriesPage from './components/pages/Merchant/ServiceCategories/ServiceCategoriesPage';
 import SetBreakHoursPage from './components/pages/Merchant/SetBreakHours/SetBreakHoursPage';
@@ -68,6 +69,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
     location.pathname.startsWith('/chat/') ||
     location.pathname === '/merchant/chat' ||
     location.pathname.startsWith('/merchant/chat/');
+  const isMerchantVerificationPage = location.pathname === '/merchant/verify';
 
   const renderTopNavbar = () => {
     if (!isAuthenticated) {
@@ -192,6 +194,11 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
             <MerchantVerificationForm />
           </ProtectedRoute>
         } />
+        <Route path="/merchant/verification" element={
+          <ProtectedRoute requiredRoles={['merchant']}>
+            <MerchantVerificationPage />
+          </ProtectedRoute>
+        } />
         <Route path="/merchant/add-service" element={
           <ProtectedRoute requiredRoles={['merchant']}>
             <AddService />
@@ -289,7 +296,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
         } />
       </Routes>
 
-      {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && (
+      {isAuthenticated && (userRole === 'user' || userRole === 'merchant') && !isChatPage && !isMerchantVerificationPage && (
         <MiniChatWidget aboveBottomNav={userRole === 'user'} />
       )}
       {tutorialAudience && (

@@ -15,6 +15,7 @@ import {
   MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
+  ShieldCheck,
   User,
 } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
@@ -37,6 +38,7 @@ const MerchantNavbar = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/merchant/dashboard', icon: LayoutDashboard },
+    { name: 'Verification', path: '/merchant/verification', icon: ShieldCheck },
     { name: 'Services', path: '/merchant/manage-services', icon: ClipboardList },
     { name: 'Categories', path: '/merchant/service-categories', icon: FileText },
     { name: 'Bookings', path: '/merchant/bookings', icon: Calendar },
