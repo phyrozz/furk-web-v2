@@ -256,6 +256,10 @@ test('businesses and freelancers save their uploaded requirements before submitt
     form.selectProvider(provider);
     form.fillDetails();
     form.fillFiles();
+    for (const id of ['service_photo_2', 'service_video_2']) {
+      form.card(id)?.props.onRemove(id);
+    }
+    form.render();
     await form.submit();
     assert.equal(form.calls.submissions.length, 1);
     assert.equal(form.calls.submissions[0], 1);
@@ -266,6 +270,7 @@ test('businesses and freelancers save their uploaded requirements before submitt
     assert.equal(submitted.province, 'Metro Manila');
     assert.equal(submitted.lat, 14.5);
     assert.equal(submitted.long, 121);
+    assert.ok(submitted.files_by_type[provider].every(file => !['service_photo_2', 'service_video_2'].includes(file.requirement_id)));
     const expected = (provider === 'BUSINESS' ? requirements.businessMerchantRequirements : requirements.freelanceMerchantRequirements).filter(req => req.required);
     assert.equal(form.calls.uploads.length, expected.length);
     for (const req of expected) assert.ok(form.calls.uploads.some(upload => upload.key.startsWith(`merchant-verification-drafts/17/${provider}/${req.id}/`)));

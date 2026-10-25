@@ -18,13 +18,14 @@ const VerificationUploadCard = ({ requirement, upload, disabled, onFileChange, o
   const fileName = upload?.file?.name ?? upload?.saved?.name;
 
   return (
-    <div id={`upload-${requirement.id}`} className={`flex min-w-0 scroll-mt-24 flex-col rounded-xl border bg-white p-4 sm:p-5 ${upload?.error ? 'border-error-300' : isReady ? 'border-success-200' : 'border-gray-200'}`}>
+    <div id={`upload-${requirement.id}`} className={`flex h-full min-w-0 scroll-mt-24 flex-col rounded-xl border bg-white p-4 sm:p-5 ${upload?.error ? 'border-error-300' : isReady ? 'border-success-200' : 'border-gray-200'}`}>
       <div className="flex items-start justify-between gap-3">
         <span className={`rounded-lg p-2 ${isReady ? 'bg-success-50 text-success-800' : 'bg-primary-50 text-primary-600'}`}><Icon size={18} aria-hidden="true" /></span>
-        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isReady ? 'bg-success-50 text-success-800' : 'bg-gray-100 text-gray-600'}`}>{upload?.saved ? 'Uploaded' : isReady ? 'Ready to upload' : requirement.required ? 'Required' : 'Optional'}</span>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isReady ? 'bg-success-50 text-success-800' : requirement.required ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-800 ring-1 ring-inset ring-green-600/20'}`}>{upload?.saved ? 'Uploaded' : isReady ? 'Ready to upload' : requirement.required ? 'Required' : 'Optional'}</span>
       </div>
       <h4 className="mt-3 text-sm font-bold text-gray-900">{requirement.name}</h4>
       <p className="mt-1 flex-1 text-xs leading-relaxed text-gray-600">{requirement.description}</p>
+      {requirement.note && <p className="mt-2 text-xs leading-relaxed text-gray-600">{requirement.note}</p>}
       {upload && (
         <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
           {upload.preview && requirement.type !== 'video' && <img src={upload.preview} alt={`Preview of ${requirement.name}`} className="mb-3 h-28 w-full rounded-md object-contain" />}

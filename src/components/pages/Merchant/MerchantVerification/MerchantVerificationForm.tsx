@@ -195,7 +195,7 @@ const MerchantVerificationForm = () => {
   const handleFileChange = (requirement: UploadRequirement, file: File) => {
     const error = validateVerificationFile(requirement, file);
     releasePreview(uploads[requirement.id]?.preview);
-    const preview = !error && (file.type.startsWith('image/') || requirement.type === 'photo' || requirement.type === 'video') ? URL.createObjectURL(file) : undefined;
+    const preview = !error && ((requirement.type === 'photo' && file.type.startsWith('image/')) || (requirement.type === 'video' && file.type.startsWith('video/'))) ? URL.createObjectURL(file) : undefined;
     if (preview) previewUrls.current.add(preview);
     setUploadsByType(previous => ({ ...previous, [merchantType]: { ...previous[merchantType], [requirement.id]: { id: requirement.id, file, preview, status: error ? 'error' : 'success', error } } }));
   };
@@ -407,7 +407,7 @@ const MerchantVerificationForm = () => {
                     {uploadGroups.map(group => (
                       <div key={group.type}>
                         <h3 className="text-sm font-bold text-gray-900">{group.title}</h3><p className="mt-1 text-xs text-gray-500">{group.description}</p>
-                        <div className="mt-4 grid items-start gap-4 md:grid-cols-2">
+                        <div className="mt-4 grid items-stretch gap-4 md:grid-cols-2">
                           {requirements.filter(requirement => requirement.type === group.type).map(requirement => <VerificationUploadCard key={`${merchantType}-${requirement.id}`} requirement={requirement} upload={uploads[requirement.id]} disabled={isBusy} onFileChange={handleFileChange} onRemove={removeFile} />)}
                         </div>
                       </div>
