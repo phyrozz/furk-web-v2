@@ -31,8 +31,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #F8F7F5;
-  color: #302B25;
+  background: rgb(var(--furk-bg-gray-50, 248 247 245));
+  color: rgb(var(--furk-text-gray-800, 48 43 37));
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -51,7 +51,7 @@ p {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgb(var(--furk-bg-gray-100, 241 245 249));
   border-radius: 5px;
 }
 
@@ -67,12 +67,12 @@ p {
 
 @layer base {
   ::selection {
-    background: #EFE4D2;
-    color: #453120;
+    background: rgb(var(--furk-bg-primary-200, 239 228 210));
+    color: rgb(var(--furk-text-primary-800, 69 49 32));
   }
 
   :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    outline: 2px solid #7F5E3E;
+    outline: 2px solid rgb(var(--furk-text-primary-600, 127 94 62));
     outline-offset: 3px;
   }
 }
@@ -159,3 +159,34 @@ p {
     scroll-behavior: auto !important;
   }
 }
+
+/* Third-party widgets use their own surfaces outside Tailwind utilities. */
+html.dark {
+  --toastify-color-light: rgb(var(--furk-bg-white));
+  --toastify-text-color-light: rgb(var(--furk-text-gray-800));
+}
+
+.dark :is(.leaflet-bar a, .leaflet-control-layers, .leaflet-popup-content-wrapper, .leaflet-popup-tip, .leaflet-tooltip) {
+  background-color: rgb(var(--furk-bg-white));
+  color: rgb(var(--furk-text-gray-800));
+  border-color: rgb(var(--furk-border-gray-200));
+}
+
+.dark .leaflet-container .leaflet-control-attribution {
+  background-color: rgb(var(--furk-bg-white) / 0.9);
+  color: rgb(var(--furk-text-gray-600));
+}
+
+.dark .leaflet-container a {
+  color: rgb(var(--furk-text-sky-600));
+}
+
+.dark :is(.leaflet-bar a:hover, .leaflet-bar a:focus, .leaflet-bar a.leaflet-disabled) {
+  background-color: rgb(var(--furk-bg-gray-100));
+  color: rgb(var(--furk-text-gray-400));
+}
+
+.dark .leaflet-tooltip-top::before { border-top-color: rgb(var(--furk-bg-white)); }
+.dark .leaflet-tooltip-bottom::before { border-bottom-color: rgb(var(--furk-bg-white)); }
+.dark .leaflet-tooltip-left::before { border-left-color: rgb(var(--furk-bg-white)); }
+.dark .leaflet-tooltip-right::before { border-right-color: rgb(var(--furk-bg-white)); }

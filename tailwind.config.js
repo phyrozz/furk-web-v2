@@ -1,8 +1,20 @@
+import { themedColors, themeColorsPlugin } from './theme-colors.js';
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
+  safelist: ['dark'],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      backgroundColor: ({ theme }) => themedColors(theme('colors'), 'bg'),
+      gradientColorStops: ({ theme }) => themedColors(theme('colors'), 'bg'),
+      textColor: ({ theme }) => themedColors(theme('colors'), 'text'),
+      placeholderColor: ({ theme }) => themedColors(theme('colors'), 'text'),
+      borderColor: ({ theme }) => ({ DEFAULT: themedColors(theme('colors'), 'border').gray[200], ...themedColors(theme('colors'), 'border') }),
+      divideColor: ({ theme }) => themedColors(theme('colors'), 'border'),
+      ringColor: ({ theme }) => themedColors(theme('colors'), 'border'),
+      ringOffsetColor: ({ theme }) => themedColors(theme('colors'), 'bg'),
       colors: {
         gray: {
           50: '#F8F7F5',
@@ -114,5 +126,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [themeColorsPlugin],
 };

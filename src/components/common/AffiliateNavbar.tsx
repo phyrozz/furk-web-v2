@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HelpCircle, LogOut } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
+import SettingsLink from './SettingsLink';
 
 const AffiliateNavbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -48,6 +49,7 @@ const AffiliateNavbar = () => {
           </Link>
 
           <div className="flex items-center gap-3">
+            <SettingsLink />
             <Link
               to="/help"
               className="flex items-center justify-center w-10 h-10 rounded-full text-primary-600 hover:text-primary-700 transition-colors"

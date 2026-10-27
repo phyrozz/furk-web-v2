@@ -76,15 +76,17 @@ const TrendChart: React.FC<TrendChartProps> = ({
               bottom: 5,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--furk-border-gray-200, 227 223 217))" />
             <XAxis
               dataKey="date"
               tickFormatter={dateFormatter}
               interval={viewType === 'biannual' ? 2 : 'preserveStartEnd'}
+              tick={{ fill: 'rgb(var(--furk-text-gray-500, 120 113 104))' }}
             />
-            <YAxis />
+            <YAxis tick={{ fill: 'rgb(var(--furk-text-gray-500, 120 113 104))' }} />
             <Tooltip
               labelFormatter={dateFormatter}
+              contentStyle={{ backgroundColor: 'rgb(var(--furk-bg-white, 255 255 255))', borderColor: 'rgb(var(--furk-border-gray-200, 227 223 217))', color: 'rgb(var(--furk-text-gray-900, 33 29 24))' }}
             />
             <Line
               type="monotone"

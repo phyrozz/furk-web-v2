@@ -44,6 +44,7 @@ import ServicesPage from './components/pages/Services/ServicesPage';
 import SignUpPage from './components/pages/SignUp/SignUpPage';
 import TermsOfService from './components/pages/TermsOfService/TermsOfService';
 import HelpPage from './components/pages/Help/HelpPage';
+import SettingsPage from './components/pages/Settings/SettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRedirect from './components/RoleRedirect';
@@ -143,6 +144,7 @@ function PageRoutes({ isAuthenticated, userRole }: { isAuthenticated: boolean, u
                 <Route path="/services/:id" element={<CustomerPageTransition><ServiceDetails /></CustomerPageTransition>} />
                 <Route path="/merchants/:id" element={<CustomerPageTransition><MerchantDetailsPage /></CustomerPageTransition>} />
                 <Route path="/help" element={<CustomerPageTransition><HelpPage /></CustomerPageTransition>} />
+                <Route path="/settings" element={<SettingsPage isMerchant={isAuthenticated && userRole === 'merchant'} />} />
               </Routes>
             </main>
           </>

@@ -20,7 +20,7 @@ const Switch: React.FC<SwitchProps> = ({ isOn, handleToggle, className }) => {
       onClick={handleToggle}
     >
       <motion.div
-        className="w-4 h-4 bg-white rounded-full shadow-md"
+        className="w-4 h-4 bg-[#fff] rounded-full shadow-md"
         layout
         transition={spring}
       />

@@ -93,7 +93,7 @@ const HiddenPreviewDrawer = () => {
               </div>
 
               <div className="p-6 sm:p-8">
-                <div className="rounded-2xl border border-primary-100 bg-[radial-gradient(circle_at_top_left,_rgba(156,122,84,0.18),_transparent_32%),linear-gradient(180deg,_#fffaf4_0%,_#ffffff_100%)] p-6">
+                <div className="rounded-2xl border border-primary-100 bg-gradient-to-b from-primary-50 to-white p-6">
                   <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <h3 className="font-cursive text-3xl font-bold text-gray-900">

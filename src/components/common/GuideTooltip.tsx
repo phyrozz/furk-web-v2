@@ -38,8 +38,8 @@ const GuideTip: React.FC<GuideTipProps> = ({
         clickable
         style={{
           opacity: 1,
-          backgroundColor: '#fff',
-          color: '#000',
+          backgroundColor: 'rgb(var(--furk-bg-white, 255 255 255))',
+          color: 'rgb(var(--furk-text-gray-900, 33 29 24))',
           padding: '10px',
           borderRadius: '4px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
@@ -63,7 +63,7 @@ const GuideTip: React.FC<GuideTipProps> = ({
               cursor: 'pointer',
               fontSize: '14px',
               fontWeight: 'bold',
-              color: '#666',
+              color: 'rgb(var(--furk-text-gray-600, 93 87 79))',
             }}
           >
             ✕

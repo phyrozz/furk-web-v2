@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Calendar, momentLocalizer, SlotInfo, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import './BookingCalendar.css';
 import { MerchantBookingsService } from '../../../../services/merchant-bookings/merchant-bookings';
 import Select from '../../../common/Select';
 import MerchantNavbar from '../../../common/MerchantNavbar';
@@ -219,9 +220,9 @@ const BookingCalendar: React.FC = () => {
     if (event.status === 'selected') {
       return {
         style: {
-          backgroundColor: '#e0f2fe',
+          backgroundColor: 'rgb(var(--furk-bg-sky-100, 224 242 254))',
           border: '2px dashed #0284c7',
-          color: '#000',
+          color: 'rgb(var(--furk-text-gray-900, 0 0 0))',
         }
       };
     }
@@ -281,20 +282,20 @@ const BookingCalendar: React.FC = () => {
     });
 
     let style: React.CSSProperties = {
-      backgroundColor: '#a1a1a1',
+      backgroundColor: 'var(--furk-calendar-closed, #a1a1a1)',
       opacity: 1
     };
 
     if (isDateInBusinessHours) {
       style = {
-        backgroundColor: '#ffffff',
+        backgroundColor: 'rgb(var(--furk-bg-white, 255 255 255))',
         opacity: 1,
       };
     }
 
     if (isDateInClosure) {
       style = {
-        backgroundColor: '#a1a1a1',
+        backgroundColor: 'var(--furk-calendar-closed, #a1a1a1)',
         opacity: 1,
       };
     }
@@ -304,7 +305,7 @@ const BookingCalendar: React.FC = () => {
     if (isSelected) {
       style = {
         ...style,
-        backgroundColor: '#e0f2fe', // light blue for selected
+        backgroundColor: 'rgb(var(--furk-bg-sky-100, 224 242 254))', // light blue for selected
       };
     }
 
@@ -319,7 +320,7 @@ const BookingCalendar: React.FC = () => {
     const breaksForDay = merchantBreaks.filter(b => b.day_of_week === merchantDow);
 
     if (!dayHours) {
-      return { style: { backgroundColor: '#a1a1a1' } };
+      return { style: { backgroundColor: 'var(--furk-calendar-closed, #a1a1a1)' } };
     }
 
     // Keep the original datetime intact
@@ -334,7 +335,7 @@ const BookingCalendar: React.FC = () => {
     });
 
     if (isDateInClosure) {
-      return { style: { backgroundColor: '#a1a1a1' } };
+      return { style: { backgroundColor: 'var(--furk-calendar-closed, #a1a1a1)' } };
     }
 
     const openTime = moment(currentTime).set({
@@ -367,12 +368,12 @@ const BookingCalendar: React.FC = () => {
       return (currentTime.isBefore(breakEnd) && slotEndTime.isAfter(breakStart));
     });
 
-    let backgroundColor = '#ffffff'; // default = open
+    let backgroundColor = 'rgb(var(--furk-bg-white, 255 255 255))'; // default = open
     if (!isWithinBusinessHours) {
-      backgroundColor = '#a1a1a1'; // closed
+      backgroundColor = 'var(--furk-calendar-closed, #a1a1a1)'; // closed
     }
     if (isWithinBreak) {
-      backgroundColor = '#a1a1a1'; // break
+      backgroundColor = 'var(--furk-calendar-closed, #a1a1a1)'; // break
     }
 
     return { style: { backgroundColor } };
@@ -606,7 +607,7 @@ const BookingCalendar: React.FC = () => {
                 <span className="text-xs md:text-sm">Cancelled by user</span>
               </div>
               <div className="flex items-center gap-2 whitespace-nowrap">
-                <div className="w-4 h-4 rounded-full bg-[#a1a1a1]" />
+                <div className="w-4 h-4 rounded-full bg-[var(--furk-calendar-closed,#a1a1a1)]" />
                 <span className="text-xs md:text-sm">Closed</span>
               </div>
             </div>
@@ -629,6 +630,7 @@ const BookingCalendar: React.FC = () => {
           <SelectionBox start={dragStart} end={dragEnd} />
           {/* <ContextMenu items={contextMenuItems} triggerOn='left' containerRef={contextMenuContainerRef} /> */}
           <Calendar
+            className="furk-calendar"
             localizer={localizer}
             events={[...events, ...selectionEvents]}
             selectable

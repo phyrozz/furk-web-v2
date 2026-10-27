@@ -1,4 +1,5 @@
 import { PET_OWNER_TOUR_PREFIX } from '../../utils/pet-owner-tour';
+import { THEME_STORAGE_KEY } from '../../theme/theme';
 
 export class LocalStorageService {
   private readonly MERCHANT_STATUS_KEY = 'merchantStatus';
@@ -51,6 +52,7 @@ export class LocalStorageService {
   }
 
   clearAll(): void {
+    const themePreference = localStorage.getItem(THEME_STORAGE_KEY);
     const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
     const verifiedNoticeSeen = localStorage.getItem('furk_merchant_verified_dashboard_notice_seen');
     const petOwnerTourSeen = localStorage.getItem('furk_pet_owner_tour_seen');
@@ -59,6 +61,9 @@ export class LocalStorageService {
       .filter(key => key.startsWith(PET_OWNER_TOUR_PREFIX))
       .map(key => [key, localStorage.getItem(key)] as const);
     localStorage.clear();
+    if (themePreference) {
+      localStorage.setItem(THEME_STORAGE_KEY, themePreference);
+    }
     for (const [key, value] of petOwnerTours) {
       if (value) localStorage.setItem(key, value);
     }

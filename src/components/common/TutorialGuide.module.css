@@ -59,8 +59,8 @@
   min-width: 0;
   padding: 1rem;
   border-radius: 1rem;
-  background: #f8f7f5;
-  color: #464039;
+  background: rgb(var(--furk-bg-gray-50, 248 247 245));
+  color: rgb(var(--furk-text-gray-700, 70 64 57));
   font-size: 0.875rem;
   line-height: 1.75;
 }
@@ -73,8 +73,8 @@
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 50%;
-  background: #f5efe4;
-  color: #62462e;
+  background: rgb(var(--furk-bg-primary-100, 245 239 228));
+  color: rgb(var(--furk-text-primary-700, 98 70 46));
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;

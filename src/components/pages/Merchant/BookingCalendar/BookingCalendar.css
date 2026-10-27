@@ -1,0 +1,32 @@
+html.dark {
+  --furk-calendar-closed: #484036;
+}
+
+/* Structural calendar surfaces; booking status colors retain their own contrast. */
+.dark .furk-calendar :is(.rbc-month-view, .rbc-header, .rbc-month-row, .rbc-day-bg, .rbc-time-view, .rbc-time-header-content, .rbc-time-content, .rbc-time-content > *, .rbc-time-header > .rbc-row, .rbc-timeslot-group, .rbc-time-slot, .rbc-day-slot .rbc-time-slot, .rbc-agenda-view table, .rbc-agenda-view th, .rbc-agenda-view td) {
+  border-color: rgb(var(--furk-border-gray-200));
+}
+
+.dark .furk-calendar :is(.rbc-toolbar button, .rbc-show-more) {
+  color: rgb(var(--furk-text-gray-800));
+  border-color: rgb(var(--furk-border-gray-300));
+}
+
+.dark .furk-calendar :is(.rbc-toolbar button:hover, .rbc-toolbar button:focus, .rbc-toolbar button:active, .rbc-toolbar button.rbc-active, .rbc-off-range-bg) {
+  background-color: rgb(var(--furk-bg-gray-100));
+  color: rgb(var(--furk-text-gray-800));
+}
+
+.dark .furk-calendar :is(.rbc-today, .rbc-slot-selection) {
+  background-color: rgb(var(--furk-bg-sky-100));
+}
+
+.dark .furk-calendar .rbc-off-range {
+  color: rgb(var(--furk-text-gray-400));
+}
+
+.dark .furk-calendar :is(.rbc-time-header-gutter, .rbc-time-gutter, .rbc-overlay) {
+  background-color: rgb(var(--furk-bg-white));
+  color: rgb(var(--furk-text-gray-800));
+  border-color: rgb(var(--furk-border-gray-200));
+}

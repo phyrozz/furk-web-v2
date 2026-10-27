@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, User, HelpCircle } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
 import { motion } from 'framer-motion';
+import SettingsLink from './SettingsLink';
 
 const AdminNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +52,6 @@ const AdminNavbar = () => {
     { name: 'Dashboard', path: '/admin/dashboard'},
     { name: 'Merchants', path: '/admin/merchants'},
     { name: 'Affiliates', path: '/admin/affiliates'},
-    // { name: 'Settings', path: '/admin/settings', icon: Settings },
     { name: 'Promos', path: '/admin/promos'},
     { name: 'Reward Products', path: '/admin/reward-products'},
     { name: 'Payouts', path: '/admin/payouts'}
@@ -80,6 +80,7 @@ const AdminNavbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
+            <SettingsLink />
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -190,6 +191,7 @@ const AdminNavbar = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
+              <Link to="/settings" className="furk-nav-link px-4" onClick={closeMenu}>Settings</Link>
               <Link
                 to="/help"
                 className={`flex items-center space-x-2 px-4 py-2 furk-nav-link ${

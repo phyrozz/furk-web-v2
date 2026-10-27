@@ -18,6 +18,7 @@ import { UserProfileService } from '../../services/profile/user-profile-service'
 import MobileBottomNav from './MobileBottomNav';
 import { useTutorialsMenu } from './TutorialsMenuContext';
 import { getTutorialAudienceForPage } from '../../data/tutorials';
+import SettingsLink from './SettingsLink';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -251,6 +252,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
+            <SettingsLink />
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -434,6 +436,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
           </div>
 
           <div className="ml-auto flex items-center gap-1 lg:hidden">
+            <SettingsLink />
             <Link
               to="/help"
               aria-label="Help"

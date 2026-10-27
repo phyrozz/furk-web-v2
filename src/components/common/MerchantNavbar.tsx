@@ -16,6 +16,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ShieldCheck,
+  Settings,
   User,
 } from 'lucide-react';
 import { loginService } from '../../services/auth/auth-service';
@@ -46,6 +47,7 @@ const MerchantNavbar = () => {
     { name: 'Break hours', path: '/merchant/break-hours', icon: Coffee },
     { name: 'Payouts', path: '/merchant/payouts', icon: DollarSign },
     { name: 'Chat', path: '/merchant/chat', icon: MessageCircle },
+    { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
   const closeMenu = () => setIsOpen(false);

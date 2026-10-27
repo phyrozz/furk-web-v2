@@ -8,8 +8,8 @@
   justify-content: center;
   gap: 1.25rem;
   padding: 1.5rem;
-  background: #fbf8f4;
-  color: #62462e;
+  background: rgb(var(--furk-bg-primary-50, 251 248 244));
+  color: rgb(var(--furk-text-primary-700, 98 70 46));
   text-align: center;
   pointer-events: none;
 }
@@ -28,7 +28,7 @@
   bottom: 1rem;
   left: 0;
   height: 1px;
-  background: #e3dfd9;
+  background: rgb(var(--furk-bg-gray-200, 227 223 217));
 }
 
 .dog {
@@ -40,9 +40,9 @@
   justify-content: center;
   width: 4rem;
   height: 4rem;
-  border: 1px solid #efe4d2;
+  border: 1px solid rgb(var(--furk-border-primary-200, 239 228 210));
   border-radius: 1.5rem;
-  background: #f5efe4;
+  background: rgb(var(--furk-bg-primary-100, 245 239 228));
   animation: trot 900ms ease-in-out infinite;
 }
 
@@ -61,7 +61,7 @@
   bottom: 1.5rem;
   display: flex;
   gap: 0.5rem;
-  color: #b99c78;
+  color: rgb(var(--furk-text-primary-400, 185 156 120));
 }
 
 .trail > svg {
@@ -85,7 +85,7 @@
 
 .caption {
   margin: 0.375rem 0 0;
-  color: #787168;
+  color: rgb(var(--furk-text-gray-500, 120 113 104));
   font-size: 0.75rem;
 }
 
