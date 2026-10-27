@@ -1,5 +1,6 @@
 import { PET_OWNER_TOUR_PREFIX } from '../../utils/pet-owner-tour';
 import { THEME_STORAGE_KEY } from '../../theme/theme';
+import { resetAccountSummary } from '../account-summary/account-summary';
 
 export class LocalStorageService {
   private readonly MERCHANT_STATUS_KEY = 'merchantStatus';
@@ -43,6 +44,7 @@ export class LocalStorageService {
   }
 
   clearStorage(): void {
+    resetAccountSummary();
     localStorage.removeItem(this.MERCHANT_STATUS_KEY);
     localStorage.removeItem(this.ROLE_NAME_KEY);
     localStorage.removeItem(this.TOKEN_KEY);
@@ -52,6 +54,7 @@ export class LocalStorageService {
   }
 
   clearAll(): void {
+    resetAccountSummary();
     const themePreference = localStorage.getItem(THEME_STORAGE_KEY);
     const tourSeen = localStorage.getItem('furk_merchant_tour_seen');
     const verifiedNoticeSeen = localStorage.getItem('furk_merchant_verified_dashboard_notice_seen');

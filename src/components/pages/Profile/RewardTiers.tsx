@@ -8,6 +8,7 @@ import { Award, Check, ChevronDown, Search } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import PawLoading from '../../common/PawLoading';
 import Modal from '../../common/Modal';
+import { accountWallet } from '../../../services/account-summary/account-summary';
 
 const RewardTiers = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,6 +89,7 @@ const RewardTiers = () => {
       await http.post('/reward-tier/subscribe', {
         reward_tier_id: selectedTier.id
       });
+      accountWallet.invalidate();
       
       ToastService.show(`Successfully subscribed to ${selectedTier.name} tier!`);
       setCurrentTier(selectedTier);

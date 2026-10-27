@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { http } from '../../../utils/http';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { accountWallet } from '../../../services/account-summary/account-summary';
 
 interface PaymentStatusResponse {
   success: boolean;
@@ -54,6 +55,7 @@ const PaymentPage: React.FC = () => {
 
         const status = response.data?.status;
         if (status === 'success' || status === 'PAYMENT_SUCCESS') {
+          accountWallet.invalidate();
           setMessage('Your payment was confirmed and your wallet has been updated.');
           toast.success('Payment successful!');
           finish('success', '/payment/success');

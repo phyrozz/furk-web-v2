@@ -8,17 +8,16 @@ import { UserNotificationsService } from '../../services/user-notifications/user
 import PawLoading from './PawLoading';
 import ResizableRightSidebar from './ResizableRightSidebar';
 import DateUtils from '../../utils/date-utils';
-import { http } from '../../utils/http';
-import { UserWallet } from '../../models/user-wallet';
 import Button from './Button';
 import { Tooltip } from './Tooltip';
 import { useGuideTooltip } from '../../providers/GuideTooltip';
 import GuideTip from './GuideTooltip';
-import { UserProfileService } from '../../services/profile/user-profile-service';
 import MobileBottomNav from './MobileBottomNav';
 import { useTutorialsMenu } from './TutorialsMenuContext';
 import { getTutorialAudienceForPage } from '../../data/tutorials';
 import SettingsLink from './SettingsLink';
+import { useAccountResource } from '../../hooks/useAccountResource';
+import { accountAvatar, accountWallet, DEFAULT_AVATAR } from '../../services/account-summary/account-summary';
 
 const userNotificationsService = new UserNotificationsService();
 
@@ -35,23 +34,13 @@ interface NavbarProps {
   userRole?: string | null;
 }
 
-interface NavbarProfile {
-  image_url?: string;
-}
-
 const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isAuth, setIsAuth] = useState(isAuthenticated ?? false);
-  const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isProfileImageLoading, setIsProfileImageLoading] = useState(true);
-  const [profileImageUrl, setProfileImageUrl] = useState<string>('/default_profile.png');
   const { tooltipState, setTooltipState } = useGuideTooltip();
   const { isExpanded: isTutorialMenuExpanded, setIsExpanded: setIsTutorialMenuExpanded, mobileTriggerRef } = useTutorialsMenu();
-  const userProfileService = new UserProfileService();
-  const cdnUrl = import.meta.env.VITE_CDN_URL || '';
 
   const fetchNotifications = useCallback(async (limit: number, offset: number) => {
     try {
@@ -62,44 +51,6 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
       return [];
     }
   }, []);
-
-  const fetchUserWallet = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await http.get<{ data: UserWallet }>('/pet-owner-profile/get-user-wallet');
-      setUserWallet(response.data);
-    } catch (error) {
-      console.error('Failed to fetch user wallet:', error);
-      setUserWallet(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const fetchUserProfile = useCallback(async () => {
-    try {
-      setIsProfileImageLoading(true);
-      const response = await userProfileService.getUserDetails();
-      const profile = response.data as NavbarProfile;
-
-      if (!profile?.image_url) {
-        setProfileImageUrl('/default_profile.png');
-        return;
-      }
-
-      if (profile.image_url.startsWith('http')) {
-        setProfileImageUrl(profile.image_url);
-        return;
-      }
-
-      setProfileImageUrl(`${cdnUrl}/${profile.image_url.replace(/^\/+/, '')}`);
-    } catch (error) {
-      console.error('Failed to fetch profile image:', error);
-      setProfileImageUrl('/default_profile.png');
-    } finally {
-      setIsProfileImageLoading(false);
-    }
-  }, [cdnUrl]);
 
   const { items: notifications, loadMore, loading, hasMore } = useLazyLoad<Notification>({
     fetchData: fetchNotifications,
@@ -166,7 +117,13 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
 
   const resolvedRole = userRole ?? loginService.getUserRole();
   const hasTutorials = Boolean(getTutorialAudienceForPage(location.pathname, isAuth, resolvedRole));
-  const formattedFurkredits = userWallet?.furkredits?.toFixed(2) ?? '0.00';
+  const canLoadAccount = isAuth && resolvedRole === 'user';
+  const wallet = useAccountResource(accountWallet, canLoadAccount);
+  const avatar = useAccountResource(accountAvatar, canLoadAccount);
+  const isLoading = canLoadAccount && wallet.data === null && wallet.status !== 'error';
+  const isProfileImageLoading = canLoadAccount && avatar.data === null && avatar.status !== 'error';
+  const profileImageUrl = avatar.data ?? DEFAULT_AVATAR;
+  const formattedFurkredits = wallet.data?.furkredits?.toFixed(2) ?? '0.00';
 
   useEffect(() => {
     if (typeof isAuthenticated !== 'undefined') {
@@ -199,13 +156,6 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
     
     checkAuth();
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (isAuth) {
-      fetchUserWallet();
-      fetchUserProfile();
-    }
-  }, [isAuth, fetchUserWallet, fetchUserProfile]);
 
   const renderNotifications = () => (
     <div className="space-y-2">
@@ -346,7 +296,7 @@ const Navbar = ({ isAuthenticated, userRole }: NavbarProps) => {
                         src={profileImageUrl}
                         alt="Profile"
                         className="w-full h-full object-cover"
-                        onError={() => setProfileImageUrl('/default_profile.png')}
+                        onError={() => accountAvatar.set(DEFAULT_AVATAR)}
                       />
                     )}
                   </motion.button>

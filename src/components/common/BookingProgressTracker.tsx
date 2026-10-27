@@ -5,6 +5,7 @@ import { loginService } from '../../services/auth/auth-service';
 import { userNotificationsService } from '../../services/user-notifications/user-notifications';
 import { Loader, AlertTriangle, X, PawPrint, Heart } from 'lucide-react';
 import { parseBookingStatusEvents } from '../../utils/booking-status-events';
+import { accountWallet } from '../../services/account-summary/account-summary';
 
 interface BookingProgress {
   user_id: string;
@@ -97,6 +98,9 @@ const BookingProgressTracker: React.FC<BookingProgressTrackerProps> = ({ isAuthe
       try {
         const updates = parseBookingStatusEvents(JSON.parse(event.data));
         if (updates.length === 0) return;
+        if (loginService.getUserRole() === 'user' && updates.some(update =>
+          ['booking_cancelled', 'booking_auto_rejected', 'booking_completed'].includes(update.event)
+        )) accountWallet.invalidate();
 
         console.log('Received booking WebSocket update:', updates);
         const mostRecent = updates.reduce((latest, update) => {

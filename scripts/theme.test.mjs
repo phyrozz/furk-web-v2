@@ -71,7 +71,7 @@ test('login, logout and session cleanup preserve the browser appearance preferen
     if (preference) data.set('furk-theme', preference);
     const context = vm.createContext({
       exports: {},
-      require: (name) => name.endsWith('/theme') ? { THEME_STORAGE_KEY: 'furk-theme' } : { PET_OWNER_TOUR_PREFIX: 'furk_pet_owner_tour:' },
+      require: (name) => name.endsWith('/theme') ? { THEME_STORAGE_KEY: 'furk-theme' } : name.endsWith('/account-summary') ? { resetAccountSummary() {} } : { PET_OWNER_TOUR_PREFIX: 'furk_pet_owner_tour:' },
       localStorage: { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => data.set(key, value), clear: () => data.clear() },
     });
     vm.runInContext(compiled, context);

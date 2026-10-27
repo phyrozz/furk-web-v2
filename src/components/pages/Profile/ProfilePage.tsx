@@ -14,8 +14,8 @@ import Favorites from './Favorites';
 import PetProfiles from './PetProfiles';
 import TransactionHistory from './TransactionHistory';
 import RewardTiers from './RewardTiers';
-import { UserWallet } from '../../../models/user-wallet';
-import { http } from '../../../utils/http';
+import { accountWallet } from '../../../services/account-summary/account-summary';
+import { useAccountResource } from '../../../hooks/useAccountResource';
 import TopUpSidebar from './TopUpSidebar';
 import { formatAmount } from '../../../utils/currency-utils';
 
@@ -64,7 +64,7 @@ const ProfilePage = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [editFormData, setEditFormData] = useState<UserProfile | null>(null);
   const [loadingSave, setLoadingSave] = useState(false);
-  const [userWallet, setUserWallet] = useState<UserWallet | null>(null);
+  const { data: userWallet } = useAccountResource(accountWallet);
   const [isTopUpSidebarOpen, setIsTopUpSidebarOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -86,11 +86,9 @@ const ProfilePage = () => {
 
   const fetchUserWallet = useCallback(async () => {
     try {
-      const response = await http.get<{ data: UserWallet }>('/pet-owner-profile/get-user-wallet');
-      setUserWallet(response.data);
+      await accountWallet.load();
     } catch (error) {
       console.error('Failed to fetch user wallet:', error);
-      setUserWallet(null);
       setLoading(false);
     } finally {
       setLoading(false);
@@ -104,7 +102,6 @@ const ProfilePage = () => {
       await getUserDetails();
       await fetchUserWallet();
     };
-    // Dont run API fetchings concurrently. Wait all to finish before showing the page.
     loadData();
 
     return () => {
@@ -366,7 +363,6 @@ const ProfilePage = () => {
       } onSuccess={
         () => {
           setIsTopUpSidebarOpen(false);
-          fetchUserWallet();
         }
       } />
 

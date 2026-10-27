@@ -2,6 +2,7 @@ import axios from "axios";
 import { ReviewForm } from "../../components/pages/Services/ReviewDialog";
 import { http } from "../../utils/http";
 import type { BookingRequest, BookingResult } from "../../utils/booking-request";
+import { accountWallet } from '../account-summary/account-summary';
 
 interface BookingAvailabilityResponse {
     data: {
@@ -69,11 +70,17 @@ export class PetServicesService {
     }
 
     async createBooking(data: BookingRequest): Promise<BookingResult> {
-        return http.post('/booking', data);
+        const session = accountWallet.getSession();
+        const response = await http.post<BookingResult>('/booking', data);
+        if (session === accountWallet.getSession()) accountWallet.invalidate();
+        return response;
     }
 
     async getBookingRequest(requestId: string): Promise<BookingResult> {
-        return http.get(`/booking/requests/${encodeURIComponent(requestId)}`);
+        const session = accountWallet.getSession();
+        const response = await http.get<BookingResult>(`/booking/requests/${encodeURIComponent(requestId)}`);
+        if (session === accountWallet.getSession()) accountWallet.invalidate();
+        return response;
     }
 
     async addToFavorites(serviceId: number): Promise<any> {
